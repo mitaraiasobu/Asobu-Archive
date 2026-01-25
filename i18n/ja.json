@@ -72,19 +72,20 @@
   "eventDetails": {
     "illustration_contest": {
       "title": "イラストコンテスト",
-      "descHtml": "ハッシュタグから参加作品が見れます。<br>詳細はリンク先へ。"
+      "descHtml": "ハッシュタグから参加作品が見れます。<br>詳細はリンク先へ！"
     },
     "clip_contest": {
       "title": "切り抜き動画コンテスト",
-      "descHtml": "切り抜き動画のイベントです。<br>詳細はリンク先へ。"
+      "descHtml": "切り抜き動画のイベントです。<br>完成した動画はXのDMもしくはメールに送ってください！"
     },
     "coloring_contest_new_outfit": {
       "title": "新衣装塗り絵コンテスト",
-      "descHtml": "あなたの塗り絵が新衣装に採用されるかも！？<br>詳細はリンク先へ。"
+      "descHtml": "あなたの塗り絵が新衣装に採用されるかも！？<br>詳細はリンク先へ！"
     },
     "soundproof_crowdfunding": {
       "title": "防音室クラウドファンディング",
-      "descHtml": "防音室のための支援ページです。<br>詳細はリンク先へ。"
+      "descHtml": "防音室のための支援ページです。<br>詳細はリンク先へ！"
     }
   }
+
 }
