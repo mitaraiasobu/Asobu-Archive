@@ -73,7 +73,7 @@
     },
     "clip_contest": {
       "title": "Clip Video Contest",
-      "descHtml": "A clipping contest event.<br>See the link for details."
+      "descHtml": "A clipping contest event."
     },
     "coloring_contest_new_outfit": {
       "title": "New Outfit Coloring Contest",
@@ -84,4 +84,5 @@
       "descHtml": "Support page for the soundproof room.<br>See the link for details."
     }
   }
+
 }
