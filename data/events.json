@@ -2,7 +2,7 @@
   {
     "id": "illustration_contest",
     "mediaType": "video",
-    "src": "./assets/イラコン2.mp4",
+    "src": "./assets/イラコン.mp4",
     "poster": "./assets/イラコン2.png",
     "status": "active",
     "start": "2026-01-03",
@@ -48,3 +48,4 @@
     ]
   }
 ]
+
