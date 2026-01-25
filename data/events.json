@@ -18,10 +18,7 @@
     "poster": "./assets/切り抜き動画コンテスト.png",
     "status": "active",
     "start": "2026-01-03",
-    "end": "2026-02-28",
-    "links": [
-      { "labelKey": "event.openPage", "url": "（URL）" }
-    ]
+    "end": "2026-02-28"
   },
   {
     "id": "coloring_contest_new_outfit",
@@ -48,5 +45,6 @@
     ]
   }
 ]
+
 
 
