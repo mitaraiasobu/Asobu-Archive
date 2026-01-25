@@ -1,0 +1,50 @@
+[
+  {
+    "id": "illustration_contest",
+    "mediaType": "video",
+    "src": "./assets/イラコン2.mp4",
+    "poster": "./assets/イラコン2.png",
+    "status": "active",
+    "start": "2026-01-03",
+    "end": "2026-02-28",
+    "links": [
+      { "labelKey": "event.openOnX", "url": "https://x.com/hashtag/%E5%BE%A1%E6%89%8B%E6%B4%97%E9%81%8A%E3%82%A4%E3%83%A9%E3%82%B3%E3%83%B3?src=hashtag_click&f=live" }
+    ]
+  },
+  {
+    "id": "clip_contest",
+    "mediaType": "video",
+    "src": "./assets/切り抜き動画コンテスト.mp4",
+    "poster": "./assets/切り抜き動画コンテスト.png",
+    "status": "active",
+    "start": "2026-01-03",
+    "end": "2026-02-28",
+    "links": [
+      { "labelKey": "event.openPage", "url": "（URL）" }
+    ]
+  },
+  {
+    "id": "coloring_contest_new_outfit",
+    "mediaType": "video",
+    "src": "./assets/学園衣装塗り絵.mp4",
+    "poster": "./assets/学園衣装塗り絵.png",
+    "status": "active",
+    "start": "2026-01-03",
+    "end": "after_3000_subs_plus_7d",
+    "links": [
+      { "labelKey": "event.openPage", "url": "https://mitaraiasobu.github.io/coloring_contest_school_uniform/coloring_contest.html" },
+      { "labelKey": "event.openOnX", "url": "https://x.com/hashtag/%E5%BE%A1%E6%89%8B%E6%B4%97%E3%81%BF%E3%81%9F%E3%82%89?src=hashtag_click&f=live" }
+    ]
+  },
+  {
+    "id": "soundproof_crowdfunding",
+    "mediaType": "image",
+    "src": "./assets/防音室169.png",
+    "status": "active",
+    "start": "2026-01-18",
+    "end": "",
+    "links": [
+      { "labelKey": "event.openPage", "url": "https://mitaraiasobu.github.io/crowd_funding/index.html" }
+    ]
+  }
+]

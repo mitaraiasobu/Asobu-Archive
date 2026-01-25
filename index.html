@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>遊アーカイブ | 御手洗 遊</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__title" id="siteTitle">遊アーカイブ⋈🦝御手洗 遊の公式サイト</div>
+      <div class="brand__sub" id="siteSub">寿命を有意義につかっていこ～！</div>
+    </div>
+
+  <div class="actions">
+    <!-- SNS（PC表示用） -->
+    <div class="social">
+      <a class="chip chip-link" href="https://x.com/MitaraiAsobu"
+        target="_blank" rel="noopener">Twitter</a>
+      <a class="chip chip-link" href="https://www.youtube.com/"
+        target="_blank" rel="noopener">YouTube</a>
+      <a class="chip chip-link" href="https://mitaraiasobu.fanbox.cc/"
+        target="_blank" rel="noopener">FANBOX</a>
+      <a class="chip chip-link" href="https://mitaraiasobu.booth.pm/"
+        target="_blank" rel="noopener">BOOTH</a>
+    </div>
+
+    <!-- 翻訳ボタン -->
+    <div class="lang">
+      <button class="chip" data-lang="ja">日本語</button>
+      <button class="chip" data-lang="en">EN</button>
+      <button class="chip" data-lang="ko">한국어</button>
+    </div>
+
+    <!-- ハンバーガー（スマホ用） -->
+    <button class="nav-toggle" id="navToggle"
+      aria-label="menu" aria-expanded="false">☰</button>
+  </div>
+
+  </header>
+
+  <!-- スマホ用メニュー（SNS＋タブ） -->
+  <div class="navpanel" id="navPanel" aria-hidden="true">
+    <div class="navpanel__backdrop" id="navBackdrop"></div>
+
+    <div class="navpanel__inner">
+      <div class="navpanel__title">メニュー</div>
+
+      <!-- SNS（ハンバーガーの中だけ） -->
+      <div class="navpanel__group">
+        <a class="chip chip-link" href="https://x.com/MitaraiAsobu" target="_blank" rel="noopener">Twitter</a>
+        <a class="chip chip-link" href="https://www.youtube.com/" target="_blank" rel="noopener">YouTube</a>
+        <a class="chip chip-link" href="https://mitaraiasobu.fanbox.cc/" target="_blank" rel="noopener">FANBOX</a>
+        <a class="chip chip-link" href="https://mitaraiasobu.booth.pm/" target="_blank" rel="noopener">BOOTH</a>
+      </div>
+
+      <div class="ruleline"></div>
+
+      <!-- タブ（スマホではこれを使う） -->
+      <div class="navpanel__grid">
+        <a href="#home" class="tab tab--mobile" data-tab="home"></a>
+        <a href="#about" class="tab tab--mobile" data-tab="about"></a>
+        <a href="#support" class="tab tab--mobile" data-tab="support"></a>
+        <a href="#fanclub" class="tab tab--mobile" data-tab="fanclub"></a>
+        <a href="#goods" class="tab tab--mobile" data-tab="goods"></a>
+        <a href="#log" class="tab tab--mobile" data-tab="log"></a>
+        <a href="#notice" class="tab tab--mobile" data-tab="notice"></a>
+        <a href="#contact" class="tab tab--mobile" data-tab="contact"></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PC用タブ（スマホではCSSで非表示にする） -->
+  <nav class="tabs" id="tabs">
+    <a href="#home" class="tab" data-tab="home"></a>
+    <a href="#about" class="tab" data-tab="about"></a>
+    <a href="#support" class="tab" data-tab="support"></a>
+    <a href="#fanclub" class="tab" data-tab="fanclub"></a>
+    <a href="#goods" class="tab" data-tab="goods"></a>
+    <a href="#log" class="tab" data-tab="log"></a>
+    <a href="#notice" class="tab" data-tab="notice"></a>
+    <a href="#contact" class="tab" data-tab="contact"></a>
+  </nav>
+
+  <main class="container">
+    <!-- HOME -->
+    <section class="page" id="page-home">
+      <div class="hero">
+        <div class="hero__left">
+          <h1 id="homeHeadline"></h1>
+          <p class="muted" id="homeLead"></p>
+        </div>
+      </div>
+
+      <div class="home-split">
+        <div class="home-left">
+          <section class="card">
+            <div class="card__head">
+              <h2 id="scheduleTitle"></h2>
+              <span class="muted" id="scheduleHint"></span>
+            </div>
+
+            <div class="schedule">
+              <img id="scheduleImg" src="./assets/schedule_this_week.png" alt="Weekly schedule" />
+            </div>
+
+            <div class="asobu-note">
+              <div class="asobu-note__label" id="scheduleNoteLabel"></div>
+              <div class="asobu-note__text prose" id="scheduleNoteText"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="home-right">
+          <section class="card">
+            <div class="card__head">
+              <h2 id="eventsTitle"></h2>
+              <span class="muted" id="eventsHint"></span>
+            </div>
+            <div class="events-scroll"><div class="grid" id="eventsGrid"></div></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="page" id="page-about">
+      <section class="card">
+        <div class="card__head">
+          <h2 id="aboutTitle"></h2>
+        </div>
+        <div class="prose" id="aboutBody"></div>
+      </section>
+    </section>
+
+    <!-- SUPPORT -->
+    <section class="page" id="page-support">
+      <section class="card">
+        <div class="card__head">
+          <h2 id="supportTitle"></h2>
+        </div>
+        <div class="prose" id="supportBody"></div>
+      </section>
+    </section>
+
+    <!-- FANCLUB -->
+    <section class="page" id="page-fanclub">
+      <section class="card">
+        <div class="card__head">
+          <h2 id="fanclubTitle"></h2>
+        </div>
+        <div class="prose" id="fanclubBody"></div>
+      </section>
+    </section>
+
+    <!-- GOODS -->
+    <section class="page" id="page-goods">
+      <section class="card">
+        <div class="card__head">
+          <h2 id="goodsTitle"></h2>
+        </div>
+        <div class="prose" id="goodsBody"></div>
+      </section>
+    </section>
+
+    <!-- LOG -->
+    <section class="page" id="page-log">
+      <section class="card">
+        <div class="card__head">
+          <h2 id="logTitle"></h2>
+        </div>
+        <div class="prose" id="logBody"></div>
+      </section>
+    </section>
+
+    <!-- NOTICE -->
+    <section class="page" id="page-notice">
+      <section class="card">
+        <div class="card__head">
+          <h2 id="noticeTitle"></h2>
+        </div>
+        <div class="prose" id="noticeBody"></div>
+      </section>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="page" id="page-contact">
+      <section class="card">
+        <div class="card__head">
+          <h2 id="contactTitle"></h2>
+        </div>
+        <div class="prose" id="contactBody"></div>
+      </section>
+    </section>
+  </main>
+
+  <!-- EVENT MODAL -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal__backdrop" id="modalBackdrop"></div>
+
+    <div class="modal__panel" role="dialog" aria-modal="true">
+      <button class="modal__close" id="modalClose" aria-label="Close">×</button>
+      <button class="carbtn carbtn--prev" id="carPrev" aria-label="Prev">‹</button>
+      <button class="carbtn carbtn--next" id="carNext" aria-label="Next">›</button>
+
+      <div class="modal__carousel">
+        <section class="carpage" data-page="0">
+          <div class="modal__media" id="modalMediaMain"></div>
+          <div class="modal__navhint muted" id="modalHint"></div>
+        </section>
+
+        <section class="carpage" data-page="1">
+          <div class="modal__media modal__media--detail" id="modalMediaDetail"></div>
+          <div class="modal__text">
+            <h3 id="modalTitle"></h3>
+            <p class="muted" id="modalPeriod"></p>
+            <div class="prose" id="modalDesc"></div>
+            <div class="modal__links" id="modalLinks"></div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX (image zoom) -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox__backdrop" id="lightboxBackdrop"></div>
+    <img class="lightbox__img" id="lightboxImg" alt="">
+  </div>
+
+  <footer class="footer">
+    <span class="muted" id="footerNote"></span>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
