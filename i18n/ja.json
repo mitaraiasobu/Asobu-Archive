@@ -60,7 +60,9 @@
 
   "event": {
     "openOnX": "Xで見る",
-    "openPage": "ページを開く"
+    "openPage": "ページを開く",
+    "surveyStreamTime": "配信の時間帯について",
+    "surveyPrivateWeek": "私利私欲週間の感想"
   },
 
   "eventStatus": {
@@ -85,6 +87,10 @@
     "soundproof_crowdfunding": {
       "title": "防音室クラウドファンディング",
       "descHtml": "防音室のための支援ページです。<br>詳細はリンク先へ！"
+    },
+    "survey_forms": {
+      "title": "アンケートにご協力ください🤍",
+      "descHtml": "ここにあるものはすべて匿名のアンケートです。みんなの回答が活動に役立つよ！ぜひ回答してね～！"
     }
   }
 
