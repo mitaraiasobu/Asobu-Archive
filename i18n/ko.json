@@ -56,7 +56,9 @@
   },
   "event": {
     "openOnX": "X에서 보기",
-    "openPage": "페이지 열기"
+    "openPage": "페이지 열기",
+    "surveyStreamTime": "선호하는 방송 시간대",
+    "surveyPrivateWeek": "사리사욕 주간에 대한 소감"
   },
   "eventStatus": {
     "active": "진행 중"
@@ -80,7 +82,10 @@
     "soundproof_crowdfunding": {
       "title": "방음실 크라우드펀딩",
       "descHtml": "방음실을 위한 후원 페이지입니다.<br>자세한 내용은 링크에서 확인해주세요."
+    },
+    "survey_forms": {
+      "title": "설문조사에 참여해주세요 🤍",
+      "descHtml": "여기에 있는 설문은 모두 익명으로 진행됩니다. 여러분의 응답은 앞으로의 활동에 큰 도움이 돼요! 꼭 참여해 주세요!"
     }
   }
-
 }
