@@ -58,7 +58,9 @@
   },
   "event": {
     "openOnX": "View on X",
-    "openPage": "Open page"
+    "openPage": "Open page",
+    "surveyStreamTime": "Preferred streaming time",
+   "surveyPrivateWeek": "Your thoughts on the “Self-Indulgence Week"
   },
   "eventStatus": {
     "active": "Active"
@@ -82,7 +84,10 @@
     "soundproof_crowdfunding": {
       "title": "Soundproof Room Crowdfunding",
       "descHtml": "Support page for the soundproof room.<br>See the link for details."
+    },
+    "survey_forms": {
+      "title": "Please take our survey 🤍",
+      "descHtml": "All surveys here are completely anonymous. Your answers help improve future activities! We’d love to hear from you!"
     }
   }
-
 }
