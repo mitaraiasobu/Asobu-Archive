@@ -15,6 +15,9 @@ const $ = (sel) => document.querySelector(sel);
 
 let _wired = false; // avoid duplicate event listeners
 
+// イベントグリッドの動画要素を保持
+let eventVideoElements = [];
+
 function setActiveTab(tabKey) {
   document.querySelectorAll(".tab").forEach((a) => {
     a.classList.toggle("active", a.dataset.tab === tabKey);
@@ -156,6 +159,7 @@ function renderEvents() {
   if (!grid) return;
 
   grid.innerHTML = "";
+  eventVideoElements = []; // リセット
 
   state.events.forEach((ev) => {
     const detail = t(`eventDetails.${ev.id}`);
@@ -184,6 +188,11 @@ function renderEvents() {
           preload="metadata"
         ></video>
       `;
+      // 動画要素を保持
+      setTimeout(() => {
+        const videoEl = media.querySelector("video");
+        if (videoEl) eventVideoElements.push(videoEl);
+      }, 0);
     } else {
       media.innerHTML = `<img src="${src}" alt="">`;
     }
@@ -253,8 +262,8 @@ async function openModal(ev) {
   if (hint) {
     hint.textContent =
       mediaType === "video"
-        ? "‹ › でページ切替（1:動画 / 2:画像+詳細）・画像タップで拡大"
-        : "画像+詳細（画像タップで拡大）";
+        ? "‹ › でページ切替(1:動画 / 2:画像+詳細)・画像タップで拡大"
+        : "画像+詳細(画像タップで拡大)";
   }
 
   // draw media
@@ -329,6 +338,14 @@ function setModalPage(p) {
     sec.classList.toggle("active", Number(sec.dataset.page) === modalPage);
   });
 
+  // 動画ページから離れる場合は動画を停止
+  const videoEl = $("#modalMediaMain")?.querySelector("video");
+  if (videoEl && modalPage !== 0) {
+    try {
+      videoEl.pause();
+    } catch {}
+  }
+
   const prev = $("#carPrev");
   const next = $("#carNext");
   if (prev) prev.disabled = modalPage === modalMinPage;
@@ -369,7 +386,7 @@ async function setLang(lang) {
   state.lang = lang;
   localStorage.setItem("lang", lang);
 
-  // ★重要：data-lang を持つ chip だけを対象にする（SNSリンクが chip でも安全）
+  // ★重要:data-lang を持つ chip だけを対象にする(SNSリンクが chip でも安全)
   document.querySelectorAll(".chip[data-lang]").forEach((b) => {
     b.classList.toggle("active", b.dataset.lang === lang);
   });
@@ -386,6 +403,64 @@ function handleRoute() {
   const known = ["home", "about", "support", "goods", "log", "fanclub", "notice", "contact"];
   const tab = known.includes(hash) ? hash : "home";
   setActiveTab(tab);
+}
+
+// ページの表示/非表示を監視して動画を停止
+function setupVisibilityHandler() {
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      // ページが非表示になったら全ての動画を停止
+      eventVideoElements.forEach(video => {
+        try {
+          video.pause();
+        } catch {}
+      });
+
+      // モーダル内の動画も停止
+      const modalVideo = $("#modalMediaMain")?.querySelector("video");
+      if (modalVideo) {
+        try {
+          modalVideo.pause();
+        } catch {}
+      }
+    }
+  });
+}
+
+// ハンバーガーメニューのスクロール制御
+function setupHamburgerScrollBehavior() {
+  const navToggle = document.getElementById("navToggle");
+  if (!navToggle) return;
+
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const currentScrollY = window.scrollY;
+        
+        // 下にスクロールしている場合は非表示
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          navToggle.classList.add("hidden");
+        } 
+        // 上にスクロールしている場合は表示
+        else if (currentScrollY < lastScrollY) {
+          navToggle.classList.remove("hidden");
+        }
+        
+        // 最上部にいる場合は常に表示
+        if (currentScrollY < 50) {
+          navToggle.classList.remove("hidden");
+        }
+        
+        lastScrollY = currentScrollY;
+        ticking = false;
+      });
+      
+      ticking = true;
+    }
+  });
 }
 
 function wireOnce() {
@@ -474,17 +549,22 @@ function wireOnce() {
 
   navBackdrop?.addEventListener("click", closeNav);
 
-  // メニュー内のリンクを押したら閉じる（hashchange前に閉じる）
+  // メニュー内のリンクを押したら閉じる(hashchange前に閉じる)
   navPanel?.addEventListener("click", (e) => {
     const a = e.target?.closest?.("a");
     if (a) closeNav();
   });
 
-  // 画面サイズがPCに戻ったら閉じる（バグり防止）
+  // 画面サイズがPCに戻ったら閉じる(バグり防止)
   window.addEventListener("resize", () => {
     if (window.matchMedia("(min-width: 769px)").matches) closeNav();
   });
 
+  // ページ表示/非表示の監視を設定
+  setupVisibilityHandler();
+  
+  // ハンバーガーメニューのスクロール制御を設定
+  setupHamburgerScrollBehavior();
 }
 
 async function init() {
@@ -497,7 +577,7 @@ async function init() {
     state.events = [];
   }
 
-  // ★重要：言語切替は data-lang 付きだけ
+  // ★重要:言語切替は data-lang 付きだけ
   document.querySelectorAll(".chip[data-lang]").forEach((b) => {
     b.addEventListener("click", () => setLang(b.dataset.lang));
   });
