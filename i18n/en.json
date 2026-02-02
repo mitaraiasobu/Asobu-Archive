@@ -17,7 +17,7 @@
     "title": "This Week’s Streaming Schedule",
     "hint": "",
     "noteLabel": "A note from Asobu",
-    "noteHtml": "This week’s schedule is...... none 🖤<br><br>“Self-Indulgence Week” is a week devised so that<br>Asobu can live freely and comfortably—<br>a full-on guerrilla streaming week<br>with absolutely no schedule at all.<br>To be honest, I won’t do any annoying streams,<br>I won’t take requests for singing streams,<br>I won’t read every single comment,<br>it’s the ultimate my-pace.<br><span class=\"divider\">______</span>Lifespans, just follow me."
+    "noteHtml": "I’m really looking forward to every stream 🖤 I can’t wait to chat with all of you 🖤 Thank you so much for always supporting me 🤍 We’re one-sixth of the way to monetization in watch time. Only 450 hours left—let’s do our best together! Thank you for your support!"
   },
   "events": {
     "title": "Contests / Events",
@@ -60,7 +60,8 @@
     "openOnX": "View on X",
     "openPage": "Open page",
     "surveyStreamTime": "Preferred streaming time",
-   "surveyPrivateWeek": "Your thoughts on the “Self-Indulgence Week"
+    "surveyPrivateWeek": "about Self-Indulgence Week",
+    "surveyDayWatchTime": "Streaming slots for each day"
   },
   "eventStatus": {
     "active": "Active"
