@@ -53,7 +53,8 @@
     "end": "",
     "links": [
       { "labelKey": "event.surveyStreamTime", "url": "https://docs.google.com/forms/d/e/1FAIpQLScS8CgXIV3W2KMFGbVU-tSGSUnfUf402do8W73h_d9FB6Fjkw/viewform?usp=header" },
-      { "labelKey": "event.surveyPrivateWeek", "url": "https://docs.google.com/forms/d/e/1FAIpQLSeTUGvaST6BDMnCjZlsNHrFDAAXqxAb0j1iqajmNRt2GSqjDw/viewform?usp=header" }
+      { "labelKey": "event.surveyPrivateWeek", "url": "https://docs.google.com/forms/d/e/1FAIpQLSeTUGvaST6BDMnCjZlsNHrFDAAXqxAb0j1iqajmNRt2GSqjDw/viewform?usp=header" },
+      { "labelKey": "event.surveyDayWatchTime", "url": "https://docs.google.com/forms/d/e/1FAIpQLSf3o5S-v-BnMxS8hk20_MxAG9e3gDHGj_RNXT79DFmcTTtQNA/viewform?usp=header" }
     ]
   }
 ]
