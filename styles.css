@@ -769,6 +769,16 @@ a{color:inherit}
   margin: 4px 6px 10px;
 }
 
+/* SNSボタンを3列横並びに */
+.navpanel__group{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.navpanel__group .sns-img-btn{
+  flex: 0 0 auto;
+}
+
 .navpanel__grid{
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -780,4 +790,29 @@ a{color:inherit}
   display: inline-flex;
   justify-content: center;
   text-decoration: none;
+}
+/* ===== SNS image buttons ===== */
+.sns-img-btn {
+  display: inline-block;
+  border-radius: 8px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+  line-height: 0;
+  border: 1px solid rgba(255,255,255,.08);
+}
+.sns-img-btn img {
+  display: block;
+  width: 80px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: inherit;
+}
+.sns-img-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 18px rgba(0,0,0,.45);
+  opacity: .92;
+}
+.sns-img-btn:active {
+  transform: translateY(0) scale(.99);
 }
