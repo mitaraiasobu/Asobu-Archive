@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>遊アーカイブ | 御手洗 遊</title>
   <link rel="stylesheet" href="./styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Kaisei+Tokumin:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet" />
 </head>
 
 <body>
@@ -61,9 +62,12 @@
         <a href="#support" class="tab tab--mobile" data-tab="support"></a>
         <a href="#fanclub" class="tab tab--mobile" data-tab="fanclub"></a>
         <a href="#goods" class="tab tab--mobile" data-tab="goods"></a>
+        <a href="#crowdfunding" class="tab tab--mobile" data-tab="crowdfunding"></a>
+        <a href="#contest" class="tab tab--mobile" data-tab="contest"></a>
         <a href="#log" class="tab tab--mobile" data-tab="log"></a>
         <a href="#notice" class="tab tab--mobile" data-tab="notice"></a>
         <a href="#contact" class="tab tab--mobile" data-tab="contact"></a>
+
       </div>
     </div>
   </div>
@@ -75,9 +79,12 @@
     <a href="#support" class="tab" data-tab="support"></a>
     <a href="#fanclub" class="tab" data-tab="fanclub"></a>
     <a href="#goods" class="tab" data-tab="goods"></a>
+    <a href="#crowdfunding" class="tab" data-tab="crowdfunding"></a>
+    <a href="#contest" class="tab" data-tab="contest"></a>
     <a href="#log" class="tab" data-tab="log"></a>
     <a href="#notice" class="tab" data-tab="notice"></a>
     <a href="#contact" class="tab" data-tab="contact"></a>
+
   </nav>
 
   <main class="container">
@@ -85,7 +92,6 @@
     <section class="page" id="page-home">
       <div class="hero">
         <div class="hero__left">
-          <h1 id="homeHeadline"></h1>
           <p class="muted" id="homeLead"></p>
         </div>
       </div>
@@ -119,76 +125,69 @@
           </section>
         </div>
       </div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    
     </section>
 
     <!-- ABOUT -->
     <section class="page" id="page-about">
-      <section class="card">
-        <div class="card__head">
-          <h2 id="aboutTitle"></h2>
-        </div>
-        <div class="prose" id="aboutBody"></div>
-      </section>
+      <div id="aboutBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
     </section>
 
     <!-- SUPPORT -->
     <section class="page" id="page-support">
-      <section class="card">
-        <div class="card__head">
-          <h2 id="supportTitle"></h2>
-        </div>
-        <div class="prose" id="supportBody"></div>
-      </section>
+      <div id="supportBody"></div>
     </section>
 
-    <!-- FANCLUB -->
+        <!-- FANCLUB -->
     <section class="page" id="page-fanclub">
-      <section class="card">
-        <div class="card__head">
-          <h2 id="fanclubTitle"></h2>
-        </div>
-        <div class="prose" id="fanclubBody"></div>
-      </section>
+      <div id="fanclubBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    
     </section>
 
     <!-- GOODS -->
     <section class="page" id="page-goods">
-      <section class="card">
-        <div class="card__head">
-          <h2 id="goodsTitle"></h2>
-        </div>
-        <div class="prose" id="goodsBody"></div>
-      </section>
+      <div id="goodsBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
     </section>
 
     <!-- LOG -->
     <section class="page" id="page-log">
-      <section class="card">
-        <div class="card__head">
-          <h2 id="logTitle"></h2>
-        </div>
-        <div class="prose" id="logBody"></div>
-      </section>
+      <div id="logBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
     </section>
 
     <!-- NOTICE -->
     <section class="page" id="page-notice">
-      <section class="card">
-        <div class="card__head">
-          <h2 id="noticeTitle"></h2>
-        </div>
-        <div class="prose" id="noticeBody"></div>
-      </section>
+      <div id="noticeBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- CROWDFUNDING -->
+    <section class="page" id="page-crowdfunding">
+      <div id="crowdfundingBody"></div>
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- CONTEST -->
+    <section class="page" id="page-contest">
+      <div id="contestBody"></div>
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
     </section>
 
     <!-- CONTACT -->
     <section class="page" id="page-contact">
-      <section class="card">
-        <div class="card__head">
-          <h2 id="contactTitle"></h2>
-        </div>
-        <div class="prose" id="contactBody"></div>
-      </section>
+      <div id="contactBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
     </section>
   </main>
 
