@@ -80,11 +80,6 @@ a{color:inherit}
   margin:0 auto;
   padding:18px 14px 80px;
 }
-#page-home{
-  max-width:1000px;
-  margin-left:auto;
-  margin-right:auto;
-}
 
 .hero{
   display:flex; justify-content:space-between; align-items:flex-end;
@@ -1067,12 +1062,18 @@ a{color:inherit}
 .support-tl-total .support-tl-month { font-size: 13px; color: #b6b6c2; font-family: 'Kaisei Tokumin', serif; font-weight: 900; }
 @media (max-width: 600px) {
   .support-timeline {
-    grid-template-columns: repeat(4, 100px);
-    gap: 12px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
   }
   .support-tl-card {
-    width: 100px;
-    height: 100px;
+    width: 100%;
+    height: 90px;
+    border-radius: 8px;
+    padding: 4px 2px;
+  }
+  .support-tl-card:not(:last-child)::after {
+    right: -8px;
+    font-size: 14px;
   }
 }
 
