@@ -607,25 +607,28 @@ async function init() {
 // CONTEST TAB LOGIC
 // Called from renderStaticTexts() after contestBody.innerHTML is set
 // ===================================================================
-let _contestInited = false;
+// Persistent state: survives language switches (innerHTML rebuild)
+let _ct = null;
 
 function initContest() {
-  if (_contestInited) return;
-
   const canvas = document.getElementById('ct-canvas');
   if (!canvas) return;  // HTML not yet injected
-  _contestInited = true;
 
   const ctx        = canvas.getContext('2d', { willReadFrequently: true });
   const hsvPicker  = document.getElementById('ct-hsv-picker');
   const hsvPickerM = document.getElementById('ct-hsv-picker-m');
 
-  let hue = 0, sat = 100, bri = 100, ctColor = '#ff0000';
-  let ctPalette = [];
-  let selectedLayer = null;
-  let fixedVisible  = true;
-  let loadedImgs = {}, loadCnt = 0;
-  let ctZoom = 100;
+  // Restore from previous state, or start fresh
+  let hue          = _ct ? _ct.hue          : 0;
+  let sat          = _ct ? _ct.sat          : 100;
+  let bri          = _ct ? _ct.bri          : 100;
+  let ctColor      = _ct ? _ct.ctColor      : '#ff0000';
+  let ctPalette    = _ct ? _ct.ctPalette    : [];
+  let selectedLayer= _ct ? _ct.selectedLayer: null;
+  let fixedVisible = _ct ? _ct.fixedVisible : true;
+  let loadedImgs   = _ct ? _ct.loadedImgs   : {};
+  let loadCnt      = _ct ? _ct.loadCnt      : 0;
+  let ctZoom       = _ct ? _ct.ctZoom       : 100;
 
   const layerImageUrls = {
     1:'./images/1.png',  2:'./images/2.png',  3:'./images/3.png',
@@ -650,6 +653,14 @@ function initContest() {
     { id:12, name:'イヤリング', color:null, visible:true },
     { id:13, name:'襟',         color:null, visible:true },
   ];
+
+  // Restore layer colors & visibility from previous state
+  if (_ct && _ct.layers) {
+    _ct.layers.forEach(function(s) {
+      const l = ctLayers.find(function(x) { return x.id === s.id; });
+      if (l) { l.color = s.color; l.visible = s.visible; }
+    });
+  }
 
   // --- Color math ---
   function hsbToHex(h, s, b) {
@@ -998,6 +1009,12 @@ function initContest() {
   const _rbm = document.getElementById('ct-reset-palette-m');if(_rbm) _rbm.onclick = resetCtPalette;
 
   // Apply / Reset all
+  // Wrap apply/reset to also persist state (must be before button wiring)
+  const _origApply = ctApplyColor;
+  const _origReset = ctResetAll;
+  ctApplyColor = function() { _origApply(); saveCtState(); };
+  ctResetAll   = function() { _origReset(); saveCtState(); };
+
   const _ap  = document.getElementById('ct-apply');     if(_ap)  _ap.onclick  = ctApplyColor;
   const _apm = document.getElementById('ct-apply-m');   if(_apm) _apm.onclick = ctApplyColor;
   const _ra  = document.getElementById('ct-reset-all');   if(_ra)  _ra.onclick  = ctResetAll;
@@ -1028,22 +1045,55 @@ function initContest() {
   const _ms = document.getElementById('ct-zoom-slider');
   const _mr = document.getElementById('ct-zoom-reset');
   if(_mc) _mc.onclick = function(e){ e.stopPropagation(); ctCloseModal(); };
-  if(_mb) _mb.onclick = ctCloseModal;
   if(_mi) _mi.onclick = function(e){ e.stopPropagation(); };
   if(_ms) _ms.addEventListener('input', function(e){ ctZoom=+e.target.value; ctUpdateZoom(); });
   if(_mr) _mr.onclick = function(){ ctZoom=100; ctUpdateZoom(); };
 
+  // Persist current state so it survives the next language switch
+  function saveCtState() {
+    _ct = {
+      hue: hue, sat: sat, bri: bri, ctColor: ctColor,
+      ctPalette: ctPalette.slice(),
+      selectedLayer: selectedLayer,
+      fixedVisible: fixedVisible,
+      loadedImgs: loadedImgs,
+      loadCnt: loadCnt,
+      ctZoom: ctZoom,
+      layers: ctLayers.map(function(l) {
+        return { id: l.id, color: l.color, visible: l.visible };
+      })
+    };
+  }
+
+  // Modal outer-click: clicking the modal backdrop (outside the image) closes it
+  const _mOuter = document.getElementById('ct-img-modal');
+  if (_mOuter) _mOuter.addEventListener('click', function(e) {
+    if (e.target === _mOuter) ctCloseModal();
+  });
+
+  // Keydown: use AbortController to prevent stacking on re-init
+  if (_ct && _ct._keyController) { try { _ct._keyController.abort(); } catch(e) {} }
+  const _keyCtrl = new AbortController();
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') { ctCloseModal(); ctClosePanel(); }
-  });
+  }, { signal: _keyCtrl.signal });
 
   // Start
   loadCtPalette();
   updateCtColor();
   renderCtPalettes();
-  loadCtImages();
+  // Images already loaded on lang switch — skip reload, just redraw
+  if (Object.keys(loadedImgs).length > 0) {
+    const loadingEl = document.getElementById('ct-loading');
+    if (loadingEl) loadingEl.style.display = 'none';
+    drawCtCanvas();
+  } else {
+    loadCtImages();
+  }
   renderCtLayerList('ct-layer-list', false);
   renderCtLayerList('ct-layer-list-m', true);
+  saveCtState();
+  _ct._keyController = _keyCtrl;
 }
 
 init().catch((err) => {
