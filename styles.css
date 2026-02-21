@@ -1306,3 +1306,9 @@ body {
   margin-left: calc(50% - min(calc(100vw - 28px), 1100px) / 2);
   box-sizing: border-box;
 }
+
+#page-home {
+  width: min(calc(100vw - 28px), 1000px);
+  margin-left: calc(50% - min(calc(100vw - 28px), 1000px) / 2);
+  box-sizing: border-box;
+}
