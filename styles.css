@@ -254,11 +254,23 @@ a{color:inherit}
   display: block;
 }
 
+/* ===== Modal scroll lock ===== */
+body.modal-open {
+  overflow: hidden;
+}
+
 /* ===== Split modal: 左=動画 / 右=画像+詳細+ボタン ===== */
 .modal__carousel{
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 0;
+}
+/* 動画なし（画像のみ）の場合は中央1カラム */
+.modal__carousel--image-only{
+  grid-template-columns: 1fr;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
 }
 @media (max-width: 680px){
   .modal__carousel{ grid-template-columns: 1fr; }
@@ -283,7 +295,15 @@ a{color:inherit}
   }
   .carpage[data-page="1"]{
     border-left: none;
-    max-height: none;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  /* モーダルパネル自体もスマホでは最大高を制限してスクロール可能に */
+  .modal__panel{
+    max-height: 92vh;
+    overflow-y: auto;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -1298,4 +1318,47 @@ body {
   width: min(calc(100vw - 28px), 1000px);
   margin-left: calc(50% - min(calc(100vw - 28px), 1000px) / 2);
   box-sizing: border-box;
+}
+/* ===== Contest mobile banner ===== */
+/* デフォルト非表示（PC） */
+.ct-mobile-banner{
+  display: none;
+}
+/* スマホのみ表示 */
+@media (max-width: 768px) {
+.ct-mobile-banner{
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255,121,176,.12);
+  border: 1px solid rgba(255,121,176,.4);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+}
+.ct-mobile-banner__text{
+  flex: 1;
+}
+.ct-mobile-banner__close{
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid rgba(255,121,176,.5);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+.ct-mobile-banner__close:hover{
+  background: rgba(255,121,176,.2);
 }
