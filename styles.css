@@ -1846,10 +1846,10 @@ body.no-anim .anim-toggle-btn__dot {
 .event__title,
 .mission-overlay__label,
 .mission-overlay__title,
-:not(#page-contest *).support-sec-head,
-:not(#page-contest *).support-main-title,
-:not(#page-contest *).support-sub-title,
-:not(#page-contest *).support-footer-name,
+.support-sec-head,
+.support-main-title,
+.support-sub-title,
+.support-footer-name,
 footer .muted {
   font-family: 'DotGothic16', monospace;
 }
@@ -1861,10 +1861,10 @@ footer .muted {
 :lang(ko) .event__title,
 :lang(ko) .mission-overlay__label,
 :lang(ko) .mission-overlay__title,
-:lang(ko) :not(#page-contest *).support-sec-head,
-:lang(ko) :not(#page-contest *).support-main-title,
-:lang(ko) :not(#page-contest *).support-sub-title,
-:lang(ko) :not(#page-contest *).support-footer-name,
+:lang(ko) .support-sec-head,
+:lang(ko) .support-main-title,
+:lang(ko) .support-sub-title,
+:lang(ko) .support-footer-name,
 :lang(ko) footer .muted {
   font-family: 'NeoDunggeunmoPro', monospace;
 }
