@@ -191,9 +191,15 @@
     await scrambleTo(subEl,   texts.sub,   10);
     setTimeout(() => overlay.classList.add("fadeout"),
       Math.max(0, FADEOUT_MS - (performance.now() - t0)));
-    setTimeout(() => { overlay.remove(); style.remove(); },
-      Math.max(0, TOTAL_MS - (performance.now() - t0)));
+    setTimeout(() => {
+      overlay.remove(); style.remove();
+      if (window.__introFinishResolve) window.__introFinishResolve();
+    }, Math.max(0, TOTAL_MS - (performance.now() - t0)));
   }
+
+  window.__introFinishPromise = new Promise(resolve => {
+    window.__introFinishResolve = resolve;
+  });
 
   runIntro();
 })();
@@ -242,14 +248,33 @@ function setActiveTab(tabKey) {
       if (cfBody && !cfBody.dataset.missionDone) {
         cfBody.dataset.missionDone = "1";
         const missionTitle = t("crowdfunding.missionTitle") || "防音室を導入して絶叫を防げ！";
-        triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
+        // まず即座にコンテンツを隠す
+        cfBody.querySelectorAll(".cf-split > div, .support-header").forEach(el => {
+          el.style.opacity = "0"; el.style.transition = "none"; el.style.transform = "translateY(16px)";
+        });
+        const doMission = () => triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
+        if (window.__introFinishPromise) {
+          window.__introFinishPromise.then(doMission);
+        } else {
+          doMission();
+        }
       }
     } else if (tabKey === "contest") {
       const contestBody = document.getElementById("contestBody");
       if (contestBody && !contestBody.dataset.missionDone) {
         contestBody.dataset.missionDone = "1";
         const missionTitle = t("contest.missionTitle") || "学園衣装をコーディネートしよう！";
-        triggerMissionAnim(contestBody, missionTitle, "#contest-root");
+        // まず即座にコンテンツを隠す
+        const contestRoot = contestBody.querySelector("#contest-root");
+        if (contestRoot) {
+          contestRoot.style.opacity = "0"; contestRoot.style.transition = "none"; contestRoot.style.transform = "translateY(16px)";
+        }
+        const doMission = () => triggerMissionAnim(contestBody, missionTitle, "#contest-root");
+        if (window.__introFinishPromise) {
+          window.__introFinishPromise.then(doMission);
+        } else {
+          doMission();
+        }
       }
     }
   }
