@@ -1,5 +1,206 @@
 /* app.js (FULL / working) */
 
+/* ─────────────────────────────────────────────────────────────
+   ゲーム風イントロ演出
+   ───────────────────────────────────────────────────────────── */
+(function () {
+  const savedLang = (localStorage.getItem("lang") || "ja");
+  const DOT_FONT  = savedLang === "ko"
+    ? "'DotGothic16', 'NeoDunggeunmoPro', monospace"
+    : "'DotGothic16', monospace";
+
+  // i18n JSONのsplash.*を非同期取得（スクランブルと並行実行）
+  // JSONロード前なのでfetchで直接読む。失敗時はフォールバック
+  const splashPromise = fetch(`./i18n/${savedLang}.json`, { cache: "no-store" })
+    .then(r => r.json())
+    .then(json => json.splash || {})
+    .catch(() => ({}));
+
+  const SCRAMBLE_CHARS  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&⋈★◆▲░▒▓";
+  const SCRAMBLE_FRAMES = 10;
+  const FRAME_MS        = 38;
+  const FADEOUT_MS      = 2600;
+  const TOTAL_MS        = 3300;
+
+  const style = document.createElement("style");
+  style.textContent = `
+    #asobu-intro {
+      position: fixed; inset: 0; z-index: 99999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 20px;
+      background: #080408; overflow: hidden;
+      cursor: default; user-select: none;
+    }
+    /* スキャンライン */
+    #asobu-intro::before {
+      content: ""; position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(255,255,255,0.025) 2px, rgba(255,255,255,0.025) 4px);
+      pointer-events: none;
+      animation: intro-scanline 10s linear infinite;
+    }
+    @keyframes intro-scanline {
+      from { background-position: 0 0; } to { background-position: 0 240px; }
+    }
+    /* ピンクグロー */
+    #asobu-intro::after {
+      content: ""; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 52%, rgba(255,80,160,0.22) 0%, transparent 70%),
+        radial-gradient(ellipse 100% 100% at 50% 50%, rgba(20,0,30,0.7) 0%, transparent 100%);
+      pointer-events: none;
+      animation: intro-glow-pulse 2s ease-in-out infinite alternate;
+    }
+    @keyframes intro-glow-pulse { from { opacity: 0.8; } to { opacity: 1; } }
+
+    /* コーナー装飾 */
+    .intro-corner { position: absolute; width: 36px; height: 36px; opacity: 0.6; }
+    .intro-corner--tl { top: 18px; left: 18px; border-top: 2px solid #ff6eb4; border-left: 2px solid #ff6eb4; }
+    .intro-corner--tr { top: 18px; right: 18px; border-top: 2px solid #ff6eb4; border-right: 2px solid #ff6eb4; }
+    .intro-corner--bl { bottom: 18px; left: 18px; border-bottom: 2px solid #ff6eb4; border-left: 2px solid #ff6eb4; }
+    .intro-corner--br { bottom: 18px; right: 18px; border-bottom: 2px solid #ff6eb4; border-right: 2px solid #ff6eb4; }
+
+    /* タイトル */
+    #intro-title {
+      position: relative; z-index: 2;
+      font-family: ${DOT_FONT};
+      font-size: clamp(22px, 5.5vw, 58px); font-weight: 400;
+      color: #fff; letter-spacing: 0.14em;
+      text-shadow: 0 0 6px #ff6eb4, 0 0 18px #ff3d9a,
+                   0 0 40px #ff3d9a, 0 0 80px rgba(255,60,154,0.35);
+      white-space: nowrap; min-height: 1.3em;
+    }
+    /* サブテキスト */
+    #intro-sub {
+      position: relative; z-index: 2;
+      font-family: ${DOT_FONT};
+      font-size: clamp(10px, 1.8vw, 16px); font-weight: 400;
+      color: rgba(255,200,230,0.85); letter-spacing: 0.07em;
+      text-shadow: 0 0 10px rgba(255,100,180,0.5);
+      white-space: nowrap; min-height: 1.5em;
+    }
+    /* バー（最初から表示） */
+    #intro-bar-wrap {
+      position: relative; z-index: 2;
+      width: min(500px, 82vw); height: 6px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,110,180,0.25);
+      overflow: hidden;
+    }
+    #intro-bar {
+      height: 100%; width: 0%;
+      background: linear-gradient(90deg, #c0006a, #ff3d9a, #ffaadd, #ff3d9a, #c0006a);
+      background-size: 300% 100%;
+      box-shadow: 0 0 12px #ff3d9a, 0 0 24px rgba(255,60,154,0.4);
+      animation: intro-bar-shine 0.8s linear infinite;
+      transition: width 1.8s cubic-bezier(0.15, 1, 0.3, 1);
+    }
+    @keyframes intro-bar-shine {
+      from { background-position: 0% 0%; } to { background-position: 300% 0%; }
+    }
+    /* LOADING ラベル */
+    #intro-loading-label {
+      position: relative; z-index: 2;
+      font-family: ${DOT_FONT};
+      font-size: clamp(9px, 1.4vw, 12px);
+      color: rgba(255,150,200,0.6); letter-spacing: 0.25em; text-transform: uppercase;
+      animation: intro-blink 1.1s step-end infinite;
+    }
+    @keyframes intro-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    /* フェードアウト */
+    #asobu-intro.fadeout { animation: intro-fadeout 0.65s ease-in forwards; }
+    @keyframes intro-fadeout {
+      0%   { opacity: 1; transform: scale(1); }
+      55%  { opacity: 0.35; transform: scale(1.012); }
+      100% { opacity: 0; transform: scale(1.025); pointer-events: none; }
+    }
+    /* スクランブル文字 */
+    .scr-char { display: inline-block; color: #ff6eb4; }
+    .scr-char.settled { color: inherit; transition: color 0.08s; }
+  `;
+  document.head.appendChild(style);
+
+  // DOM構築
+  const overlay = document.createElement("div");
+  overlay.id = "asobu-intro";
+  ["tl","tr","bl","br"].forEach(pos => {
+    const c = document.createElement("div");
+    c.className = `intro-corner intro-corner--${pos}`;
+    overlay.appendChild(c);
+  });
+  const titleEl   = document.createElement("div"); titleEl.id = "intro-title";
+  const subEl     = document.createElement("div"); subEl.id   = "intro-sub";
+  const barWrap   = document.createElement("div"); barWrap.id  = "intro-bar-wrap";
+  const bar       = document.createElement("div"); bar.id      = "intro-bar";
+  barWrap.appendChild(bar);
+  const loadLabel = document.createElement("div"); loadLabel.id = "intro-loading-label";
+  loadLabel.textContent = "NOW LOADING...";
+  overlay.append(titleEl, subEl, barWrap, loadLabel);
+  document.body.prepend(overlay);
+
+  // バーを最初からスタート
+  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = "100%"; }));
+
+  function randomChar() {
+    return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+  }
+
+  function scrambleTo(el, targetText, startDelay) {
+    return new Promise(resolve => {
+      el.innerHTML = "";
+      const spans = [];
+      for (let i = 0; i < targetText.length; i++) {
+        if (targetText[i] === " " || targetText[i] === "　" || targetText[i] === "/") {
+          el.appendChild(document.createTextNode(targetText[i]));
+          spans.push(null);
+        } else {
+          const s = document.createElement("span");
+          s.className = "scr-char";
+          s.textContent = randomChar();
+          el.appendChild(s);
+          spans.push(s);
+        }
+      }
+      let settled = 0;
+      const nonNull = spans.filter(Boolean);
+      if (nonNull.length === 0) { resolve(); return; }
+      nonNull.forEach((s, ni) => {
+        const idx = spans.indexOf(s);
+        const charDelay = startDelay + ni * (FRAME_MS * 0.75);
+        let frame = 0;
+        const tick = () => {
+          if (frame < SCRAMBLE_FRAMES) {
+            s.textContent = randomChar(); frame++;
+            setTimeout(tick, FRAME_MS);
+          } else {
+            s.textContent = targetText[idx];
+            s.classList.add("settled");
+            if (++settled === nonNull.length) resolve();
+          }
+        };
+        setTimeout(tick, charDelay);
+      });
+    });
+  }
+
+  async function runIntro() {
+    const t0 = performance.now();
+    const texts = await splashPromise;
+    await scrambleTo(titleEl, texts.title, 60);
+    await scrambleTo(subEl,   texts.sub,   10);
+    setTimeout(() => overlay.classList.add("fadeout"),
+      Math.max(0, FADEOUT_MS - (performance.now() - t0)));
+    setTimeout(() => { overlay.remove(); style.remove(); },
+      Math.max(0, TOTAL_MS - (performance.now() - t0)));
+  }
+
+  runIntro();
+})();
+/* ─────────────────────────────────────────────────────────────
+   イントロ演出ここまで
+   ───────────────────────────────────────────────────────────── */
+
 const state = {
   lang: "ja",
   i18n: {},
@@ -172,6 +373,12 @@ function formatPeriod(start, end) {
 
 
 function renderStaticTexts() {
+  // ヘッダーのブランドタイトル・サブ
+  const siteTitle = $("#siteTitle");
+  const siteSub   = $("#siteSub");
+  if (siteTitle) siteTitle.textContent = t("site.title") || "遊アーカイブ⋈🦝";
+  if (siteSub)   siteSub.textContent   = t("site.sub")   || "御手洗 遊の公式サイト/寿命を有意義につかっていこ～！";
+
   // Tabs label
   document.querySelectorAll(".tab").forEach((a) => {
     a.textContent = t(`tabs.${a.dataset.tab}`);
@@ -556,6 +763,8 @@ async function setLang(lang) {
 
   state.i18n = await loadJSON(`./i18n/${lang}.json`);
   document.documentElement.lang = lang === "ja" ? "ja" : (lang === "ko" ? "ko" : "en");
+  // 韓国語フォント切り替え用クラス
+  document.body.classList.toggle("lang-ko", lang === "ko");
 
   // 初回ロード以外はスクランブルエフェクト
   if (!isFirstLoad) {
@@ -1117,6 +1326,24 @@ function toggleAcc(id) {
 }
 
 async function init() {
+  // ── ヘッダーを上部固定 ──────────────────────────────────────────
+  if (!document.getElementById("header-fixed-style")) {
+    const s = document.createElement("style");
+    s.id = "header-fixed-style";
+    s.textContent = `
+      .topbar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 1000 !important;
+      }
+      body { padding-top: var(--topbar-height, 56px); }
+    `;
+    document.head.appendChild(s);
+  }
+  // ────────────────────────────────────────────────────────────────
+
   wireOnce();
 
   // Events (optional)
