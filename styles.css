@@ -1,3 +1,17 @@
+/* ============================================================
+   🔤 カスタムフォント: Neo둥근모 Pro（韓国語ドット風）
+   ファイルは assets/fonts/ に配置
+   ============================================================ */
+@font-face {
+  font-family: 'NeoDunggeunmoPro';
+  src: url('./assets/fonts/NeoDunggeunmoPro-Regular.woff2') format('woff2'),
+       url('./assets/fonts/NeoDunggeunmoPro-Regular.woff')  format('woff'),
+       url('./assets/fonts/NeoDunggeunmoPro-Regular.ttf')   format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root{
   --bg:#0f0f12;
   --card:#17171c;
@@ -35,8 +49,23 @@ a{color:inherit}
   background: rgba(15,15,18,.65);
 }
 
-.brand__title{font-weight:800; letter-spacing:.02em}
-.brand__sub{font-size:12px; color:var(--muted); margin-top:2px}
+.brand__title{
+  font-family: 'DotGothic16', monospace;
+  font-weight: 400;
+  letter-spacing: .04em;
+}
+.brand__sub{
+  font-family: 'DotGothic16', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  letter-spacing: .03em;
+}
+:lang(ko) .brand__title,
+:lang(ko) .brand__sub {
+  font-family: 'NeoDunggeunmoPro', monospace;
+  letter-spacing: .04em;
+}
 
 .actions{display:flex; gap:10px; align-items:center}
 .lang{display:flex; gap:8px; margin-left: 48px; flex-wrap:wrap}
@@ -1429,6 +1458,13 @@ body {
   background: rgba(255,121,176,.2);
 }
 
+
+/* 韓国語時: スプラッシュ・ブランド・ミッションをNeoDunggeunmoProに */
+body.lang-ko .splash__title,
+body.lang-ko .splash__sub {
+  font-family: 'NeoDunggeunmoPro', monospace;
+  letter-spacing: .05em;
+}
 /* ============================================================
    ✨ ANIMATION SYSTEM
    ============================================================ */
@@ -1529,10 +1565,9 @@ body:not(.no-anim) .btn.primary:hover {
 
 /* タブホバー */
 body:not(.no-anim) .tab {
-  transition: border-color .18s ease, background .18s ease, transform .15s ease;
+  transition: border-color .18s ease, background .18s ease;
 }
 body:not(.no-anim) .tab:not(.active):hover {
-  transform: translateY(-1px);
   border-color: rgba(255,121,176,.4);
   background: rgba(255,121,176,.07);
 }
@@ -1742,24 +1777,31 @@ body.no-anim .anim-toggle-btn__dot {
   text-align: center;
 }
 .mission-overlay__label {
-  font-family: 'Dela Gothic One', sans-serif;
-  font-size: 13px;
-  letter-spacing: .35em;
+  font-family: 'DotGothic16', monospace;
+  font-size: 11px;
+  letter-spacing: .3em;
   color: var(--accent);
   opacity: 0;
   transform: translateY(-8px);
   animation: missionLabelIn 0.4s ease 0.3s forwards;
 }
 .mission-overlay__title {
-  font-family: 'Kaisei Tokumin', serif;
-  font-size: clamp(1.4rem, 4vw, 2.4rem);
-  font-weight: 900;
-  letter-spacing: .04em;
+  font-family: 'DotGothic16', monospace;
+  font-size: clamp(1.2rem, 4vw, 2.2rem);
+  font-weight: 400;
+  letter-spacing: .06em;
   color: #fff;
-  text-shadow: 0 0 30px rgba(255,121,176,.7), 0 2px 12px rgba(0,0,0,.8);
+  text-shadow:
+    0 0 24px rgba(255,121,176,.8),
+    0 0 50px rgba(255,121,176,.3),
+    2px 2px 0 rgba(0,0,0,.8);
   opacity: 0;
   transform: scale(0.8) translateY(10px);
   animation: missionTitleIn 0.55s cubic-bezier(.22,.68,0,1.2) 0.5s forwards;
+}
+:lang(ko) .mission-overlay__label,
+:lang(ko) .mission-overlay__title {
+  font-family: 'NeoDunggeunmoPro', monospace;
 }
 .mission-overlay__bar {
   width: 0;
@@ -1780,16 +1822,259 @@ body.no-anim .anim-toggle-btn__dot {
 }
 
 /* ============================================================
-   ⬅ タイムライン矢印の揺れアニメーション
+   ⬅ タイムライン矢印：アニメなし
    ============================================================ */
 .support-item-arrow {
-  animation: arrowWobble 1.6s ease-in-out infinite;
-}
-body.no-anim .support-item-arrow {
   animation: none;
 }
 @keyframes arrowWobble {
   0%, 100% { transform: translateX(0); }
   40%       { transform: translateX(5px); }
   60%       { transform: translateX(2px); }
+}
+
+/* ============================================================
+   🎮 GAME AESTHETIC SYSTEM
+   ドット感・ゲーム感の追加スタイル
+   ============================================================ */
+
+/* ── ドットフォント適用範囲（コンテストページは除外） ─────── */
+.tab,
+.chip,
+.card__head h2,
+.asobu-note__label,
+.event__title,
+.mission-overlay__label,
+.mission-overlay__title,
+:not(#page-contest *).support-sec-head,
+:not(#page-contest *).support-main-title,
+:not(#page-contest *).support-sub-title,
+:not(#page-contest *).support-footer-name,
+footer .muted {
+  font-family: 'DotGothic16', monospace;
+}
+
+:lang(ko) .tab,
+:lang(ko) .chip,
+:lang(ko) .card__head h2,
+:lang(ko) .asobu-note__label,
+:lang(ko) .event__title,
+:lang(ko) .mission-overlay__label,
+:lang(ko) .mission-overlay__title,
+:lang(ko) :not(#page-contest *).support-sec-head,
+:lang(ko) :not(#page-contest *).support-main-title,
+:lang(ko) :not(#page-contest *).support-sub-title,
+:lang(ko) :not(#page-contest *).support-footer-name,
+:lang(ko) footer .muted {
+  font-family: 'NeoDunggeunmoPro', monospace;
+}
+
+/* ── タブ：ピクセル風 ───────────────────────────────────── */
+.tab {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  border-radius: 4px;
+  padding: 8px 12px;
+  border-color: rgba(255,255,255,0.08);
+  transition: all 0.12s ease;
+}
+
+.tab.active {
+  border-color: rgba(255,121,176,.75);
+  background: rgba(255,121,176,.1);
+  box-shadow:
+    0 0 0 1px rgba(255,121,176,.3),
+    0 2px 0 0 #ff79b0,
+    inset 0 1px 0 0 rgba(255,121,176,.15);
+}
+
+/* ── チップ（言語切替） ────────────────────────────────── */
+.chip {
+  border-radius: 4px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  padding: 7px 12px;
+  border-color: rgba(255,255,255,0.1);
+}
+:lang(ko) .chip {
+  font-family: 'NeoDunggeunmoPro', monospace;
+}
+.chip.active {
+  background: rgba(255,121,176,.18);
+  box-shadow: 0 0 0 1px rgba(255,121,176,.5), 0 0 10px rgba(255,121,176,.2);
+}
+
+/* ── カード：上部グローライン ──────────────────────────── */
+.card {
+  position: relative;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,121,176,0.5) 20%,
+    rgba(255,121,176,0.9) 50%,
+    rgba(255,121,176,0.5) 80%,
+    transparent 100%);
+  border-radius: var(--radius) var(--radius) 0 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+body:not(.no-anim) .card:hover::before {
+  opacity: 1;
+}
+
+/* ── イベントメタ：ドットフォント ──────────────────────── */
+.event__body {
+  padding: 8px 10px 10px;
+}
+.event__meta {
+  font-size: 11px;
+  font-family: 'DotGothic16', monospace;
+  letter-spacing: 0.02em;
+  color: rgba(255,121,176,0.7);
+}
+:lang(ko) .event__meta {
+  font-family: 'NeoDunggeunmoPro', monospace;
+}
+
+/* ── トップバー：HUD感 ────────────────────────────────── */
+.topbar {
+  position: relative;
+  border-bottom: 1px solid rgba(255,121,176,0.2);
+  background: rgba(8,4,10,.75);
+}
+.topbar::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,121,176,0.6) 50%,
+    transparent 100%);
+  pointer-events: none;
+}
+
+/* ── タブバー ─────────────────────────────────────────── */
+.tabs {
+  background: rgba(8,4,10,.55);
+  border-bottom: 1px solid rgba(255,121,176,0.15);
+  gap: 6px;
+}
+
+/* ── ブランド：グリッチ ───────────────────────────────── */
+.brand__title {
+  position: relative;
+  letter-spacing: 0.05em;
+}
+body:not(.no-anim) .brand__title:hover {
+  animation: glitch 0.3s step-end 1, glowPulse 4s ease-in-out infinite;
+}
+@keyframes glitch {
+  0%   { text-shadow: 2px 0 #ff3d9a, -2px 0 #00ffff; clip-path: inset(0 0 85% 0); }
+  20%  { text-shadow: -2px 0 #ff3d9a, 2px 0 #00ffff; clip-path: inset(15% 0 65% 0); }
+  40%  { text-shadow: 2px 0 #ff3d9a, -2px 0 #00ffff; clip-path: inset(40% 0 40% 0); }
+  60%  { text-shadow: -2px 0 #ff3d9a, 2px 0 #00ffff; clip-path: inset(65% 0 15% 0); }
+  80%  { text-shadow: 2px 0 #ff3d9a, -2px 0 #00ffff; clip-path: inset(85% 0 0 0); }
+  100% { text-shadow: 0 0 8px #ff79b0; clip-path: none; }
+}
+
+/* ── ブランドサブ：ゆるいパルス ──────────────────────── */
+.brand__sub {
+  opacity: 0.8;
+  animation: subPulse 5s ease-in-out infinite;
+}
+@keyframes subPulse {
+  0%, 100% { opacity: 0.75; }
+  50%       { opacity: 1; }
+}
+
+/* ── ページ遷移：スキャン感 ───────────────────────────── */
+body:not(.no-anim) .page.active {
+  animation: pageGameIn 0.38s cubic-bezier(0.22, 0.68, 0, 1.1) both;
+}
+@keyframes pageGameIn {
+  0%   { opacity: 0; transform: translateY(8px); clip-path: inset(100% 0 0 0); }
+  45%  { clip-path: inset(0 0 0 0); }
+  100% { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+}
+
+/* ── カスタムカーソル ─────────────────────────────────── */
+body:not(.no-anim) {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpolygon points='2,2 2,16 6,12 9,19 11,18 8,11 14,11' fill='%23ffffff' stroke='%23ff6eb4' stroke-width='1'/%3E%3C/svg%3E") 2 2, auto;
+}
+body:not(.no-anim) a,
+body:not(.no-anim) button,
+body:not(.no-anim) [role="button"],
+body:not(.no-anim) .event,
+body:not(.no-anim) .tab,
+body:not(.no-anim) .chip {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpolygon points='2,2 2,16 6,12 9,19 11,18 8,11 14,11' fill='%23ff79b0' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 2 2, pointer;
+}
+
+/* ── フッター：ドットフォント ─────────────────────────── */
+.footer {
+  border-top: 1px solid rgba(255,121,176,0.2);
+  font-family: 'DotGothic16', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  background: rgba(8,4,10,.6);
+}
+:lang(ko) .footer {
+  font-family: 'NeoDunggeunmoPro', monospace;
+}
+
+/* ── ドットグリッド背景 ───────────────────────────────── */
+.container::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,121,176,0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: -1;
+  animation: dotDrift 60s linear infinite;
+}
+@keyframes dotDrift {
+  from { background-position: 0 0; }
+  to   { background-position: 28px 28px; }
+}
+
+/* ── スクロールアップボタン ──────────────────────────── */
+.scroll-top-btn {
+  font-family: 'DotGothic16', monospace;
+  border-radius: 4px;
+  letter-spacing: 0.1em;
+  font-size: 16px;
+}
+
+/* ── スクロールバー：ドット感 ─────────────────────────── */
+.events-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.events-scroll::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.04);
+  border-left: 1px solid rgba(255,255,255,0.06);
+}
+.events-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff6eb4, #ff3d9a);
+  box-shadow: 0 0 4px rgba(255,60,154,0.4);
+}
+
+/* ── 区切り線：ドット点線 ─────────────────────────────── */
+.ruleline {
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,121,176,0.4) 0px,
+    rgba(255,121,176,0.4) 4px,
+    transparent 4px,
+    transparent 10px
+  ) !important;
+  height: 1px !important;
+  border: none !important;
 }
