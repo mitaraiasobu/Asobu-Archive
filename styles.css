@@ -197,9 +197,9 @@ a{color:inherit}
   object-fit:cover;
   background: var(--card2);
 }
-.modal__text{ padding:14px 14px 16px; }
-.modal__text h3{ margin:0 0 6px; }
-.modal__links{ display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+.modal__text{ padding:0; display:flex; flex-direction:column; gap:4px; }
+.modal__text h3{ margin:0 0 4px; font-size:16px; }
+.modal__links{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 .btn{
   display:inline-flex; align-items:center; gap:8px;
   padding:10px 12px;
@@ -207,6 +207,7 @@ a{color:inherit}
   border:1px solid var(--line);
   background: rgba(255,255,255,.05);
   text-decoration:none;
+  cursor:pointer;
 }
 .btn.primary{
   border-color: rgba(255,121,176,.7);
@@ -253,49 +254,48 @@ a{color:inherit}
   display: block;
 }
 
-/* ===== Carousel modal (prev/next paging) ===== */
+/* ===== Split modal: 左=動画 / 右=画像+詳細+ボタン ===== */
 .modal__carousel{
-  position: relative;
-  width: 100%;
-  height: min(78vh, 620px);
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 0;
+}
+@media (max-width: 680px){
+  .modal__carousel{ grid-template-columns: 1fr; }
 }
 
+/* 両ページ常時表示 */
 .carpage{
-  position: absolute;
-  inset: 0;
-  padding: 12px;
-  display: none;
-  align-content: start;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  min-height: 0;
 }
-.carpage.active{ display: grid; }
-
-.carbtn{
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  font-size: 28px;
-  line-height: 0;
-  cursor: pointer;
-  z-index: 5;
+/* 右カラムはスクロール可能 */
+.carpage[data-page="1"]{
+  border-left: 1px solid var(--line);
+  overflow-y: auto;
+  max-height: min(80vh, 600px);
 }
-.carbtn--prev{ left: 10px; }
-.carbtn--next{ right: 10px; }
-.carbtn:disabled{
-  opacity: .35;
-  cursor: default;
+@media (max-width: 680px){
+  .carpage[data-page="0"]{
+    border-bottom: 1px solid var(--line);
+  }
+  .carpage[data-page="1"]{
+    border-left: none;
+    max-height: none;
+  }
 }
 
-/* page 1 media */
+/* カルーセルボタン非表示 */
+.carbtn{ display: none !important; }
+
+/* 左カラム: 動画エリア */
 .modal__media{
   width: 100%;
-  height: calc(min(78vh, 620px) - 78px);
-  border-radius: 16px;
+  flex: 1;
+  min-height: 160px;
+  border-radius: 12px;
   overflow: hidden;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.08);
@@ -305,13 +305,13 @@ a{color:inherit}
 .modal__media video{
   width: 100%;
   height: 100%;
-  object-fit: contain; /* 全体が見える */
+  object-fit: contain;
   object-position: center;
   display: block;
   background: #0c0c10;
 }
 
-.modal__navhint{ font-size: 12px; }
+.modal__navhint{ display: none; }
 
 /* ===== Lightbox (image zoom) ===== */
 .lightbox{ position:fixed; inset:0; display:none; z-index:80; }
@@ -329,33 +329,20 @@ a{color:inherit}
 }
 
 
-/* ===== FIX: Modal buttons outside the panel (PC) ===== */
-.modal__panel{ overflow: visible; }
-
-/* Ensure buttons are always above the panel/backdrop */
-.modal__close, .carbtn{ z-index: 60; }
-
-/* Place buttons outside */
-.modal__close{ top: -56px; right: 0px; }
-.carbtn--prev{ left: -56px; }
-.carbtn--next{ right: -56px; }
-
-/* Mobile: keep buttons inside for usability */
-@media (max-width: 560px){
-  .modal__close{ top: 8px; right: 10px; }
-  .carbtn--prev{ left: 10px; }
-  .carbtn--next{ right: 10px; }
-}
+/* ===== Modal close button ===== */
+.modal__panel{ overflow: hidden; }
+.modal__close{ top: 8px; right: 10px; z-index: 60; }
 
 
 /* ===== Detail page media (poster/image) ===== */
 .modal__media--detail{
-  height: 300px;
+  height: 180px;
+  flex: none;
   margin-bottom: 10px;
 }
 
-@media (max-width: 560px){
-  .modal__media--detail{ height: 220px; }
+@media (max-width: 680px){
+  .modal__media--detail{ height: 160px; }
 }
 
 
