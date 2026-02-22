@@ -26,6 +26,91 @@ function setActiveTab(tabKey) {
 
   const page = $(`#page-${tabKey}`);
   if (page) page.classList.add("active");
+
+  // タブを開いたときにアニメーション発火
+  if (!document.body.classList.contains("no-anim")) {
+    if (tabKey === "support") {
+      // supportタブ：headerアニメ（IntersectionObserverだと非表示で発火しないため直接実行）
+      const supportBody = document.getElementById("supportBody");
+      if (supportBody) {
+        runSupportHeaderAnim(supportBody);
+        runSupportAccentAnim(supportBody);
+      }
+    } else if (tabKey === "crowdfunding") {
+      const cfBody = document.getElementById("crowdfundingBody");
+      if (cfBody && !cfBody.dataset.missionDone) {
+        cfBody.dataset.missionDone = "1";
+        const missionTitle = t("crowdfunding.missionTitle") || "防音室を導入して絶叫を防げ！";
+        triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
+      }
+    } else if (tabKey === "contest") {
+      const contestBody = document.getElementById("contestBody");
+      if (contestBody && !contestBody.dataset.missionDone) {
+        contestBody.dataset.missionDone = "1";
+        const missionTitle = t("contest.missionTitle") || "学園衣装をコーディネートしよう！";
+        triggerMissionAnim(contestBody, missionTitle, "#contest-root");
+      }
+    }
+  }
+}
+
+// supportタブのheader文字アニメを強制実行（タブ表示後に呼ぶ）
+function runSupportHeaderAnim(root) {
+  if (!root || document.body.classList.contains("no-anim")) return;
+  const header = root.querySelector(".support-header");
+  if (!header || header.dataset.shFired) return;
+  header.dataset.shFired = "1";
+
+  let globalDelay = 0;
+  const CHAR_INTERVAL = 0.065;
+  const LINE_GAP = 0.22;
+  const rows = [
+    { sel: ".support-main-title", cls: "sh-char" },
+    { sel: ".support-sub-title",  cls: "sh-char" },
+    { sel: ".support-deco-line",  cls: "sh-char--heart" },
+  ];
+  rows.forEach(({ sel, cls }) => {
+    const el = header.querySelector(sel);
+    if (!el || el.dataset.shWrapped) return;
+    el.dataset.shWrapped = "1";
+    function wrapNodes(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const frag = document.createDocumentFragment();
+        [...node.textContent].forEach((ch) => {
+          if (/\s/.test(ch)) { frag.appendChild(document.createTextNode(ch)); globalDelay += CHAR_INTERVAL * 0.25; }
+          else {
+            const span = document.createElement("span");
+            span.className = cls;
+            span.textContent = ch;
+            span.style.animationDelay = globalDelay.toFixed(3) + "s";
+            frag.appendChild(span);
+            globalDelay += CHAR_INTERVAL;
+          }
+        });
+        node.replaceWith(frag);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        [...node.childNodes].forEach(wrapNodes);
+      }
+    }
+    const tmp = document.createElement("div");
+    tmp.innerHTML = el.innerHTML;
+    [...tmp.childNodes].forEach(wrapNodes);
+    el.innerHTML = tmp.innerHTML;
+    globalDelay += LINE_GAP;
+  });
+}
+
+// support-accent（寿命なら当然...だよね？）を3秒後にめちゃゆっくりフェードイン
+function runSupportAccentAnim(root) {
+  if (!root || document.body.classList.contains("no-anim")) return;
+  const header = root.querySelector(".support-header");
+  if (!header) return;
+  const accentEl = header.querySelector(".support-accent");
+  if (!accentEl || accentEl.dataset.accentFired) return;
+  accentEl.dataset.accentFired = "1";
+  accentEl.style.opacity = "0";
+  accentEl.style.transition = "opacity 6s ease 3s";
+  requestAnimationFrame(() => requestAnimationFrame(() => { accentEl.style.opacity = "1"; }));
 }
 
 function t(path) {
@@ -116,48 +201,57 @@ function renderStaticTexts() {
   const aboutTitle = $("#aboutTitle");
   const aboutBody = $("#aboutBody");
   if (aboutTitle) aboutTitle.textContent = t("about.title");
-  if (aboutBody) aboutBody.innerHTML = t("about.bodyHtml");
+  if (aboutBody) { aboutBody.innerHTML = t("about.bodyHtml"); animateSupportHeader(aboutBody); animateTimeline(aboutBody); }
 
   const supportTitle = $("#supportTitle");
   const supportBody = $("#supportBody");
   if (supportTitle) supportTitle.textContent = t("support.title");
-  if (supportBody) supportBody.innerHTML = t("support.bodyHtml");
+  if (supportBody) {
+    supportBody.innerHTML = t("support.bodyHtml");
+    // アニメはsetActiveTab("support")呼び出し時に発火させる
+    animateTimeline(supportBody);
+    animatePriorityList(supportBody);
+    // 言語切り替え後はフラグをリセット（再演出できるように）
+    const hdr = supportBody.querySelector(".support-header");
+    if (hdr) { delete hdr.dataset.shDone; delete hdr.dataset.shFired; }
+    const acc = supportBody.querySelector(".support-accent");
+    if (acc) { delete acc.dataset.accentFired; delete acc.dataset.shWrapped; acc.style.opacity = ""; acc.style.transition = ""; }
+  }
 
   const goodsTitle = $("#goodsTitle");
   const goodsBody = $("#goodsBody");
   if (goodsTitle) goodsTitle.textContent = t("goods.title");
-  if (goodsBody) goodsBody.innerHTML = t("goods.bodyHtml");
+  if (goodsBody) { goodsBody.innerHTML = t("goods.bodyHtml"); animateSupportHeader(goodsBody); animateTimeline(goodsBody); }
 
   const logTitle = $("#logTitle");
   const logBody = $("#logBody");
   if (logTitle) logTitle.textContent = t("log.title");
-  if (logBody) logBody.innerHTML = t("log.bodyHtml");
+  if (logBody) { logBody.innerHTML = t("log.bodyHtml"); animateSupportHeader(logBody); animateTimeline(logBody); }
 
-  // fanclub (exists only if you add it in index.html)
   const fcTitle = document.getElementById("fanclubTitle");
   const fcBody = document.getElementById("fanclubBody");
   if (fcTitle) fcTitle.textContent = t("fanclub.title");
-  if (fcBody) fcBody.innerHTML = t("fanclub.bodyHtml");
+  if (fcBody) { fcBody.innerHTML = t("fanclub.bodyHtml"); animateSupportHeader(fcBody); animateTimeline(fcBody); }
 
   const noticeTitle = document.getElementById("noticeTitle");
   const noticeBody = document.getElementById("noticeBody");
   if (noticeTitle) noticeTitle.textContent = t("notice.title");
-  if (noticeBody) noticeBody.innerHTML = t("notice.bodyHtml");
-
+  if (noticeBody) { noticeBody.innerHTML = t("notice.bodyHtml"); animateSupportHeader(noticeBody); animateTimeline(noticeBody); }
 
   const cfBody = document.getElementById("crowdfundingBody");
-  if (cfBody) cfBody.innerHTML = t("crowdfunding.bodyHtml");
+  if (cfBody) {
+    cfBody.innerHTML = t("crowdfunding.bodyHtml");
+    animateSupportHeader(cfBody);
+    animateTimeline(cfBody);
+  }
 
   const contestBody = document.getElementById("contestBody");
   if (contestBody) {
-    // __PROMO_TITLE__ を翻訳テキストに置換してから注入
     const contestHtml = t("contest.bodyHtml").replace(
       "__PROMO_TITLE__",
       escapeHtml(t("contest.promoTitle") || "コンテスト一覧")
     );
     contestBody.innerHTML = contestHtml;
-
-    // モバイル向け注意バナーを先頭に挿入（スマホのみ表示）
     const bannerMsg = t("contest.mobileBanner");
     const existingBanner = document.getElementById("ct-mobile-banner");
     if (!existingBanner) {
@@ -174,15 +268,19 @@ function renderStaticTexts() {
       contestBody.insertBefore(banner, contestBody.firstChild);
     }
     initContest();
+    animateSupportHeader(contestBody);
+    animateTimeline(contestBody);
   }
 
   const contactTitle = $("#contactTitle");
   const contactBody = $("#contactBody");
   if (contactTitle) contactTitle.textContent = t("contact.title");
-  if (contactBody) contactBody.innerHTML = t("contact.bodyHtml");
+  if (contactBody) { contactBody.innerHTML = t("contact.bodyHtml"); animateSupportHeader(contactBody); animateTimeline(contactBody); }
 
   const footerNote = $("#footerNote");
   if (footerNote) footerNote.textContent = t("footer.note");
+
+  updateAnimToggleLabel();
 }
 
 function renderEvents() {
@@ -250,6 +348,19 @@ function renderEvents() {
     );
 
     grid.appendChild(card);
+
+    // 左上から小さく→大きく登場
+    if (!document.body.classList.contains("no-anim")) {
+      card.style.opacity = "0";
+      card.style.transform = "scale(0.4) translate(-30%, -30%)";
+      card.style.transformOrigin = "top left";
+      const delay = state.events.indexOf(ev) * 0.08;
+      card.style.transition = `opacity 0.45s cubic-bezier(.22,.68,0,1.2) ${delay}s, transform 0.45s cubic-bezier(.22,.68,0,1.4) ${delay}s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        card.style.opacity = "1";
+        card.style.transform = "scale(1) translate(0,0)";
+      }));
+    }
   });
 }
 
@@ -360,6 +471,8 @@ async function openModal(ev) {
   if (page0) page0.style.display = mediaType === "video" ? "" : "none";
   if (page1) page1.style.display = "";
   if (carousel) carousel.classList.toggle("modal__carousel--image-only", mediaType !== "video");
+
+  // レイアウトはCSSグリッド(grid-areas)で処理するためDOM操作不要
 }
 
 function closeModal() {
@@ -430,19 +543,29 @@ async function loadJSON(path) {
 }
 
 async function setLang(lang) {
+  const isFirstLoad = !state.lang;
   state.lang = lang;
   localStorage.setItem("lang", lang);
 
-  // ★重要:data-lang を持つ chip だけを対象にする(SNSリンクが chip でも安全)
   document.querySelectorAll(".chip[data-lang]").forEach((b) => {
     b.classList.toggle("active", b.dataset.lang === lang);
   });
+  // スマホ用プルダウンも同期
+  const mobileDropdown = document.getElementById("mobileLangDropdown");
+  if (mobileDropdown) mobileDropdown.value = lang;
 
   state.i18n = await loadJSON(`./i18n/${lang}.json`);
   document.documentElement.lang = lang === "ja" ? "ja" : (lang === "ko" ? "ko" : "en");
 
-  renderStaticTexts();
-  renderEvents();
+  // 初回ロード以外はスクランブルエフェクト
+  if (!isFirstLoad) {
+    renderStaticTexts();
+    renderEvents();
+    scramblePageText();
+  } else {
+    renderStaticTexts();
+    renderEvents();
+  }
 }
 
 function handleRoute() {
@@ -602,9 +725,392 @@ function wireOnce() {
     scheduleImg.style.cursor = "zoom-in";
     scheduleImg.addEventListener("click", () => openLightbox(scheduleImg.src));
   }
+
+  setupAnimToggle();
+  setupScrollAnimations();
 }
 
-// ===== Support tab accordion =====
+function setupAnimToggle() {
+  const noAnim = localStorage.getItem("noAnim") === "1";
+  if (noAnim) document.body.classList.add("no-anim");
+
+  function getAnimLabel(off) {
+    return off ? (t("animToggle.off") || "アニメOFF") : (t("animToggle.on") || "アニメON");
+  }
+
+  function makeAnimBtn(id, cls) {
+    const b = document.createElement("button");
+    b.id = id;
+    b.className = cls;
+    b.setAttribute("aria-label", "アニメーション切り替え");
+    b.innerHTML = '<span class="anim-toggle-btn__dot"></span><span class="anim-toggle-btn__label">' + getAnimLabel(noAnim) + '</span>';
+    b.addEventListener("click", () => {
+      const off = document.body.classList.toggle("no-anim");
+      document.querySelectorAll(".anim-toggle-btn__label").forEach(s => s.textContent = getAnimLabel(off));
+      localStorage.setItem("noAnim", off ? "1" : "0");
+    });
+    return b;
+  }
+
+  // PC用: 左下フロート（スマホでは非表示）
+  const btnPC = makeAnimBtn("animToggleBtnPC", "anim-toggle-btn anim-toggle-btn--pc");
+  document.body.appendChild(btnPC);
+
+  // スマホ用: ヘッダー内、☰の左隣（PCでは非表示）
+  const btnMobile = makeAnimBtn("animToggleBtnMobile", "anim-toggle-btn anim-toggle-btn--mobile");
+  const navToggle = document.getElementById("navToggle");
+  if (navToggle && navToggle.parentElement) {
+    navToggle.parentElement.insertBefore(btnMobile, navToggle);
+  }
+
+  // スマホ用言語ボタン: 🌐マーク、アニメボタンと☰の間に配置
+  const langWrap = document.createElement("div");
+  langWrap.id = "mobileLangSelect";
+  langWrap.className = "mobile-lang-select";
+
+  const langBtn = document.createElement("button");
+  langBtn.className = "mobile-lang-globe-btn";
+  langBtn.setAttribute("aria-label", "言語選択");
+  langBtn.textContent = "🌐";
+
+  const langDropdown = document.createElement("div");
+  langDropdown.className = "mobile-lang-dropdown";
+  langDropdown.id = "mobileLangDropdown";
+  langDropdown.hidden = true;
+  ["ja|日本語", "en|English", "ko|한국어"].forEach(item => {
+    const [val, label] = item.split("|");
+    const btn = document.createElement("button");
+    btn.className = "mobile-lang-option";
+    btn.dataset.lang = val;
+    btn.textContent = label;
+    btn.addEventListener("click", () => {
+      setLang(val);
+      langDropdown.hidden = true;
+    });
+    langDropdown.appendChild(btn);
+  });
+
+  langBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    langDropdown.hidden = !langDropdown.hidden;
+  });
+  document.addEventListener("click", () => { langDropdown.hidden = true; });
+
+  langWrap.appendChild(langBtn);
+  langWrap.appendChild(langDropdown);
+
+  // ☰の直前（アニメボタンの右隣）に挿入
+  if (navToggle && navToggle.parentElement) {
+    navToggle.parentElement.insertBefore(langWrap, navToggle);
+  }
+}
+
+function updateAnimToggleLabel() {
+  const off = document.body.classList.contains("no-anim");
+  const label = off ? (t("animToggle.off") || "アニメOFF") : (t("animToggle.on") || "アニメON");
+  document.querySelectorAll(".anim-toggle-btn__label").forEach(s => s.textContent = label);
+}
+
+function setupScrollAnimations() {
+  const SELECTORS = [".card", ".event", ".asobu-note", ".btn.primary"];
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) { entry.target.classList.add("anim-visible"); observer.unobserve(entry.target); }
+    });
+  }, { threshold: 0.08, rootMargin: "0px 0px -20px 0px" });
+  function observeAll() {
+    document.querySelectorAll(SELECTORS.join(",")).forEach((el) => {
+      if (!el.classList.contains("anim-ready")) { el.classList.add("anim-ready"); observer.observe(el); }
+    });
+  }
+  observeAll();
+  const container = document.querySelector(".container");
+  if (container) new MutationObserver(() => observeAll()).observe(container, { childList: true, subtree: true });
+}
+
+function animateSupportHeader(root) {
+  if (!root || document.body.classList.contains("no-anim")) return;
+  const header = root.querySelector(".support-header");
+  if (!header || header.dataset.shDone) return;
+  header.dataset.shDone = "1";
+
+  function runAnim() {
+    let globalDelay = 0;
+    const CHAR_INTERVAL = 0.065;
+    const LINE_GAP = 0.22;
+    // HTMLの実際の順番に合わせる: main-title → sub-title → deco-line → accent
+    // accentは最後に独立して遅延フェードイン（globalDelayとは無関係）
+    const rows = [
+      { sel: ".support-main-title", cls: "sh-char",       charMode: true },
+      { sel: ".support-sub-title",  cls: "sh-char",       charMode: true },
+      { sel: ".support-deco-line",  cls: "sh-char--heart", charMode: true },
+    ];
+    rows.forEach(({ sel, cls, charMode }) => {
+      const el = header.querySelector(sel);
+      if (!el || el.dataset.shWrapped) return;
+      el.dataset.shWrapped = "1";
+      if (!charMode) {
+        el.style.opacity = "0";
+        const delay = (globalDelay + 0.5).toFixed(2);
+        el.style.transition = `opacity 1.1s ease ${delay}s`;
+        requestAnimationFrame(() => requestAnimationFrame(() => { el.style.opacity = "1"; }));
+        globalDelay += 1.2;
+        return;
+      }
+      function wrapNodes(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const frag = document.createDocumentFragment();
+          [...node.textContent].forEach((ch) => {
+            if (/\s/.test(ch)) { frag.appendChild(document.createTextNode(ch)); globalDelay += CHAR_INTERVAL * 0.25; }
+            else {
+              const span = document.createElement("span");
+              span.className = cls;
+              span.textContent = ch;
+              span.style.animationDelay = globalDelay.toFixed(3) + "s";
+              frag.appendChild(span);
+              globalDelay += CHAR_INTERVAL;
+            }
+          });
+          node.replaceWith(frag);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          [...node.childNodes].forEach(wrapNodes);
+        }
+      }
+      const tmp = document.createElement("div");
+      tmp.innerHTML = el.innerHTML;
+      [...tmp.childNodes].forEach(wrapNodes);
+      el.innerHTML = tmp.innerHTML;
+      globalDelay += LINE_GAP;
+    });
+
+    // .support-accent は他の文字アニメと完全に独立して、3秒後にめちゃゆっくりフェードイン
+    const accentEl = header.querySelector(".support-accent");
+    if (accentEl && !accentEl.dataset.shWrapped) {
+      accentEl.dataset.shWrapped = "1";
+      accentEl.style.opacity = "0";
+      accentEl.style.transition = "opacity 6s ease 3s";
+      requestAnimationFrame(() => requestAnimationFrame(() => { accentEl.style.opacity = "1"; }));
+    }
+  }
+  const obs = new IntersectionObserver((entries, obs) => {
+    entries.forEach((entry) => { if (entry.isIntersecting) { runAnim(); obs.disconnect(); } });
+  }, { threshold: 0.1 });
+  obs.observe(header);
+}
+
+// 遊の嬉しさランキング：アイテムを1から順にスライドイン
+function animatePriorityList(root) {
+  if (!root || document.body.classList.contains("no-anim")) return;
+
+  root.querySelectorAll(".support-list").forEach((list) => {
+    if (list.dataset.listDone) return;
+    list.dataset.listDone = "1";
+    const rows = [...list.querySelectorAll(".support-item-row")];
+    const obs = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        obs.disconnect();
+        rows.forEach((row, i) => {
+          row.style.opacity = "0";
+          row.style.transform = "translateX(-24px)";
+          const delay = (i * 0.13).toFixed(2) + "s";
+          row.style.transition = `opacity .5s cubic-bezier(.22,.68,0,1.2) ${delay}, transform .5s cubic-bezier(.22,.68,0,1.4) ${delay}`;
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            row.style.opacity = "1";
+            row.style.transform = "translateX(0)";
+          }));
+        });
+      });
+    }, { threshold: 0.1 });
+    obs.observe(list);
+  });
+}
+
+function animateTimeline(root) {
+  if (!root || document.body.classList.contains("no-anim")) return;
+  const timeline = root.querySelector(".support-timeline");
+  if (!timeline || timeline.dataset.tlDone) return;
+  timeline.dataset.tlDone = "1";
+  const cards = [...timeline.querySelectorAll(".support-tl-card")];
+  const obs = new IntersectionObserver((entries, obs) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      obs.disconnect();
+      cards.forEach((card, i) => {
+        card.style.opacity = "0";
+        card.style.transform = "translateX(-18px)";
+        const delay = (i * 0.18).toFixed(2) + "s";
+        card.style.transition = "opacity .55s cubic-bezier(.22,.68,0,1.2) " + delay + ", transform .55s cubic-bezier(.22,.68,0,1.4) " + delay;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          card.style.opacity = "1";
+          card.style.transform = "translateX(0)";
+        }));
+      });
+    });
+  }, { threshold: 0.15 });
+  obs.observe(timeline);
+}
+
+function scramblePageText() {
+  if (document.body.classList.contains("no-anim")) return;
+  const CHARS_JP = "あいうえおかきくけこさしすせそたちつてとなにぬねの遊命愛夢花光星";
+  const CHARS_EN = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&";
+  const CHARS_KR = "가나다라마바사아자차카타파하개내대래배새애재채케테페해";
+  const GLITCH   = "█▓▒░╔╗╚╝║═╬▲▼◆◇●○★☆♡♥⋈∞";
+  const ALL = CHARS_JP + CHARS_EN + CHARS_KR + GLITCH;
+  const rand = (str) => str[Math.floor(Math.random() * str.length)];
+
+  // 言語ボタン以外の全テキスト要素を収集
+  const leafTextEls = [];
+  function collectLeafText(root) {
+    root.querySelectorAll("*").forEach((el) => {
+      // 言語ボタン・アニメトグル・スクリプト・スタイル・input系を除外
+      if (el.closest(".chip[data-lang]") || el.closest(".anim-toggle-btn") ||
+          el.tagName === "SCRIPT" || el.tagName === "STYLE" ||
+          el.tagName === "INPUT" || el.tagName === "TEXTAREA" ||
+          el.tagName === "BUTTON" && el.closest(".chip[data-lang]")) return;
+      // 子要素にテキストノードのみを持つ葉要素
+      const hasOnlyTextNodes = [...el.childNodes].every(n => n.nodeType === 3 || (n.nodeType === 1 && n.tagName === "BR"));
+      if (hasOnlyTextNodes && el.textContent.trim().length > 0) {
+        leafTextEls.push(el);
+      }
+    });
+  }
+
+  // ヘッダー・フッター・タブ・現在アクティブなページ
+  const header = document.querySelector(".topbar");
+  if (header) collectLeafText(header);
+  const footer = document.querySelector(".footer");
+  if (footer) collectLeafText(footer);
+  const tabs = document.querySelectorAll(".tab, .tab--mobile");
+  tabs.forEach(el => { if (!leafTextEls.includes(el)) leafTextEls.push(el); });
+  const activePage = document.querySelector(".page.active");
+  if (activePage) collectLeafText(activePage);
+
+  const targets = leafTextEls.filter(el =>
+    !el.closest(".chip[data-lang]") && !el.closest(".anim-toggle-btn") && el.textContent.trim().length > 0
+  );
+
+  const originals = targets.map((el) => el.textContent);
+  const DURATION = 750;
+  const FPS = 55;
+  let elapsed = 0;
+  const tick = setInterval(() => {
+    elapsed += FPS;
+    const progress = Math.min(elapsed / DURATION, 1);
+    targets.forEach((el, idx) => {
+      const orig = originals[idx];
+      const revealed = Math.floor(orig.length * progress);
+      let out = "";
+      for (let i = 0; i < orig.length; i++) {
+        if (/\s/.test(orig[i])) { out += orig[i]; continue; }
+        out += i < revealed ? orig[i] : rand(ALL);
+      }
+      el.textContent = out;
+    });
+    if (progress >= 1) {
+      clearInterval(tick);
+      targets.forEach((el, idx) => { el.textContent = originals[idx]; });
+    }
+  }, FPS);
+}
+
+// タブを開いたときに発火するミッション演出
+// コンテンツを一旦隠してオーバーレイ後に登場させる
+function triggerMissionAnim(bodyEl, titleText, contentSelector) {
+  if (!bodyEl || document.body.classList.contains("no-anim")) return;
+
+  // コンテンツを一旦非表示
+  const contents = contentSelector
+    ? [...bodyEl.querySelectorAll(contentSelector)]
+    : [bodyEl];
+
+  // 要素が見つからない場合はそのまま演出だけ
+  contents.forEach(el => {
+    el.style.opacity = "0";
+    el.style.transition = "none";
+    el.style.transform = "translateY(16px)";
+  });
+
+  // ミッション演出後にコンテンツを順番に登場
+  animateMissionTitle(titleText, () => {
+    contents.forEach((el, i) => {
+      const delay = i * 0.15;
+      el.style.transition = `opacity 0.65s ease ${delay}s, transform 0.65s cubic-bezier(.22,.68,0,1.2) ${delay}s`;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+      }));
+    });
+  });
+}
+
+// ===== Mission Title アニメーション =====
+// ゲームのミッション名が中央に出て通常位置に戻る演出
+function animateMissionTitle(titleText, onComplete) {
+  if (document.body.classList.contains("no-anim")) {
+    if (onComplete) onComplete();
+    return;
+  }
+
+  // 既存オーバーレイがあれば除去
+  const old = document.getElementById("mission-overlay");
+  if (old) old.remove();
+
+  const overlay = document.createElement("div");
+  overlay.id = "mission-overlay";
+  overlay.innerHTML = `
+    <div class="mission-overlay__bg"></div>
+    <div class="mission-overlay__content">
+      <div class="mission-overlay__label">MISSION</div>
+      <div class="mission-overlay__title">${titleText}</div>
+      <div class="mission-overlay__bar"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // フェードイン
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    overlay.classList.add("mission-overlay--in");
+  }));
+
+  // 少し待ってからフェードアウト
+  setTimeout(() => {
+    overlay.classList.add("mission-overlay--out");
+    setTimeout(() => {
+      overlay.remove();
+      if (onComplete) onComplete();
+    }, 800);
+  }, 2200);
+}
+
+function initMissionAnim(bodyEl, titleText, contentSelector) {
+  if (!bodyEl || document.body.classList.contains("no-anim")) return;
+  if (bodyEl.dataset.missionDone) return;
+  bodyEl.dataset.missionDone = "1";
+
+  // コンテンツを一旦非表示
+  const contents = contentSelector
+    ? bodyEl.querySelectorAll(contentSelector)
+    : [bodyEl];
+  contents.forEach(el => {
+    el.style.opacity = "0";
+    el.style.transition = "none";
+  });
+
+  // ミッション演出後にコンテンツを順番に登場
+  animateMissionTitle(titleText, () => {
+    contents.forEach((el, i) => {
+      const delay = i * 0.12;
+      el.style.transition = `opacity 0.6s ease ${delay}s, transform 0.6s cubic-bezier(.22,.68,0,1.2) ${delay}s`;
+      el.style.transform = "translateY(14px)";
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+      }));
+    });
+  });
+}
 function toggleAcc(id) {
   const el = document.getElementById(id);
   if (el) el.classList.toggle('open');
