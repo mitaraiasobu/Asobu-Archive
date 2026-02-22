@@ -149,7 +149,32 @@ function renderStaticTexts() {
   if (cfBody) cfBody.innerHTML = t("crowdfunding.bodyHtml");
 
   const contestBody = document.getElementById("contestBody");
-  if (contestBody) { contestBody.innerHTML = t("contest.bodyHtml"); initContest(); }
+  if (contestBody) {
+    // __PROMO_TITLE__ を翻訳テキストに置換してから注入
+    const contestHtml = t("contest.bodyHtml").replace(
+      "__PROMO_TITLE__",
+      escapeHtml(t("contest.promoTitle") || "コンテスト一覧")
+    );
+    contestBody.innerHTML = contestHtml;
+
+    // モバイル向け注意バナーを先頭に挿入（スマホのみ表示）
+    const bannerMsg = t("contest.mobileBanner");
+    const existingBanner = document.getElementById("ct-mobile-banner");
+    if (!existingBanner) {
+      const banner = document.createElement("div");
+      banner.id = "ct-mobile-banner";
+      banner.className = "ct-mobile-banner";
+      banner.innerHTML = `
+        <span class="ct-mobile-banner__text">${escapeHtml(bannerMsg)}</span>
+        <button class="ct-mobile-banner__close" aria-label="Close">✕</button>
+      `;
+      banner.querySelector(".ct-mobile-banner__close").addEventListener("click", () => {
+        banner.style.display = "none";
+      });
+      contestBody.insertBefore(banner, contestBody.firstChild);
+    }
+    initContest();
+  }
 
   const contactTitle = $("#contactTitle");
   const contactBody = $("#contactBody");
@@ -256,10 +281,9 @@ async function openModal(ev) {
 
     // linkTab: タブ移動ボタン
     if (ev.linkTab) {
-      const tabLabel = t(`tabs.${ev.linkTab}`) || ev.linkTab;
       const btn = document.createElement("button");
       btn.className = "btn primary";
-      btn.textContent = "詳細 →";
+      btn.textContent = t("event.detailsBtn") || "詳細 →";
       btn.addEventListener("click", () => {
         closeModal();
         location.hash = ev.linkTab;
@@ -279,13 +303,6 @@ async function openModal(ev) {
     });
   }
 
-  const hint = $("#modalHint");
-  if (hint) {
-    hint.textContent =
-      mediaType === "video"
-        ? "‹ › でページ切替(1:動画 / 2:画像+詳細)・画像タップで拡大"
-        : "画像+詳細(画像タップで拡大)";
-  }
 
   // draw media
   if (mediaWrapMain) mediaWrapMain.innerHTML = "";
@@ -334,12 +351,15 @@ async function openModal(ev) {
 
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
 
-  // 左カラム（動画）: image型は非表示
+  // 左カラム（動画）: image型は非表示、かつimage-onlyクラスで中央寄せ
   const page0 = document.querySelector('.carpage[data-page="0"]');
   const page1 = document.querySelector('.carpage[data-page="1"]');
+  const carousel = document.querySelector('.modal__carousel');
   if (page0) page0.style.display = mediaType === "video" ? "" : "none";
   if (page1) page1.style.display = "";
+  if (carousel) carousel.classList.toggle("modal__carousel--image-only", mediaType !== "video");
 }
 
 function closeModal() {
@@ -356,6 +376,7 @@ function closeModal() {
   if (!modal) return;
   modal.classList.remove("open");
   modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
 }
 
 function setModalPage(p) {
