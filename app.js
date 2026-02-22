@@ -253,6 +253,21 @@ async function openModal(ev) {
   const linksWrap = $("#modalLinks");
   if (linksWrap) {
     linksWrap.innerHTML = "";
+
+    // linkTab: タブ移動ボタン
+    if (ev.linkTab) {
+      const tabLabel = t(`tabs.${ev.linkTab}`) || ev.linkTab;
+      const btn = document.createElement("button");
+      btn.className = "btn primary";
+      btn.textContent = "詳細 →";
+      btn.addEventListener("click", () => {
+        closeModal();
+        location.hash = ev.linkTab;
+      });
+      linksWrap.appendChild(btn);
+    }
+
+    // 通常の外部リンク
     (ev.links || []).forEach((l) => {
       const a = document.createElement("a");
       a.className = "btn primary";
@@ -319,7 +334,12 @@ async function openModal(ev) {
 
   modal.classList.add("open");
   modal.setAttribute("aria-hidden", "false");
-  setModalPage(modalMinPage);
+
+  // 左カラム（動画）: image型は非表示
+  const page0 = document.querySelector('.carpage[data-page="0"]');
+  const page1 = document.querySelector('.carpage[data-page="1"]');
+  if (page0) page0.style.display = mediaType === "video" ? "" : "none";
+  if (page1) page1.style.display = "";
 }
 
 function closeModal() {
@@ -483,29 +503,11 @@ function wireOnce() {
     if (e.key === "Escape") closeModal();
   });
 
-  // Carousel buttons
+  // Carousel buttons: 不要なので非表示
   const prev = $("#carPrev");
   const next = $("#carNext");
-  if (prev) {
-    prev.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setModalPage(modalPage - 1);
-    });
-  }
-  if (next) {
-    next.addEventListener("click", (e) => {
-      e.stopPropagation();
-      setModalPage(modalPage + 1);
-    });
-  }
-
-  // Keyboard paging
-  window.addEventListener("keydown", (e) => {
-    const modal = $("#modal");
-    if (!modal || !modal.classList.contains("open")) return;
-    if (e.key === "ArrowLeft") setModalPage(modalPage - 1);
-    if (e.key === "ArrowRight") setModalPage(modalPage + 1);
-  });
+  if (prev) prev.style.display = "none";
+  if (next) next.style.display = "none";
 
   // Lightbox close
   const lbBackdrop = $("#lightboxBackdrop");
@@ -572,6 +574,13 @@ function wireOnce() {
   
   // ハンバーガーメニューのスクロール制御を設定
   setupHamburgerScrollBehavior();
+
+  // スケジュール画像タップで全画面（ライトボックス）
+  const scheduleImg = document.getElementById("scheduleImg");
+  if (scheduleImg) {
+    scheduleImg.style.cursor = "zoom-in";
+    scheduleImg.addEventListener("click", () => openLightbox(scheduleImg.src));
+  }
 }
 
 // ===== Support tab accordion =====
