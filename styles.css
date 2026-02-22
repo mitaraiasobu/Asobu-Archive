@@ -272,9 +272,6 @@ body.modal-open {
   margin: 0 auto;
   width: 100%;
 }
-@media (max-width: 680px){
-  .modal__carousel{ grid-template-columns: 1fr; }
-}
 
 /* 両ページ常時表示 */
 .carpage{
@@ -289,21 +286,100 @@ body.modal-open {
   overflow-y: auto;
   max-height: min(80vh, 600px);
 }
-@media (max-width: 680px){
-  .carpage[data-page="0"]{
-    border-bottom: 1px solid var(--line);
-  }
-  .carpage[data-page="1"]{
-    border-left: none;
-    max-height: 60vh;
-    overflow-y: auto;
-  }
-  /* モーダルパネル自体もスマホでは最大高を制限してスクロール可能に */
-  .modal__panel{
-    max-height: 92vh;
-    overflow-y: auto;
+
+/* =====================================================
+   スマホ: 上左=動画 / 上右=画像 / 下=テキスト
+   CSSグリッドだけで実現（DOM移動不要）
+   ===================================================== */
+@media (max-width: 680px) {
+  .modal__panel {
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
     top: 50%;
     transform: translate(-50%, -50%);
+  }
+
+  /* カルーセルを grid-areas で3ゾーン定義 */
+  .modal__carousel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "video image"
+      "text  text";
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* page0(動画) → videoエリア */
+  .carpage[data-page="0"] {
+    grid-area: video;
+    padding: 10px 6px 6px 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* page1自体を消して子要素をgridに直接参加させる */
+  .carpage[data-page="1"] {
+    display: contents;
+    border-left: none;
+  }
+
+  /* mediaDetail → imageエリア */
+  #modalMediaDetail {
+    grid-area: image;
+    padding: 10px 10px 6px 6px;
+    aspect-ratio: unset;
+    height: auto;
+    min-height: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  #modalMediaDetail img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    border-radius: 8px;
+  }
+
+  /* modal__text → textエリア */
+  .modal__text {
+    grid-area: text;
+    border-top: 1px solid var(--line);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 14px 16px;
+    min-height: 0;
+  }
+
+  /* 動画ラッパー */
+  #modalMediaMain {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    flex: none;
+  }
+
+  /* 画像のみモード: page0非表示、imageを全幅に */
+  .modal__carousel--image-only {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "image"
+      "text";
+  }
+  .modal__carousel--image-only .carpage[data-page="0"] {
+    display: none;
+  }
+  .modal__carousel--image-only #modalMediaDetail {
+    padding: 10px;
   }
 }
 
@@ -710,7 +786,7 @@ body.modal-open {
   .lang{ margin-left: 12px; }         /* PCの大きい余白を縮める */
 }
 
-/* スマホメニューの見た目 */
+/* ハンバーガーボタンの見た目 */
 .nav-toggle{
   width: 40px;
   height: 40px;
@@ -722,27 +798,16 @@ body.modal-open {
   align-items:center;
   justify-content:center;
   font-size: 20px;
-  position: fixed;
-  right: 18px;
-  bottom: 20px;
+  /* 常にヘッダー内インライン配置 */
+  position: static;
   z-index: 30;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: opacity 0.3s ease;
 }
 
-/* スクロールで非表示にする */
+/* スクロールで非表示: スマホ版はヘッダーが常に見えるので不要 */
 .nav-toggle.hidden{
-  transform: translateY(100px);
   opacity: 0;
   pointer-events: none;
-}
-
-/* スマホ以外では元の位置に */
-@media (min-width: 769px){
-  .nav-toggle{
-    position: static;
-    transform: none !important;
-    opacity: 1 !important;
-  }
 }
 
 /* パネル（初期は非表示） */
@@ -878,6 +943,7 @@ body.modal-open {
   line-height: 1.25; letter-spacing: 0.06em;
 }
 .support-accent { color: #ff79b0; font-size: 0.9em; }
+body.no-anim .support-accent { opacity: 1 !important; transition: none !important; }
 .support-sub-title { margin-top: 8px; font-size: 13px; color: #b6b6c2; letter-spacing: 0.15em; }
 .support-deco-line {
   display: flex; align-items: center; justify-content: center;
@@ -1361,4 +1427,369 @@ body {
 }
 .ct-mobile-banner__close:hover{
   background: rgba(255,121,176,.2);
+}
+
+/* ============================================================
+   ✨ ANIMATION SYSTEM
+   ============================================================ */
+
+@keyframes charPopUp {
+  0%   { opacity: 0; transform: translateY(9px) scale(.91); }
+  65%  { transform: translateY(-2px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes popIn {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.93); }
+  65%  { transform: translate(-50%,-50%) scale(1.018); }
+  100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+}
+
+@keyframes glowPulse {
+  0%,100% { text-shadow: 0 0 0px rgba(255,121,176,0); }
+  50%      { text-shadow: 0 0 20px rgba(255,121,176,.6), 0 0 40px rgba(255,121,176,.25); }
+}
+
+@keyframes goldShimmer {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes sweepLight {
+  0%   { left: -60%; opacity: 0; }
+  10%  { opacity: 1; }
+  60%  { left: 120%; opacity: 0; }
+  100% { left: 120%; opacity: 0; }
+}
+
+/* support-header 文字アニメ */
+body:not(.no-anim) .sh-char {
+  display: inline-block;
+  opacity: 0;
+  animation: charPopUp .55s cubic-bezier(.22,.68,0,1.3) both;
+}
+body:not(.no-anim) .sh-char--heart {
+  display: inline-block;
+  opacity: 0;
+  animation: charPopUp .65s cubic-bezier(.22,.68,0,1.5) both;
+}
+
+/* ページ切り替えアニメ */
+body:not(.no-anim) .page.active {
+  animation: pageFadeIn .5s cubic-bezier(.22,.68,0,1.1) both;
+}
+
+/* ブランドタイトルのグロー */
+body:not(.no-anim) .brand__title {
+  animation: glowPulse 4s ease-in-out infinite;
+}
+
+/* モーダルのポップイン */
+body:not(.no-anim) .modal.open .modal__panel {
+  animation: popIn .35s cubic-bezier(.22,.68,0,1.2) both;
+}
+
+/* カードホバー */
+body:not(.no-anim) .card {
+  transition: box-shadow .3s ease, transform .25s ease;
+}
+body:not(.no-anim) .card:hover {
+  box-shadow: 0 0 0 1px rgba(255,121,176,.2), 0 10px 36px rgba(255,121,176,.12);
+  transform: translateY(-2px);
+}
+
+/* イベントカードホバー */
+body:not(.no-anim) .event {
+  transition: transform .25s cubic-bezier(.22,.68,0,1.4), border-color .2s ease, box-shadow .25s ease;
+}
+body:not(.no-anim) .event:hover {
+  transform: translateY(-5px) scale(1.015);
+  border-color: rgba(255,121,176,.6);
+  box-shadow: 0 10px 32px rgba(255,121,176,.2);
+}
+
+/* ボタンホバー */
+body:not(.no-anim) .btn {
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+}
+body:not(.no-anim) .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 18px rgba(255,121,176,.24);
+}
+body:not(.no-anim) .btn.primary:hover {
+  box-shadow: 0 5px 22px rgba(255,121,176,.42);
+  background: rgba(255,121,176,.24);
+}
+
+/* タブホバー */
+body:not(.no-anim) .tab {
+  transition: border-color .18s ease, background .18s ease, transform .15s ease;
+}
+body:not(.no-anim) .tab:not(.active):hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,121,176,.4);
+  background: rgba(255,121,176,.07);
+}
+
+/* チップホバー */
+body:not(.no-anim) .chip {
+  transition: border-color .18s ease, box-shadow .18s ease, transform .15s ease;
+}
+body:not(.no-anim) .chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,121,176,.45);
+}
+
+/* スクロール入場アニメ */
+body:not(.no-anim) .anim-ready {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity .6s cubic-bezier(.22,.68,0,1.1), transform .6s cubic-bezier(.22,.68,0,1.1);
+}
+body:not(.no-anim) .anim-ready.anim-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+body.no-anim .anim-ready {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+/* クラファン金縁キラキラ */
+body:not(.no-anim) .support-cf-box {
+  background: linear-gradient(270deg, #c8a84b, #f5e27a, #fff8c0, #f0d060, #a07830, #f5e27a, #c8a84b);
+  background-size: 300% 300%;
+  animation: goldShimmer 3.5s ease infinite;
+  box-shadow: 0 0 28px rgba(212,175,55,.45), 0 8px 32px rgba(0,0,0,.55);
+}
+body:not(.no-anim) .support-cf-badge {
+  background: linear-gradient(90deg, #c8a84b, #f5e27a, #fff8c0, #f0d060, #c8a84b);
+  background-size: 200% auto;
+  animation: goldShimmer 2.5s ease infinite;
+}
+body:not(.no-anim) .support-cf-reward {
+  position: relative;
+  overflow: hidden;
+}
+body:not(.no-anim) .support-cf-reward::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -60%;
+  width: 40%; height: 200%;
+  background: linear-gradient(105deg, transparent 0%, rgba(255,248,192,.22) 50%, transparent 100%);
+  animation: sweepLight 3.2s ease-in-out infinite;
+}
+
+/* ============================================================
+   ✨ アニメON/OFFボタン 共通スタイル
+   ============================================================ */
+.anim-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(15,15,18,.80);
+  color: var(--muted);
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: border-color .18s, color .18s, background .18s;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 35;
+}
+.anim-toggle-btn:hover {
+  border-color: rgba(255,121,176,.5);
+  color: var(--text);
+  background: rgba(255,121,176,.10);
+}
+.anim-toggle-btn__dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  transition: background .25s;
+  box-shadow: 0 0 5px rgba(255,121,176,.6);
+}
+body.no-anim .anim-toggle-btn__dot {
+  background: rgba(255,255,255,.22);
+  box-shadow: none;
+}
+
+/* PC用: 左下フロート固定、スマホでは非表示 */
+.anim-toggle-btn--pc {
+  position: fixed;
+  left: 18px;
+  bottom: 20px;
+  padding: 5px 10px 5px 8px;
+  font-size: 11px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.35);
+}
+@media (max-width: 768px) {
+  .anim-toggle-btn--pc { display: none; }
+}
+
+/* スマホ用: ヘッダー内インライン、PCでは非表示 */
+.anim-toggle-btn--mobile {
+  position: static;
+  padding: 5px 8px 5px 7px;
+  font-size: 10px;
+}
+@media (min-width: 769px) {
+  .anim-toggle-btn--mobile { display: none; }
+}
+
+/* スマホ用言語ボタン（🌐）: ヘッダー内、PCでは非表示 */
+.mobile-lang-select {
+  display: none;
+  position: relative;
+}
+@media (max-width: 768px) {
+  .mobile-lang-select { display: flex; align-items: center; }
+}
+
+.mobile-lang-globe-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.05);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+}
+.mobile-lang-globe-btn:hover {
+  border-color: rgba(255,121,176,.5);
+  background: rgba(255,121,176,.10);
+}
+
+.mobile-lang-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: rgba(20,20,26,.97);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  z-index: 100;
+  min-width: 110px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  backdrop-filter: blur(12px);
+}
+
+.mobile-lang-option {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+}
+.mobile-lang-option:last-child { border-bottom: none; }
+.mobile-lang-option:hover {
+  background: rgba(255,121,176,.12);
+  color: var(--accent);
+}
+/* ============================================================
+   🎮 ミッションタイトル オーバーレイ
+   ============================================================ */
+#mission-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+#mission-overlay.mission-overlay--in {
+  opacity: 1;
+}
+#mission-overlay.mission-overlay--out {
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.mission-overlay__bg {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  backdrop-filter: blur(4px);
+}
+.mission-overlay__content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 0 24px;
+  text-align: center;
+}
+.mission-overlay__label {
+  font-family: 'Dela Gothic One', sans-serif;
+  font-size: 13px;
+  letter-spacing: .35em;
+  color: var(--accent);
+  opacity: 0;
+  transform: translateY(-8px);
+  animation: missionLabelIn 0.4s ease 0.3s forwards;
+}
+.mission-overlay__title {
+  font-family: 'Kaisei Tokumin', serif;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: .04em;
+  color: #fff;
+  text-shadow: 0 0 30px rgba(255,121,176,.7), 0 2px 12px rgba(0,0,0,.8);
+  opacity: 0;
+  transform: scale(0.8) translateY(10px);
+  animation: missionTitleIn 0.55s cubic-bezier(.22,.68,0,1.2) 0.5s forwards;
+}
+.mission-overlay__bar {
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), #8ad7ff, var(--accent));
+  border-radius: 2px;
+  animation: missionBarExpand 1.0s ease 0.9s forwards;
+  box-shadow: 0 0 8px rgba(255,121,176,.6);
+}
+@keyframes missionLabelIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes missionTitleIn {
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes missionBarExpand {
+  to { width: min(500px, 80vw); }
+}
+
+/* ============================================================
+   ⬅ タイムライン矢印の揺れアニメーション
+   ============================================================ */
+.support-item-arrow {
+  animation: arrowWobble 1.6s ease-in-out infinite;
+}
+body.no-anim .support-item-arrow {
+  animation: none;
+}
+@keyframes arrowWobble {
+  0%, 100% { transform: translateX(0); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(2px); }
 }
