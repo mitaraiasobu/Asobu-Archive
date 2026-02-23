@@ -19,7 +19,7 @@
     "id": "illustration_contest",
     "mediaType": "video",
     "src": "./assets/illustcontest.mp4",
-    "poster": "./assets/イラコン2.png",
+    "poster": "./assets/イラコン.png",
     "status": "active",
     "start": "2026-01-03",
     "end": "2026-02-28",
