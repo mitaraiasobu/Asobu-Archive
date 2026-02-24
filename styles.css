@@ -110,6 +110,13 @@ a{color:inherit}
   padding:18px 14px 80px;
 }
 
+/* スマホ：タブが非表示のため、コンテンツが固定ヘッダーと被らないように上余白を追加 */
+@media (max-width: 768px){
+  .container{
+    padding-top: 32px;
+  }
+}
+
 .hero{
   display:flex; justify-content:space-between; align-items:flex-end;
   gap:18px;
@@ -833,10 +840,10 @@ body.modal-open {
   transition: opacity 0.3s ease;
 }
 
-/* スクロールで非表示: スマホ版はヘッダーが常に見えるので不要 */
+/* ハンバーガーは常時表示（スクロールで隠さない） */
 .nav-toggle.hidden{
-  opacity: 0;
-  pointer-events: none;
+  opacity: 1 !important;
+  pointer-events: auto !important;
 }
 
 /* パネル（初期は非表示） */
