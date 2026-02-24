@@ -832,40 +832,9 @@ function setupVisibilityHandler() {
   });
 }
 
-// ハンバーガーメニューのスクロール制御
+// ハンバーガーメニューのスクロール制御（常時表示）
 function setupHamburgerScrollBehavior() {
-  const navToggle = document.getElementById("navToggle");
-  if (!navToggle) return;
-
-  let lastScrollY = window.scrollY;
-  let ticking = false;
-
-  window.addEventListener("scroll", () => {
-    if (!ticking) {
-      window.requestAnimationFrame(() => {
-        const currentScrollY = window.scrollY;
-        
-        // 下にスクロールしている場合は非表示
-        if (currentScrollY > lastScrollY && currentScrollY > 100) {
-          navToggle.classList.add("hidden");
-        } 
-        // 上にスクロールしている場合は表示
-        else if (currentScrollY < lastScrollY) {
-          navToggle.classList.remove("hidden");
-        }
-        
-        // 最上部にいる場合は常に表示
-        if (currentScrollY < 50) {
-          navToggle.classList.remove("hidden");
-        }
-        
-        lastScrollY = currentScrollY;
-        ticking = false;
-      });
-      
-      ticking = true;
-    }
-  });
+  // スマホでは常時表示のため、スクロールによる非表示は行わない
 }
 
 function wireOnce() {
