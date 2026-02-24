@@ -2001,14 +2001,13 @@ body:not(.no-anim) .brand__title:hover {
   50%       { opacity: 1; }
 }
 
-/* ── ページ遷移：スキャン感 ───────────────────────────── */
+/* ── ページ遷移：フェードスライド（clip-pathはbox-shadowを切るため除去） ── */
 body:not(.no-anim) .page.active {
   animation: pageGameIn 0.38s cubic-bezier(0.22, 0.68, 0, 1.1) both;
 }
 @keyframes pageGameIn {
-  0%   { opacity: 0; transform: translateY(8px); clip-path: inset(100% 0 0 0); }
-  45%  { clip-path: inset(0 0 0 0); }
-  100% { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ── カスタムカーソル ─────────────────────────────────── */
@@ -2084,4 +2083,9 @@ body:not(.no-anim) .chip {
   ) !important;
   height: 1px !important;
   border: none !important;
+}
+/* ── aboutページ先頭のsupport-cardの上マージンをリセット（上端切れ防止） ── */
+#page-about > div > .support-card:first-child,
+#page-about .support-card:first-of-type {
+  margin-top: 8px;
 }
