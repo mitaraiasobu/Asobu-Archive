@@ -4,6 +4,13 @@
    ゲーム風イントロ演出
    ───────────────────────────────────────────────────────────── */
 (function () {
+  // アニメOFFの場合はイントロを完全にスキップ
+  if (localStorage.getItem("noAnim") === "1") {
+    window.__introFinishPromise = Promise.resolve();
+    window.__introFinishResolve = () => {};
+    return;
+  }
+
   const savedLang = (localStorage.getItem("lang") || "ja");
   const DOT_FONT  = savedLang === "ko"
     ? "'DotGothic16', 'NeoDunggeunmoPro', monospace"
@@ -19,8 +26,12 @@
   const SCRAMBLE_CHARS  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&⋈★◆▲░▒▓";
   const SCRAMBLE_FRAMES = 10;
   const FRAME_MS        = 38;
-  const FADEOUT_MS      = 2600;
-  const TOTAL_MS        = 3300;
+  // バートランジション時間（文字が全部出た後バーが走る時間）
+  const BAR_TRANSITION_MS = 1800;
+  // バー到達後の待機時間
+  const BAR_WAIT_MS = 1000;
+  // フェードアウト時間
+  const FADEOUT_DURATION_MS = 650;
 
   const style = document.createElement("style");
   style.textContent = `
@@ -80,7 +91,7 @@
       text-shadow: 0 0 10px rgba(255,100,180,0.5);
       white-space: nowrap; min-height: 1.5em;
     }
-    /* バー（最初から表示） */
+    /* バー */
     #intro-bar-wrap {
       position: relative; z-index: 2;
       width: min(500px, 82vw); height: 6px;
@@ -93,13 +104,13 @@
       background: linear-gradient(90deg, #c0006a, #ff3d9a, #ffaadd, #ff3d9a, #c0006a);
       background-size: 300% 100%;
       box-shadow: 0 0 12px #ff3d9a, 0 0 24px rgba(255,60,154,0.4);
-      animation: intro-bar-shine 0.8s linear infinite;
-      transition: width 1.8s cubic-bezier(0.15, 1, 0.3, 1);
+      animation: intro-bar-shine 8s linear infinite;
+      transition: width 3s cubic-bezier(0.15, 1, 0.3, 1);
     }
     @keyframes intro-bar-shine {
       from { background-position: 0% 0%; } to { background-position: 300% 0%; }
     }
-    /* LOADING ラベル */
+
     #intro-loading-label {
       position: relative; z-index: 2;
       font-family: ${DOT_FONT};
@@ -108,13 +119,7 @@
       animation: intro-blink 1.1s step-end infinite;
     }
     @keyframes intro-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-    /* フェードアウト */
-    #asobu-intro.fadeout { animation: intro-fadeout 0.65s ease-in forwards; }
-    @keyframes intro-fadeout {
-      0%   { opacity: 1; transform: scale(1); }
-      55%  { opacity: 0.35; transform: scale(1.012); }
-      100% { opacity: 0; transform: scale(1.025); pointer-events: none; }
-    }
+
     /* スクランブル文字 */
     .scr-char { display: inline-block; color: #ff6eb4; }
     .scr-char.settled { color: inherit; transition: color 0.08s; }
@@ -138,9 +143,6 @@
   loadLabel.textContent = "NOW LOADING...";
   overlay.append(titleEl, subEl, barWrap, loadLabel);
   document.body.prepend(overlay);
-
-  // バーを最初からスタート
-  requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = "100%"; }));
 
   function randomChar() {
     return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
@@ -184,17 +186,105 @@
     });
   }
 
+  // ── JS駆動のグリッチ消滅演出 ──────────────────────────────────
+  // canvasにイントロ画面をスナップショットして横スライスで崩す
+  function runGlitchExit(onDone) {
+    // ── 星＆ハート爆散 → overlay フェードアウト ──
+    var W = window.innerWidth;
+    var H = window.innerHeight;
+    var CX = W / 2;
+    var CY = H / 2;
+
+    // パーティクル設定
+    var SYMBOLS = ["★","✦","♥","✿","◆","·","*","✦","★","♥"];
+    var COLORS  = [
+      "#ff6eb4","#ff3d9a","#ffaadd","#fff","#ff6eb4",
+      "#ffccee","#ff3d9a","#fff","#ffaadd","#ff6eb4"
+    ];
+    var COUNT = 80;
+
+    // コンテナ（overlayの上）
+    var container = document.createElement("div");
+    container.style.cssText = "position:fixed;inset:0;z-index:100000;pointer-events:none;overflow:hidden;";
+    document.body.appendChild(container);
+
+    // パーティクル生成
+    for (var i = 0; i < COUNT; i++) {
+      (function(idx) {
+        var sym   = SYMBOLS[idx % SYMBOLS.length];
+        var color = COLORS[idx % COLORS.length];
+        var size  = 10 + Math.random() * 22;
+
+        var el = document.createElement("div");
+        el.textContent = sym;
+        el.style.cssText = [
+          "position:absolute",
+          "left:" + CX + "px",
+          "top:"  + CY + "px",
+          "font-size:" + size + "px",
+          "color:" + color,
+          "text-shadow:0 0 6px " + color + ",0 0 14px " + color,
+          "line-height:1",
+          "transform:translate(-50%,-50%)",
+          "opacity:1",
+          "will-change:transform,opacity",
+          "pointer-events:none"
+        ].join(";");
+        container.appendChild(el);
+
+        // 飛散パラメータ
+        var angle = (idx / COUNT) * Math.PI * 2 + (Math.random() - 0.5) * 0.5;
+        var dist  = 120 + Math.random() * (Math.min(W, H) * 0.48);
+        var tx    = Math.cos(angle) * dist;
+        var ty    = Math.sin(angle) * dist;
+        var rot   = (Math.random() - 0.5) * 540;
+        var delay = Math.random() * 180;
+        var dur   = 500 + Math.random() * 300;
+
+        // 少し待ってからアニメ開始
+        setTimeout(function() {
+          el.style.transition = [
+            "transform " + dur + "ms cubic-bezier(0.15,0.5,0.3,1) 0ms",
+            "opacity "   + (dur * 0.55) + "ms ease-in " + (dur * 0.45) + "ms"
+          ].join(",");
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              el.style.transform = "translate(calc(-50% + " + tx + "px), calc(-50% + " + ty + "px)) rotate(" + rot + "deg) scale(0.4)";
+              el.style.opacity   = "0";
+            });
+          });
+        }, delay);
+      })(i);
+    }
+
+    // overlayを少し遅らせてフェードアウト
+    setTimeout(function() {
+      overlay.style.transition = "opacity 600ms ease-out";
+      overlay.style.opacity    = "0";
+    }, 200);
+
+    // 全部終わったらDOM削除
+    setTimeout(function() {
+      container.remove();
+      overlay.remove();
+      style.remove();
+      if (onDone) onDone();
+    }, 1100);
+  }
+
   async function runIntro() {
-    const t0 = performance.now();
     const texts = await splashPromise;
+    // 文字スクランブル完了を待つ
     await scrambleTo(titleEl, texts.title, 60);
     await scrambleTo(subEl,   texts.sub,   10);
-    setTimeout(() => overlay.classList.add("fadeout"),
-      Math.max(0, FADEOUT_MS - (performance.now() - t0)));
+    // 全文字確定後にバーを100%へ走らせる
+    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = "100%"; }));
+    // バートランジション完了 + 1秒待機してからグリッチ消滅
     setTimeout(() => {
-      overlay.remove(); style.remove();
-      if (window.__introFinishResolve) window.__introFinishResolve();
-    }, Math.max(0, TOTAL_MS - (performance.now() - t0)));
+      runGlitchExit(() => {
+        if (window.__introFinishResolve) window.__introFinishResolve();
+      });
+    }, BAR_TRANSITION_MS + BAR_WAIT_MS);
   }
 
   window.__introFinishPromise = new Promise(resolve => {
