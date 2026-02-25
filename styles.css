@@ -108,6 +108,9 @@ a{color:inherit}
   max-width:825px;
   margin:0 auto;
   padding:18px 14px 80px;
+  position: relative;
+  z-index: 3;        /* 雨レイヤー(z:2)より上、topbar(10)/tabs(9)より下 */
+  isolation: isolate;
 }
 
 /* スマホ：タブが非表示のため、コンテンツが固定ヘッダーと被らないように上余白を追加 */
