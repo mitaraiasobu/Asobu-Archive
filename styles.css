@@ -673,6 +673,8 @@ body.modal-open {
   padding:12px;
 }
 .item-card h4{ margin:0 0 6px; font-size:16px; }
+.inner h4{ margin-top:18px; margin-bottom:-14px; }
+.inner h4 + p, .inner h4 + div{ padding-left:1em; }
 .item-card p{ margin:0; color:var(--text); line-height:1.75; }
 
 /* さっさと購入🤍 ボタン専用 */
