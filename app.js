@@ -105,7 +105,7 @@
       background-size: 300% 100%;
       box-shadow: 0 0 12px #ff3d9a, 0 0 24px rgba(255,60,154,0.4);
       animation: intro-bar-shine 8s linear infinite;
-      transition: width 3s cubic-bezier(0.15, 1, 0.3, 1);
+      /* transition はJSで動的に設定 */
     }
     @keyframes intro-bar-shine {
       from { background-position: 0% 0%; } to { background-position: 300% 0%; }
@@ -274,17 +274,26 @@
 
   async function runIntro() {
     const texts = await splashPromise;
-    // 文字スクランブル完了を待つ
+
+    // バーをDOMに追加した直後（ページ表示と同時）に走らせる
+    // transition時間 = タイトル + サブのスクランブル推定時間 + 1秒のバッファ
+    const titleLen = (texts.title || '').replace(/\s/g, '').length;
+    const subLen   = (texts.sub   || '').replace(/\s/g, '').length;
+    const estimatedScrambleMs = (titleLen + subLen) * FRAME_MS * 0.75 + SCRAMBLE_FRAMES * FRAME_MS + 500;
+    // バーは「サブテキスト表示完了の直前」に100%に達するよう transition を設定
+    bar.style.transition = `width ${estimatedScrambleMs}ms cubic-bezier(0.15, 1, 0.3, 1)`;
+    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+
+    // 文字スクランブル（バーと並行して走る）
     await scrambleTo(titleEl, texts.title, 60);
     await scrambleTo(subEl,   texts.sub,   10);
-    // 全文字確定後にバーを100%へ走らせる
-    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = "100%"; }));
-    // バートランジション完了 + 1秒待機してからグリッチ消滅
+
+    // サブテキスト（有意義に使っていこ～！）が出た1秒後にグリッチ消滅
     setTimeout(() => {
       runGlitchExit(() => {
         if (window.__introFinishResolve) window.__introFinishResolve();
       });
-    }, BAR_TRANSITION_MS + BAR_WAIT_MS);
+    }, 1000);
   }
 
   window.__introFinishPromise = new Promise(resolve => {
@@ -324,12 +333,18 @@ function setActiveTab(tabKey) {
   const page = $(`#page-${tabKey}`);
   if (page) page.classList.add("active");
 
+  // パーティクルレイン起動
+  triggerTabRain(tabKey);
+
   // タブを開いたときにアニメーション発火
   if (!document.body.classList.contains("no-anim")) {
     if (tabKey === "support") {
-      // supportタブ：headerアニメ（IntersectionObserverだと非表示で発火しないため直接実行）
+      // supportタブ：毎回HTMLを再注入してアニメをリセット・再実行
       const supportBody = document.getElementById("supportBody");
       if (supportBody) {
+        supportBody.innerHTML = t("support.bodyHtml");
+        animateTimeline(supportBody);
+        animatePriorityList(supportBody);
         runSupportHeaderAnim(supportBody);
         runSupportAccentAnim(supportBody);
       }
@@ -342,7 +357,11 @@ function setActiveTab(tabKey) {
         cfBody.querySelectorAll(".cf-split > div, .support-header").forEach(el => {
           el.style.opacity = "0"; el.style.transition = "none"; el.style.transform = "translateY(16px)";
         });
-        const doMission = () => triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
+        const doMission = () => {
+          triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
+          // ミッション演出終了後にタンク初期化
+          setTimeout(initCfPhysicsTank, 3400);
+        };
         if (window.__introFinishPromise) {
           window.__introFinishPromise.then(doMission);
         } else {
@@ -369,6 +388,560 @@ function setActiveTab(tabKey) {
     }
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+//  PARTICLE RAIN SYSTEM  ─  固定レイヤーで降らせる
+// ═══════════════════════════════════════════════════════════════════
+(function() {
+  if (document.getElementById('__rain_styles')) return;
+  const s = document.createElement('style');
+  s.id = '__rain_styles';
+  s.textContent = `
+    /* ── 全タブ共通：固定レインキャンバス ── */
+    #__rain_root {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+    /* containerはrainより上、topbar/tabs/modalより下 */
+    .container {
+      position: relative;
+      z-index: 3;
+      isolation: isolate;
+    }
+    /* ── SVGハート ── */
+    .rain-heart {
+      position: absolute;
+      top: -60px;
+      opacity: 0;
+      animation: rainHeartFall linear infinite;
+      will-change: transform, opacity;
+    }
+    @keyframes rainHeartFall {
+      0%   { transform: translateY(0px) rotate(var(--r,0deg)); opacity: var(--op,.15); }
+      10%  { opacity: var(--op,.15); }
+      90%  { opacity: var(--op,.15); }
+      100% { transform: translateY(110vh) rotate(var(--r,0deg)); opacity: 0; }
+    }
+    /* ── メンバー画像 ── */
+    .rain-member {
+      position: absolute;
+      top: -120px;
+      opacity: 0;
+      animation: rainImgFall linear infinite;
+      will-change: transform, opacity;
+      border-radius: 10px;
+    }
+    @keyframes rainImgFall {
+      0%   { transform: translateY(0px) rotate(var(--r,0deg)); opacity: 0; }
+      5%   { opacity: var(--op,.15); }
+      90%  { opacity: var(--op,.15); }
+      100% { transform: translateY(110vh) rotate(var(--r,0deg)); opacity: 0; }
+    }
+    /* ── お金 ── */
+    .rain-money {
+      position: absolute;
+      top: -50px;
+      opacity: 0;
+      font-size: var(--sz, 20px);
+      animation: rainMoneyFall linear infinite;
+      will-change: transform, opacity;
+    }
+    @keyframes rainMoneyFall {
+      0%   { transform: translateY(0px) rotate(var(--r,0deg)); opacity: 0; }
+      5%   { opacity: var(--op,.12); }
+      90%  { opacity: var(--op,.12); }
+      100% { transform: translateY(110vh) rotate(var(--r,0deg)); opacity: 0; }
+    }
+  `;
+  document.head.appendChild(s);
+
+  // ルートdivをbody直下に追加
+  const root = document.createElement('div');
+  root.id = '__rain_root';
+  document.body.appendChild(root);
+})();
+
+// ── 管理オブジェクト ──
+const _rain = {
+  activeTab: null,
+  memberImgs: null,
+  memberChecked: false,
+  goodsImgs: null,
+  goodsChecked: false,
+};
+
+function _rainRoot() { return document.getElementById('__rain_root'); }
+
+function _rainClear() {
+  const r = _rainRoot();
+  if (r) r.innerHTML = '';
+}
+
+// ── SVGハート生成（塗りつぶし or 縁線のみ）──
+function _makeSvgHeart(size, color, outline) {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('width', size);
+  s.setAttribute('height', size);
+  s.setAttribute('viewBox', '0 0 100 100');
+  s.style.display = 'block';
+  const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  p.setAttribute('d', 'M50 85 C10 60 5 30 20 15 C30 5 42 8 50 20 C58 8 70 5 80 15 C95 30 90 60 50 85Z');
+  if (outline) {
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', color);
+    p.setAttribute('stroke-width', '5');
+  } else {
+    p.setAttribute('fill', color);
+  }
+  s.appendChild(p);
+  return s;
+}
+
+// ── ハート雨 ──
+function startHeartRain() {
+  _rainClear();
+  const root = _rainRoot();
+  if (!root) return;
+
+  const COLORS = ['#ff79b0','#ff3d9a','#ffaadd','#ff6eb4','rgba(255,121,176,.8)'];
+  const COUNT = 32;
+
+  for (let i = 0; i < COUNT; i++) {
+    const size    = 12 + Math.random() * 22;
+    const left    = Math.random() * 99;
+    const dur     = 7 + Math.random() * 10;
+    const del     = -(Math.random() * dur);
+    const op      = 0.10 + Math.random() * 0.20;
+    const rot     = (Math.random() - 0.5) * 50;
+    const col     = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const outline = Math.random() < 0.45; // 約45%を縁線のみ
+
+    const div = document.createElement('div');
+    div.className = 'rain-heart';
+    div.style.left = left + '%';
+    div.style.setProperty('--r', rot + 'deg');
+    div.style.setProperty('--op', op);
+    div.style.animationDuration = dur + 's';
+    div.style.animationDelay = del + 's';
+
+    div.appendChild(_makeSvgHeart(size, col, outline));
+    root.appendChild(div);
+  }
+}
+
+// ── お金雨 ──
+function startMoneyRain() {
+  _rainClear();
+  const root = _rainRoot();
+  if (!root) return;
+
+  const MONEY = ['💵','💰','💸','💴','💶','💷','🪙'];
+  const COUNT = 32;
+
+  for (let i = 0; i < COUNT; i++) {
+    const size = 14 + Math.random() * 20;
+    const left = Math.random() * 98;
+    const dur  = 5 + Math.random() * 7;
+    const del  = -(Math.random() * dur);
+    const op   = 0.10 + Math.random() * 0.18;
+    const rot  = (Math.random() - 0.5) * 30;
+
+    const div = document.createElement('div');
+    div.className = 'rain-money';
+    div.textContent = MONEY[Math.floor(Math.random() * MONEY.length)];
+    div.style.left = left + '%';
+    div.style.setProperty('--sz', size + 'px');
+    div.style.setProperty('--r', rot + 'deg');
+    div.style.setProperty('--op', op);
+    div.style.animationDuration = dur + 's';
+    div.style.animationDelay = del + 's';
+
+    root.appendChild(div);
+  }
+}
+
+// ── メンバー画像雨 ──
+const MEMBER_IMG_PATHS = Array.from({length: 20}, (_, i) => `./assets/member/${i+1}.png`);
+
+function startMemberRain() {
+  _rainClear();
+  const root = _rainRoot();
+  if (!root) return;
+
+  function doRain(pool) {
+    if (!pool || !pool.length) return;
+    const COUNT = 16;
+    // シャッフルして連続同画像を防ぐ
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    // COUNT個になるまでシャッフル済みリストを繰り返す（連続しないよう結合時に隣接チェック）
+    const seq = [];
+    while (seq.length < COUNT) {
+      for (const s of shuffled) {
+        if (seq.length === 0 || seq[seq.length - 1] !== s) {
+          seq.push(s);
+          if (seq.length >= COUNT) break;
+        }
+      }
+    }
+    for (let i = 0; i < COUNT; i++) {
+      const src  = seq[i];
+      const size = 48 + Math.random() * 70;
+      const left = Math.random() * 94;
+      const dur  = 10 + Math.random() * 14;
+      const del  = -(Math.random() * dur);
+      const op   = 0.10 + Math.random() * 0.22;
+      const rot  = (Math.random() - 0.5) * 55;
+
+      const img = document.createElement('img');
+      img.className = 'rain-member';
+      img.src = src;
+      img.style.width = size + 'px';
+      img.style.left = left + '%';
+      img.style.setProperty('--r', rot + 'deg');
+      img.style.setProperty('--op', op);
+      img.style.animationDuration = dur + 's';
+      img.style.animationDelay = del + 's';
+      root.appendChild(img);
+    }
+  }
+
+  if (_rain.memberImgs !== null) { doRain(_rain.memberImgs); return; }
+  if (_rain.memberChecked) { setTimeout(startMemberRain, 700); return; }
+  _rain.memberChecked = true;
+  const valid = [];
+  let pending = MEMBER_IMG_PATHS.length;
+  MEMBER_IMG_PATHS.forEach(src => {
+    const img = new Image();
+    img.onload  = () => { valid.push(src); if(--pending===0){_rain.memberImgs=valid; doRain(valid);} };
+    img.onerror = () => {                   if(--pending===0){_rain.memberImgs=valid; doRain(valid);} };
+    img.src = src;
+  });
+}
+
+// ── グッズ画像雨 ──
+const GOODS_IMG_PATHS = Array.from({length: 30}, (_, i) => `./assets/goods/${i+1}.png`);
+
+function startGoodsRain() {
+  _rainClear();
+  const root = _rainRoot();
+  if (!root) return;
+
+  function doGoodsRain(pool) {
+    if (!pool || !pool.length) { startHeartRain(); return; } // 画像なしはハート雨
+
+    const COUNT = 16;
+    // シャッフルして連続同画像を防ぐ
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const seq = [];
+    while (seq.length < COUNT) {
+      for (const s of shuffled) {
+        if (seq.length === 0 || seq[seq.length - 1] !== s) {
+          seq.push(s);
+          if (seq.length >= COUNT) break;
+        }
+      }
+    }
+    for (let i = 0; i < COUNT; i++) {
+      const src  = seq[i];
+      const size = 48 + Math.random() * 70;
+      const left = Math.random() * 94;
+      const dur  = 10 + Math.random() * 14;
+      const del  = -(Math.random() * dur);
+      const op   = 0.10 + Math.random() * 0.22;
+      const rot  = (Math.random() - 0.5) * 55;
+
+      const img = document.createElement('img');
+      img.className = 'rain-member'; // 同じCSSクラスを流用
+      img.src = src;
+      img.style.width = size + 'px';
+      img.style.left = left + '%';
+      img.style.setProperty('--r', rot + 'deg');
+      img.style.setProperty('--op', op);
+      img.style.animationDuration = dur + 's';
+      img.style.animationDelay = del + 's';
+      root.appendChild(img);
+    }
+  }
+
+  if (_rain.goodsImgs !== null) { doGoodsRain(_rain.goodsImgs); return; }
+  if (_rain.goodsChecked) { setTimeout(startGoodsRain, 700); return; }
+  _rain.goodsChecked = true;
+  const valid = [];
+  let pending = GOODS_IMG_PATHS.length;
+  GOODS_IMG_PATHS.forEach(src => {
+    const img = new Image();
+    img.onload  = () => { valid.push(src); if(--pending===0){_rain.goodsImgs=valid; doGoodsRain(valid);} };
+    img.onerror = () => {                   if(--pending===0){_rain.goodsImgs=valid; doGoodsRain(valid);} };
+    img.src = src;
+  });
+}
+
+// ── タブ切り替えでレイン起動 ──
+function triggerTabRain(tabKey) {
+  _rain.activeTab = tabKey;
+  if (document.body.classList.contains('no-anim')) { _rainClear(); return; }
+  if (tabKey === 'fanclub') {
+    startMemberRain();
+  } else if (tabKey === 'goods') {
+    startGoodsRain();
+  } else if (tabKey === 'crowdfunding' || tabKey === 'support') {
+    startMoneyRain();
+  } else if (tabKey === 'contest') {
+    _rainClear();
+  } else {
+    // home を含む残りタブ全てにハート雨
+    startHeartRain();
+  }
+}
+
+// アニメOFF切り替え監視
+document.addEventListener('click', e => {
+  if (!e.target || !e.target.closest) return;
+  const btn = e.target.closest('.anim-toggle-btn');
+  if (!btn) return;
+  setTimeout(() => {
+    const off = document.body.classList.contains('no-anim');
+    if (off) { _rainClear(); }
+    else if (_rain.activeTab) { triggerTabRain(_rain.activeTab); }
+  }, 50);
+}, true);
+
+
+// ═══════════════════════════════════════════════════════════════════
+//  CROWDFUNDING HORIZONTAL PHYSICS TANK  (Matter.js)
+// ═══════════════════════════════════════════════════════════════════
+function initCfPhysicsTank() {
+  const cfBody = document.getElementById('crowdfundingBody');
+  if (!cfBody || cfBody.dataset.physicsDone) return;
+  cfBody.dataset.physicsDone = '1';
+
+  // 横棒メーターを探す
+  const hBar = cfBody.querySelector('[style*="height:16px"][style*="border-radius:999px"]');
+  if (!hBar) return;
+
+  // 進捗 % を読み取る
+  let pct = 46.8;
+  cfBody.querySelectorAll('span,div').forEach(el => {
+    const m = el.textContent.match(/(?:進捗|Progress|진행)[：:\s]*([\d.]+)%/);
+    if (m) pct = parseFloat(m[1]);
+  });
+
+  // 残り金額・目標金額を読み取る
+  let remainingAmt = 106400, goalAmt = 200000;
+  cfBody.querySelectorAll('span,div').forEach(el => {
+    const mR = el.textContent.match(/残り[：:\s]*¥([\d,]+)/);
+    if (mR) remainingAmt = parseInt(mR[1].replace(/,/g, ''));
+    const mG = el.textContent.match(/目標[：:\s]*¥([\d,]+)/);
+    if (mG) goalAmt = parseInt(mG[1].replace(/,/g, ''));
+  });
+  const collectedAmt = goalAmt - remainingAmt;
+  const fmtYen = n => '¥\u00a0' + n.toLocaleString('ja-JP');
+
+  // ── タンク UI 生成 ──
+  // タンクサイズ：横20個 × 縦7段 = MAX140個収容
+  const COIN_R  = 14;                    // コイン半径
+  const COLS    = 20;                    // 横に並ぶMAX個数
+  const ROWS    = 7;                     // 縦のMAX段数
+  const TANK_W  = COLS * COIN_R * 2;    // = 560px
+  const TANK_H  = ROWS * COIN_R * 2;    // = 196px
+  const MAX_COINS = COLS * ROWS;         // = 140個
+  // pct%分のコイン数（端数切り上げ、最低3個）
+  const COIN_COUNT = Math.max(3, Math.ceil(MAX_COINS * pct / 100));
+
+  const tankWrap = document.createElement('div');
+  tankWrap.style.cssText = `
+    margin: 16px auto 8px;
+    width: 100%;
+    max-width: ${TANK_W}px;
+    position: relative;
+    user-select: none;
+  `;
+
+  // 進捗ラベル表示
+  const pctLabel = document.createElement('div');
+  pctLabel.style.cssText = `
+    text-align:center; font-size:.85em; color:rgba(255,255,255,.65);
+    letter-spacing:.04em; margin-bottom:6px; font-variant-numeric:tabular-nums;
+  `;
+  pctLabel.textContent = `${fmtYen(collectedAmt)}/${goalAmt.toLocaleString('ja-JP')}\u3000${pct.toFixed(1)}%`;
+  tankWrap.appendChild(pctLabel);
+
+  // Canvasタンク
+  const canvas = document.createElement('canvas');
+  canvas.width  = TANK_W;
+  canvas.height = TANK_H;
+  canvas.style.cssText = `
+    display:block;
+    width: 100%;
+    border: 1.5px solid rgba(255,121,176,.4);
+    border-radius: 12px;
+    background: rgba(255,255,255,.04);
+    box-shadow: 0 0 18px rgba(255,121,176,.08) inset;
+  `;
+  tankWrap.appendChild(canvas);
+
+  // 目標ラベル
+  const goalLabel = document.createElement('div');
+  goalLabel.style.cssText = `display:none;`;
+  goalLabel.textContent = '目標: ¥200,000';
+  tankWrap.appendChild(goalLabel);
+
+  hBar.replaceWith(tankWrap);
+
+  // ── Matter.js 動的ロード → 物理演算 ──
+  function runPhysics() {
+    const { Engine, Bodies, Body, Composite } = window.Matter;
+
+    const engine = Engine.create({ gravity: { y: 1.8 } });
+    const world  = engine.world;
+
+    // 壁・底：厚み20pxで絶対貫通しない
+    const ground = Bodies.rectangle(TANK_W/2,  TANK_H + 10, TANK_W + 60, 20, { isStatic:true, label:'wall' });
+    const wallL  = Bodies.rectangle(-10,        TANK_H/2,    20, TANK_H * 10, { isStatic:true, label:'wall' });
+    const wallR  = Bodies.rectangle(TANK_W+10,  TANK_H/2,    20, TANK_H * 10, { isStatic:true, label:'wall' });
+    Composite.add(world, [ground, wallL, wallR]);
+
+    const SYMBOLS = ['💵','💰','💸','🪙','💴'];
+    const coins = [];
+    const coinSymbols = [];
+
+    const noAnim = document.body.classList.contains('no-anim');
+
+    // コインをスポーンする関数（中央上からバラバラに）
+    function spawnCoin(i) {
+      // X: タンク中央±タンク幅の半分にランダム散布（ガウス風にするため2回乱数を足す）
+      const spread = (TANK_W * 0.45);
+      const cx = TANK_W / 2;
+      const x = cx + (Math.random() - 0.5) * spread * 2;
+      const y = -COIN_R - Math.random() * COIN_R * 3; // 上端からランダムな高さでスポーン
+      const sym = SYMBOLS[i % SYMBOLS.length];
+
+      const coin = Bodies.circle(
+        Math.max(COIN_R + 1, Math.min(TANK_W - COIN_R - 1, x)),
+        y,
+        COIN_R,
+        {
+          restitution: 0.2,
+          friction: 0.55,
+          frictionAir: 0.012,
+          density: 0.003,
+          label: 'coin',
+        }
+      );
+      Body.setVelocity(coin, { x: (Math.random() - 0.5) * 2.5, y: 0.5 + Math.random() });
+      Body.setAngularVelocity(coin, (Math.random() - 0.5) * 0.2);
+      Composite.add(world, coin);
+      coins.push(coin);
+      coinSymbols.push(sym);
+    }
+
+    if (noAnim) {
+      // アニメOFF：全コインを一気にスポーンして十分なステップ数シミュレートし静止状態に
+      for (let i = 0; i < COIN_COUNT; i++) spawnCoin(i);
+      // 物理演算を前もって大量に回して静止状態を作る
+      for (let step = 0; step < 600; step++) {
+        Engine.update(engine, 1000 / 60);
+      }
+    } else {
+      // アニメON：4〜5個ずつランダム間隔で降らせる
+      const GROUP = 5;
+      for (let i = 0; i < COIN_COUNT; i += GROUP) {
+        const delay = Math.floor(i / GROUP) * 200 + Math.random() * 80;
+        setTimeout(() => {
+          const end = Math.min(i + GROUP, COIN_COUNT);
+          for (let j = i; j < end; j++) spawnCoin(j);
+        }, delay);
+      }
+    }
+
+    // Canvas 描画ループ
+    const ctx = canvas.getContext('2d');
+
+    function drawFrame() {
+      Engine.update(engine, 1000/60);
+      ctx.clearRect(0, 0, TANK_W, TANK_H);
+
+      // 水位グラデーション（pct%分の高さ）
+      const fillH = (pct / 100) * TANK_H;
+      const grad = ctx.createLinearGradient(0, TANK_H - fillH, 0, TANK_H);
+      grad.addColorStop(0, 'rgba(255,200,50,.04)');
+      grad.addColorStop(1, 'rgba(255,150,30,.18)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, TANK_H - fillH, TANK_W, fillH);
+
+      // コイン描画（Canvas内に収まるものだけ）
+      coins.forEach((coin, i) => {
+        const { x, y } = coin.position;
+        if (y < -COIN_R*4 || y > TANK_H + COIN_R*2) return;
+        if (x < -COIN_R*2 || x > TANK_W + COIN_R*2) return;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(coin.angle);
+        ctx.font = `${COIN_R * 1.7}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.globalAlpha = 0.92;
+        ctx.fillText(coinSymbols[i], 0, 0);
+        ctx.restore();
+      });
+
+      // 底部グロー
+      const btmGrad = ctx.createLinearGradient(0, TANK_H - 40, 0, TANK_H);
+      btmGrad.addColorStop(0, 'transparent');
+      btmGrad.addColorStop(1, 'rgba(255,180,30,.22)');
+      ctx.fillStyle = btmGrad;
+      ctx.fillRect(0, TANK_H - 40, TANK_W, 40);
+    }
+
+    // rAFループ（静止後は低頻度に）
+    let settled = 0;
+    function loop() {
+      drawFrame();
+      const moving = coins.some(c => Math.abs(c.velocity.x) > .1 || Math.abs(c.velocity.y) > .1);
+      if (!moving) settled++;
+      else settled = 0;
+      if (settled < 300) {
+        requestAnimationFrame(loop);
+      } else {
+        setInterval(drawFrame, 1000);
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  // Matter.js を CDN からロード
+  if (window.Matter) {
+    runPhysics();
+    return;
+  }
+  const matterScript = document.createElement('script');
+  matterScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js';
+  matterScript.onload = runPhysics;
+  matterScript.onerror = () => {
+    // フォールバック: 静的表示
+    console.warn('Matter.js load failed, falling back to static display');
+    const ctx = canvas.getContext('2d');
+    const fillH = (pct / 100) * canvas.height;
+    const g = ctx.createLinearGradient(0, canvas.height - fillH, 0, canvas.height);
+    g.addColorStop(0, 'rgba(255,200,50,.08)');
+    g.addColorStop(1, 'rgba(255,150,30,.22)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, canvas.height - fillH, canvas.width, fillH);
+    ctx.font = '18px serif'; ctx.textAlign = 'center';
+    const symbols = ['💵','💴','🪙','💰','💸'];
+    const cnt = Math.max(2, Math.round(pct/7));
+    for (let i=0; i<cnt; i++) {
+      ctx.fillText(symbols[i%symbols.length],
+        20 + (canvas.width-40)/(cnt-1||1)*i,
+        canvas.height - 14);
+    }
+  };
+  document.head.appendChild(matterScript);
+}
+
 
 // supportタブのheader文字アニメを強制実行（タブ表示後に呼ぶ）
 function runSupportHeaderAnim(root) {
@@ -563,8 +1136,15 @@ function renderStaticTexts() {
   const cfBody = document.getElementById("crowdfundingBody");
   if (cfBody) {
     cfBody.innerHTML = t("crowdfunding.bodyHtml");
+    delete cfBody.dataset.physicsDone;
     animateSupportHeader(cfBody);
     animateTimeline(cfBody);
+    // タンク初期化は翻訳処理が全部終わった後にまとめて行う（後述）
+    if (_rain.activeTab === "crowdfunding") {
+      cfBody.dataset.missionDone = "1";
+    } else if (!document.body.classList.contains("no-anim")) {
+      delete cfBody.dataset.missionDone;
+    }
   }
 
   const contestBody = document.getElementById("contestBody");
@@ -603,6 +1183,14 @@ function renderStaticTexts() {
   if (footerNote) footerNote.textContent = t("footer.note");
 
   updateAnimToggleLabel();
+
+  // 翻訳処理が全部終わってからタンクを生成（ラグ防止）
+  if (_rain.activeTab === "crowdfunding" || document.body.classList.contains("no-anim")) {
+    const cfBodyCheck = document.getElementById("crowdfundingBody");
+    if (cfBodyCheck && !cfBodyCheck.dataset.physicsDone) {
+      setTimeout(initCfPhysicsTank, 300);
+    }
+  }
 }
 
 function renderEvents() {
