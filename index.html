@@ -1,460 +1,234 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>御手洗遊のメンバーシップ</title>
-<link href="https://fonts.googleapis.com/css2?family=Kaisei+Tokumin:wght@400;500;700;800&display=swap" rel="stylesheet">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --pink:   #f7a8c4;
-  --pinkd:  #d96088;
-  --pinkl:  #fff0f6;
-  --soft:   #ffd6e8;
-  --white:  #ffffff;
-  --text:   #c45c7a;
-  --textd:  #8a3050;
-  --muted:  #d8bcc8;
-}
-
-body {
-  background: var(--pinkl);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Kaisei Tokumin', serif;
-  padding: 20px;
-  overflow-x: hidden;
-}
-
-/* ── floating deco ── */
-.bg-deco { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
-.bg-deco span {
-  position:absolute;
-  opacity:0;
-  color: var(--pinkd);
-  animation: rise linear infinite;
-  user-select:none;
-}
-@keyframes rise {
-  0%   { transform:translateY(108vh) rotate(-10deg); opacity:0; }
-  8%   { opacity:.13; }
-  92%  { opacity:.09; }
-  100% { transform:translateY(-80px) rotate(15deg); opacity:0; }
-}
-
-/* ── CARD ── */
-.card {
-  position:relative;
-  z-index:1;
-  width:100%;
-  max-width:980px;
-  aspect-ratio:4/3;
-  background: var(--white);
-  border-radius:24px;
-  box-shadow:
-    0 0 0 2.5px var(--pink),
-    0 0 0 6px #fff,
-    0 0 0 8px var(--soft),
-    0 16px 52px rgba(210,90,130,.11);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  padding:22px 26px 16px;
-  gap:11px;
-  overflow:hidden;
-}
-
-/* polka dots bg */
-.card::before {
-  content:'';
-  position:absolute;
-  inset:0;
-  border-radius:24px;
-  background-image: radial-gradient(circle, #ffc8de 1.3px, transparent 1.3px);
-  background-size:20px 20px;
-  opacity:.22;
-  pointer-events:none;
-}
-
-/* top-right corner heart */
-.card::after {
-  content:'♡';
-  position:absolute;
-  top:11px; right:15px;
-  font-size:17px;
-  color:var(--pink);
-  opacity:.55;
-}
-
-/* ── TITLE ── */
-.title-wrap {
-  position:relative; z-index:1;
-  text-align:center;
-  flex-shrink:0;
-}
-.title-deco-row {
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  font-size:13px;
-  color:var(--pink);
-  letter-spacing:3px;
-  margin-bottom:3px;
-}
-.main-title {
-  font-size: clamp(15px,2.5vw,25px);
-  font-weight:800;
-  color:var(--textd);
-  letter-spacing:2px;
-  text-shadow:
-    2px 3px 0 var(--soft),
-    0 0 22px rgba(210,80,120,.14);
-  line-height:1.25;
-}
-.title-sub {
-  font-size:10px;
-  font-weight:400;
-  color:var(--muted);
-  letter-spacing:5px;
-  margin-top:2px;
-}
-
-/* ── PANELS ── */
-.panels-row {
-  display:flex;
-  gap:16px;
-  width:100%;
-  flex:1;
-  min-height:0;
-  position:relative;
-  z-index:1;
-}
-.panel {
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  min-width:0;
-}
-.panel-label {
-  text-align:center;
-  font-size:clamp(11px,1.6vw,15px);
-  font-weight:700;
-  color:var(--text);
-  letter-spacing:3px;
-}
-.panel-label::before { content:'♡ '; color:var(--pink); }
-.panel-label::after  { content:' ♡'; color:var(--pink); }
-
-/* pink border wrapper */
-.grid-wrapper {
-  flex:1;
-  border:1.5px solid var(--pink);
-  border-radius:14px;
-  padding:9px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(255,255,255,.65);
-  position:relative;
-}
-.grid-wrapper::before {
-  content:'♡';
-  position:absolute;
-  top:-8px; left:8px;
-  font-size:12px;
-  color:var(--pink);
-  background:#fff;
-  padding:0 3px;
-  line-height:1;
-}
-.grid-wrapper::after {
-  content:'♡';
-  position:absolute;
-  bottom:-8px; right:8px;
-  font-size:12px;
-  color:var(--pink);
-  background:#fff;
-  padding:0 3px;
-  line-height:1;
-}
-
-/* ── IMAGE GRID ── */
-.image-grid {
-  display:grid;
-  grid-template-columns:repeat(var(--cols,3),1fr);
-  gap:7px;
-  width:100%;
-}
-.img-cell {
-  position:relative;
-  aspect-ratio:1;
-  cursor:pointer;
-  border-radius:9px;
-  overflow:hidden;
-}
-.img-cell img {
-  width:100%; height:100%;
-  object-fit:contain;
-  display:block;
-  border-radius:9px;
-  transition:transform .18s ease, opacity .18s ease;
-}
-.img-cell:hover:not(.hidden-mode) img { transform:scale(1.07); }
-
-/* ? overlay */
-.qmark-overlay {
-  position:absolute;
-  inset:0;
-  border-radius:9px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .18s ease;
-}
-.qmark-overlay svg { width:70%; height:70%; }
-
-.img-cell.hidden-mode img          { opacity:0; }
-.img-cell.hidden-mode .qmark-overlay { opacity:1; }
-
-/* ── BOTTOM ── */
-.bottom-area {
-  flex-shrink:0;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:4px;
-  position:relative;
-  z-index:1;
-}
-.bottom-line {
-  width:52%;
-  height:1.5px;
-  background:linear-gradient(90deg,transparent,var(--pink),var(--soft),var(--pink),transparent);
-  border-radius:2px;
-}
-.bottom-text {
-  font-size:9px;
-  font-weight:400;
-  letter-spacing:5px;
-  color:var(--muted);
-}
-.bottom-hearts {
-  font-size:13px;
-  color:var(--pink);
-  letter-spacing:5px;
-  opacity:.7;
-}
-
-/* ── SAVE BUTTON ── */
-.save-btn {
-  margin-top:13px;
-  padding:9px 30px;
-  background:var(--white);
-  border:2px solid var(--pink);
-  border-radius:999px;
-  color:var(--text);
-  font-family:'Kaisei Tokumin',serif;
-  font-size:13px;
-  font-weight:700;
-  letter-spacing:2px;
-  cursor:pointer;
-  z-index:10;
-  transition:all .2s;
-  box-shadow:0 3px 14px rgba(210,90,130,.14);
-}
-.save-btn:hover {
-  background:var(--pinkl);
-  box-shadow:0 5px 22px rgba(210,90,130,.28);
-  transform:translateY(-2px);
-}
-.save-btn:active { transform:scale(.97); }
-
-.hint {
-  font-size:10px;
-  font-family:'Kaisei Tokumin',serif;
-  color:var(--muted);
-  letter-spacing:1px;
-  margin-top:5px;
-  text-align:center;
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>遊アーカイブ | 御手洗 遊</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Dela+Gothic+One&family=Kaisei+Tokumin:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet" />
 </head>
+
 <body>
-
-<div class="bg-deco" id="bgDeco"></div>
-
-<div class="card" id="mainCard">
-
-  <div class="title-wrap">
-    <div class="title-deco-row">
-      <span>🎀</span><span>♡ ♡ ♡</span><span>🎀</span>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand__title" id="siteTitle"></div>
+      <div class="brand__sub" id="siteSub"></div>
     </div>
-    <div class="main-title">御手洗遊のメンバーシップ</div>
-    <div class="title-sub">— membership benefits —</div>
+
+  <div class="actions">
+    <!-- SNS（PC表示用） -->
+    <div class="social">
+      <a class="sns-img-btn" href="https://x.com/MitaraiAsobu" target="_blank" rel="noopener"><img src="./assets/Twitter.png" alt="Twitter" width="80" height="40" /></a>
+      <a class="sns-img-btn" href="https://www.youtube.com/@mitaraiasobu" target="_blank" rel="noopener"><img src="./assets/YouTube.png" alt="YouTube" width="80" height="40" /></a>
+      <a class="sns-img-btn" href="https://mitaraiasobu.fanbox.cc/" target="_blank" rel="noopener"><img src="./assets/Fanclub.png" alt="FANBOX" width="80" height="40" /></a>
+      <a class="sns-img-btn" href="https://mitaraiasobu.booth.pm/" target="_blank" rel="noopener"><img src="./assets/Booth.png" alt="BOOTH" width="80" height="40" /></a>
+    </div>
+
+    <!-- 翻訳ボタン -->
+    <div class="lang">
+      <button class="chip" data-lang="ja">日本語</button>
+      <button class="chip" data-lang="en">EN</button>
+      <button class="chip" data-lang="ko">한국어</button>
+    </div>
+
+    <!-- ハンバーガー（スマホ用） -->
+    <button class="nav-toggle" id="navToggle"
+      aria-label="menu" aria-expanded="false">☰</button>
   </div>
 
-  <div class="panels-row">
+  </header>
 
-    <div class="panel">
-      <div class="panel-label">スタンプ</div>
-      <div class="grid-wrapper">
-        <div class="image-grid" id="stampGrid">
-          <!-- ★ スタンプ画像を追加・削除するにはここを編集 -->
-          <div class="img-cell"><img src="YouTubeスタンプ1.png" alt="1"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ2.png" alt="2"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ3.png" alt="3"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ4.png" alt="4"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ5.png" alt="5"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ6.png" alt="6"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ7.png" alt="7"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ8.png" alt="8"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ9.png" alt="9"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ10.png" alt="10"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ11.png" alt="11"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="YouTubeスタンプ12.png" alt="12"><div class="qmark-overlay"></div></div>
-        </div>
+  <!-- スマホ用メニュー（SNS＋タブ） -->
+  <div class="navpanel" id="navPanel" aria-hidden="true">
+    <div class="navpanel__backdrop" id="navBackdrop"></div>
+
+    <div class="navpanel__inner">
+      <div class="navpanel__title">メニュー</div>
+
+      <!-- SNS（ハンバーガーの中だけ） -->
+      <div class="navpanel__group">
+        <a class="sns-img-btn" href="https://x.com/MitaraiAsobu" target="_blank" rel="noopener"><img src="./assets/Twitter.png" alt="Twitter" width="80" height="40" /></a>
+        <a class="sns-img-btn" href="https://www.youtube.com/@mitaraiasobu" target="_blank" rel="noopener"><img src="./assets/YouTube.png" alt="YouTube" width="80" height="40" /></a>
+        <a class="sns-img-btn" href="https://mitaraiasobu.fanbox.cc/" target="_blank" rel="noopener"><img src="./assets/Fanclub.png" alt="FANBOX" width="80" height="40" /></a>
+        <a class="sns-img-btn" href="https://mitaraiasobu.booth.pm/" target="_blank" rel="noopener"><img src="./assets/Booth.png" alt="BOOTH" width="80" height="40" /></a>
+      </div>
+
+      <div class="ruleline"></div>
+
+      <!-- タブ（スマホではこれを使う） -->
+      <div class="navpanel__grid">
+        <a href="#home" class="tab tab--mobile" data-tab="home"></a>
+        <a href="#about" class="tab tab--mobile" data-tab="about"></a>
+        <a href="#support" class="tab tab--mobile" data-tab="support"></a>
+        <a href="#fanclub" class="tab tab--mobile" data-tab="fanclub"></a>
+        <a href="#goods" class="tab tab--mobile" data-tab="goods"></a>
+        <a href="#crowdfunding" class="tab tab--mobile" data-tab="crowdfunding"></a>
+        <a href="#contest" class="tab tab--mobile" data-tab="contest"></a>
+        <a href="#log" class="tab tab--mobile" data-tab="log"></a>
+        <a href="#notice" class="tab tab--mobile" data-tab="notice"></a>
+        <a href="#contact" class="tab tab--mobile" data-tab="contact"></a>
+
       </div>
     </div>
+  </div>
 
-    <div class="panel">
-      <div class="panel-label">メンバーバッジ</div>
-      <div class="grid-wrapper">
-        <div class="image-grid" id="badgeGrid">
-          <!-- ★ バッジ画像を追加・削除するにはここを編集 -->
-          <div class="img-cell"><img src="ステッカーオニギリラクーン1.png" alt="1"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン2.png" alt="2"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン3.png" alt="3"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン4.png" alt="4"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン5.png" alt="5"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン6.png" alt="6"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン7.png" alt="7"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン8.png" alt="8"><div class="qmark-overlay"></div></div>
-          <div class="img-cell"><img src="ステッカーオニギリラクーン9.png" alt="9"><div class="qmark-overlay"></div></div>
+  <!-- PC用タブ（スマホではCSSで非表示にする） -->
+  <nav class="tabs" id="tabs">
+    <a href="#home" class="tab" data-tab="home"></a>
+    <a href="#about" class="tab" data-tab="about"></a>
+    <a href="#support" class="tab" data-tab="support"></a>
+    <a href="#fanclub" class="tab" data-tab="fanclub"></a>
+    <a href="#goods" class="tab" data-tab="goods"></a>
+    <a href="#crowdfunding" class="tab" data-tab="crowdfunding"></a>
+    <a href="#contest" class="tab" data-tab="contest"></a>
+    <a href="#log" class="tab" data-tab="log"></a>
+    <a href="#notice" class="tab" data-tab="notice"></a>
+    <a href="#contact" class="tab" data-tab="contact"></a>
+
+  </nav>
+
+  <main class="container">
+    <!-- HOME -->
+    <section class="page" id="page-home">
+      <div class="hero">
+        <div class="hero__left">
+          <p class="muted" id="homeLead"></p>
         </div>
       </div>
+
+      <div class="home-split">
+        <div class="home-left">
+          <section class="card">
+            <div class="card__head">
+              <h2 id="scheduleTitle"></h2>
+              <span class="muted" id="scheduleHint"></span>
+            </div>
+
+            <div class="schedule">
+              <img id="scheduleImg" src="./assets/スケジュール12.png" alt="Weekly schedule" />
+            </div>
+
+            <div class="asobu-note">
+              <div class="asobu-note__label" id="scheduleNoteLabel"></div>
+              <div class="asobu-note__text prose" id="scheduleNoteText"></div>
+            </div>
+          </section>
+        </div>
+
+        <div class="home-right">
+          <section class="card">
+            <div class="card__head">
+              <h2 id="eventsTitle"></h2>
+              <span class="muted" id="eventsHint"></span>
+            </div>
+            <div class="events-scroll"><div class="grid" id="eventsGrid"></div></div>
+          </section>
+        </div>
+      </div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    
+    </section>
+
+    <!-- ABOUT -->
+    <section class="page" id="page-about">
+      <div id="aboutBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- SUPPORT -->
+    <section class="page" id="page-support">
+      <div id="supportBody"></div>
+    </section>
+
+        <!-- FANCLUB -->
+    <section class="page" id="page-fanclub">
+      <div id="fanclubBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    
+    </section>
+
+    <!-- GOODS -->
+    <section class="page" id="page-goods">
+      <div id="goodsBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- LOG -->
+    <section class="page" id="page-log">
+      <div id="logBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- NOTICE -->
+    <section class="page" id="page-notice">
+      <div id="noticeBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- CROWDFUNDING -->
+    <section class="page" id="page-crowdfunding">
+      <div id="crowdfundingBody"></div>
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- CONTEST -->
+    <section class="page" id="page-contest">
+      <div id="contestBody"></div>
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="page" id="page-contact">
+      <div id="contactBody"></div>
+    
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+  </main>
+
+  <!-- EVENT MODAL -->
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="modal__backdrop" id="modalBackdrop"></div>
+
+    <div class="modal__panel" role="dialog" aria-modal="true">
+      <button class="modal__close" id="modalClose" aria-label="Close">×</button>
+      <button class="carbtn carbtn--prev" id="carPrev" aria-label="Prev">‹</button>
+      <button class="carbtn carbtn--next" id="carNext" aria-label="Next">›</button>
+
+      <div class="modal__carousel">
+        <section class="carpage" data-page="0">
+          <div class="modal__media" id="modalMediaMain"></div>
+          <div class="modal__navhint muted" id="modalHint"></div>
+        </section>
+
+        <section class="carpage" data-page="1">
+          <div class="modal__media modal__media--detail" id="modalMediaDetail"></div>
+          <div class="modal__text">
+            <h3 id="modalTitle"></h3>
+            <p class="muted" id="modalPeriod"></p>
+            <div class="prose" id="modalDesc"></div>
+            <div class="modal__links" id="modalLinks"></div>
+          </div>
+        </section>
+      </div>
     </div>
-
   </div>
 
-  <div class="bottom-area">
-    <div class="bottom-hearts">♡ ♡ ♡ ♡ ♡</div>
-    <div class="bottom-line"></div>
-    <div class="bottom-text">♡ join the membership ♡</div>
+  <!-- LIGHTBOX (image zoom) -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox__backdrop" id="lightboxBackdrop"></div>
+    <img class="lightbox__img" id="lightboxImg" alt="">
   </div>
-</div>
 
-<button class="save-btn" id="saveBtn">🎀 画像として保存 🎀</button>
-<p class="hint">クリックで？マーク → 保存ボタンで画像化</p>
+  <footer class="footer">
+    <span class="muted" id="footerNote"></span>
+  </footer>
 
-<!-- html2canvas を事前読み込み -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<script>
-// ── ? SVG を各overlayに注入 ──
-const Q = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="50" cy="50" r="49" fill="#1a1a1a"/>
-  <circle cx="50" cy="50" r="47" fill="none" stroke="#ffffff" stroke-width="2.5"/>
-  <text x="50" y="68"
-    text-anchor="middle"
-    font-family="'Kaisei Tokumin',serif"
-    font-size="58" font-weight="800"
-    fill="#ffffff">?</text>
-</svg>`;
-document.querySelectorAll('.qmark-overlay').forEach(el => el.innerHTML = Q);
-
-// ── bg deco ──
-const bd = document.getElementById('bgDeco');
-['♡','♡','♡','🎀','♡','♡'].forEach(() => {
-  for (let i = 0; i < 5; i++) {
-    const s = document.createElement('span');
-    s.textContent = ['♡','♡','♡','🎀','♡'][Math.floor(Math.random()*5)];
-    s.style.left = Math.random()*100+'%';
-    s.style.fontSize = (11+Math.random()*15)+'px';
-    s.style.animationDuration = (11+Math.random()*12)+'s';
-    s.style.animationDelay = (Math.random()*16)+'s';
-    bd.appendChild(s);
-  }
-});
-
-// ── auto grid cols ──
-function autoGrid(el) {
-  const n = el.querySelectorAll('.img-cell').length;
-  el.style.setProperty('--cols', Math.ceil(Math.sqrt(n)));
-}
-autoGrid(document.getElementById('stampGrid'));
-autoGrid(document.getElementById('badgeGrid'));
-
-// ── toggle ? ──
-document.querySelectorAll('.img-cell').forEach(c =>
-  c.addEventListener('click', () => c.classList.toggle('hidden-mode'))
-);
-
-// ── 画像をbase64に変換してCORS問題を回避 ──
-async function inlineImages(clone) {
-  const imgs = clone.querySelectorAll('img');
-  await Promise.all([...imgs].map(async img => {
-    try {
-      const res = await fetch(img.src);
-      const blob = await res.blob();
-      const b64 = await new Promise(r => {
-        const fr = new FileReader();
-        fr.onload = () => r(fr.result);
-        fr.readAsDataURL(blob);
-      });
-      img.src = b64;
-    } catch { /* 読めなければそのまま */ }
-  }));
-}
-
-// ── SAVE ──
-document.getElementById('saveBtn').addEventListener('click', async () => {
-  const btn = document.getElementById('saveBtn');
-  btn.disabled = true;
-  btn.textContent = '⏳ 保存中...';
-
-  const card = document.getElementById('mainCard');
-
-  try {
-    // カードをcloneしてbase64画像に差し替え
-    const clone = card.cloneNode(true);
-    clone.style.position = 'fixed';
-    clone.style.left = '-9999px';
-    clone.style.top = '0';
-    document.body.appendChild(clone);
-    await inlineImages(clone);
-
-    const cvs = await html2canvas(clone, {
-      backgroundColor: '#ffffff',
-      scale: 2,
-      useCORS: false,
-      allowTaint: true,
-      logging: false,
-      width: card.offsetWidth,
-      height: card.offsetHeight,
-    });
-
-    document.body.removeChild(clone);
-
-    const a = document.createElement('a');
-    a.download = '御手洗遊メンバーシップ.png';
-    a.href = cvs.toDataURL('image/png');
-    a.click();
-  } catch(e) {
-    alert('保存に失敗しました。ブラウザのスクリーンショット機能をお試しください。\n' + e);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🎀 画像として保存 🎀';
-  }
-});
-</script>
+  <script src="./app.js"></script>
 </body>
 </html>
