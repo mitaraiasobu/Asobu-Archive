@@ -683,7 +683,7 @@ function startGoodsRain() {
 function triggerTabRain(tabKey) {
   _rain.activeTab = tabKey;
   if (document.body.classList.contains('no-anim')) { _rainClear(); return; }
-  if (tabKey === 'fanclub') {
+  if (tabKey === 'membership') {
     startMemberRain();
   } else if (tabKey === 'goods') {
     startGoodsRain();
@@ -1123,10 +1123,10 @@ function renderStaticTexts() {
   if (logTitle) logTitle.textContent = t("log.title");
   if (logBody) { logBody.innerHTML = t("log.bodyHtml"); animateSupportHeader(logBody); animateTimeline(logBody); }
 
-  const fcTitle = document.getElementById("fanclubTitle");
-  const fcBody = document.getElementById("fanclubBody");
-  if (fcTitle) fcTitle.textContent = t("fanclub.title");
-  if (fcBody) { fcBody.innerHTML = t("fanclub.bodyHtml"); animateSupportHeader(fcBody); animateTimeline(fcBody); }
+  const fcTitle = document.getElementById("membershipTitle");
+  const fcBody = document.getElementById("membershipBody");
+  if (fcTitle) fcTitle.textContent = t("membership.title");
+  if (fcBody) { fcBody.innerHTML = t("membership.bodyHtml"); animateSupportHeader(fcBody); animateTimeline(fcBody); }
 
   const noticeTitle = document.getElementById("noticeTitle");
   const noticeBody = document.getElementById("noticeBody");
@@ -1482,7 +1482,7 @@ async function setLang(lang) {
 
 function handleRoute() {
   const hash = location.hash.replace("#", "") || "home";
-  const known = ["home", "about", "support", "goods", "log", "fanclub", "notice", "contact", "crowdfunding", "contest"];
+  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest"];
   const tab = known.includes(hash) ? hash : "home";
 
   setActiveTab(tab);
