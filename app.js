@@ -1872,6 +1872,11 @@ function scramblePageText() {
     !el.closest(".chip[data-lang]") && !el.closest(".anim-toggle-btn") && el.textContent.trim().length > 0
   );
 
+  // 各要素のテキストノードだけを収集（BRは触らない）
+  const targetTextNodes = targets.map((el) => {
+    const nodes = [...el.childNodes].filter(n => n.nodeType === 3);
+    return { el, nodes, origTexts: nodes.map(n => n.nodeValue) };
+  });
   const originals = targets.map((el) => el.textContent);
   const DURATION = 750;
   const FPS = 55;
@@ -1879,19 +1884,23 @@ function scramblePageText() {
   const tick = setInterval(() => {
     elapsed += FPS;
     const progress = Math.min(elapsed / DURATION, 1);
-    targets.forEach((el, idx) => {
-      const orig = originals[idx];
-      const revealed = Math.floor(orig.length * progress);
-      let out = "";
-      for (let i = 0; i < orig.length; i++) {
-        if (/\s/.test(orig[i])) { out += orig[i]; continue; }
-        out += i < revealed ? orig[i] : rand(ALL);
-      }
-      el.textContent = out;
+    targetTextNodes.forEach(({ nodes, origTexts }) => {
+      nodes.forEach((node, ni) => {
+        const orig = origTexts[ni];
+        const revealed = Math.floor(orig.length * progress);
+        let out = "";
+        for (let i = 0; i < orig.length; i++) {
+          if (/\s/.test(orig[i])) { out += orig[i]; continue; }
+          out += i < revealed ? orig[i] : rand(ALL);
+        }
+        node.nodeValue = out;
+      });
     });
     if (progress >= 1) {
       clearInterval(tick);
-      targets.forEach((el, idx) => { el.textContent = originals[idx]; });
+      targetTextNodes.forEach(({ nodes, origTexts }) => {
+        nodes.forEach((node, ni) => { node.nodeValue = origTexts[ni]; });
+      });
     }
   }, FPS);
 }
