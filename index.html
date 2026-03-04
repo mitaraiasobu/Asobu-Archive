@@ -1,234 +1,572 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>遊アーカイブ | 御手洗 遊</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Dela+Gothic+One&family=Kaisei+Tokumin:wght@400;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <title>Heart Reaction</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Kaisei+Tokumin:wght@400;700;800&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: transparent;
+      overflow: hidden;
+      width: 540px;
+      height: 640px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 20px;
+      font-family: 'Kaisei Tokumin', 'Nunito', sans-serif;
+    }
+    #app { display: flex; flex-direction: column; align-items: center; gap: 4px; justify-content: flex-end; }
+    #heart-wrap { position: relative; }
+    #emoji-canvas { position: absolute; top: 0; left: 0; z-index: 2; }
+    #heart-canvas { position: absolute; top: 0; left: 0; z-index: 5; pointer-events: none; }
+    #progress-text {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center; z-index: 6; pointer-events: none; white-space: nowrap;
+    }
+    #reactions-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+      color: rgba(255,255,255,0.9); text-transform: uppercase;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    }
+    #reactions-count {
+      font-size: 36px; font-weight: 800; color: white;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.35); line-height: 1.1;
+    }
+    #reactions-max {
+      font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.82);
+      text-shadow: 0 1px 5px rgba(0,0,0,0.3);
+    }
+    #level-badge {
+      background: linear-gradient(135deg, #ff85b3, #e03d80);
+      color: white; font-size: 17px; font-weight: 800;
+      padding: 6px 24px; border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(220,50,120,0.45); letter-spacing: 1.5px;
+    }
+    @keyframes levelUpFlash {
+      0%   { opacity:0; transform:translate(-50%,-50%) scale(0.4); }
+      20%  { opacity:1; transform:translate(-50%,-50%) scale(1.3);  }
+      60%  { opacity:1; transform:translate(-50%,-50%) scale(1.0);  }
+      100% { opacity:0; transform:translate(-50%,-50%) scale(1.1);  }
+    }
+    #levelup-msg {
+      position: fixed; top: 44%; left: 50%;
+      transform: translate(-50%,-50%) scale(0.4);
+      color: white; font-size: 26px; font-weight: 800;
+      text-shadow: 0 0 28px rgba(255,140,200,1), 0 2px 8px rgba(0,0,0,0.3);
+      opacity: 0; pointer-events: none; z-index: 100; white-space: nowrap;
+    }
+    @keyframes heartPop {
+      0%   { transform:scale(1);   }
+      40%  { transform:scale(1.1); }
+      100% { transform:scale(1);   }
+    }
+    .pop { animation: heartPop 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+
+    /* CLEAR演出 */
+    #clear-overlay {
+      position: fixed; top: 0; left: 0; width: 540px; height: 640px;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 200; pointer-events: none; opacity: 0;
+    }
+    #clear-text {
+      font-size: 72px; font-weight: 800; color: white;
+      text-shadow:
+        0 0 40px rgba(255,100,180,1),
+        0 0 80px rgba(255,150,200,0.8),
+        0 4px 16px rgba(0,0,0,0.4);
+      letter-spacing: 6px;
+      transform: scale(0.3);
+    }
+    @keyframes clearAppear {
+      0%   { opacity:0; transform:scale(0.3); }
+      30%  { opacity:1; transform:scale(1.2); }
+      50%  { opacity:1; transform:scale(1.0); }
+      75%  { opacity:1; transform:scale(1.0); }
+      100% { opacity:0; transform:scale(1.05); }
+    }
+    @keyframes appFadeOut {
+      0%   { opacity:1; }
+      100% { opacity:0; }
+    }
+  </style>
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand__title" id="siteTitle"></div>
-      <div class="brand__sub" id="siteSub"></div>
-    </div>
 
-  <div class="actions">
-    <!-- SNS（PC表示用） -->
-    <div class="social">
-      <a class="sns-img-btn" href="https://x.com/MitaraiAsobu" target="_blank" rel="noopener"><img src="./assets/Twitter.png" alt="Twitter" width="80" height="40" /></a>
-      <a class="sns-img-btn" href="https://www.youtube.com/@mitaraiasobu" target="_blank" rel="noopener"><img src="./assets/YouTube.png" alt="YouTube" width="80" height="40" /></a>
-      <a class="sns-img-btn" href="https://discord.gg/JzufVvtdRy" target="_blank" rel="noopener"><img src="./assets/Discord.png" alt="Discord" width="80" height="40" /></a>
-      <a class="sns-img-btn" href="https://mitaraiasobu.booth.pm/" target="_blank" rel="noopener"><img src="./assets/Booth.png" alt="BOOTH" width="80" height="40" /></a>
-    </div>
-
-    <!-- 翻訳ボタン -->
-    <div class="lang">
-      <button class="chip" data-lang="ja">日本語</button>
-      <button class="chip" data-lang="en">EN</button>
-      <button class="chip" data-lang="ko">한국어</button>
-    </div>
-
-    <!-- ハンバーガー（スマホ用） -->
-    <button class="nav-toggle" id="navToggle"
-      aria-label="menu" aria-expanded="false">☰</button>
-  </div>
-
-  </header>
-
-  <!-- スマホ用メニュー（SNS＋タブ） -->
-  <div class="navpanel" id="navPanel" aria-hidden="true">
-    <div class="navpanel__backdrop" id="navBackdrop"></div>
-
-    <div class="navpanel__inner">
-      <div class="navpanel__title">メニュー</div>
-
-      <!-- SNS（ハンバーガーの中だけ） -->
-      <div class="navpanel__group">
-        <a class="sns-img-btn" href="https://x.com/MitaraiAsobu" target="_blank" rel="noopener"><img src="./assets/Twitter.png" alt="Twitter" width="80" height="40" /></a>
-        <a class="sns-img-btn" href="https://www.youtube.com/@mitaraiasobu" target="_blank" rel="noopener"><img src="./assets/YouTube.png" alt="YouTube" width="80" height="40" /></a>
-        <a class="sns-img-btn" href="https://discord.gg/JzufVvtdRy" target="_blank" rel="noopener"><img src="./assets/Discord.png" alt="Discord" width="80" height="40" /></a>
-        <a class="sns-img-btn" href="https://mitaraiasobu.booth.pm/" target="_blank" rel="noopener"><img src="./assets/Booth.png" alt="BOOTH" width="80" height="40" /></a>
-      </div>
-
-      <div class="ruleline"></div>
-
-      <!-- タブ（スマホではこれを使う） -->
-      <div class="navpanel__grid">
-        <a href="#home" class="tab tab--mobile" data-tab="home"></a>
-        <a href="#about" class="tab tab--mobile" data-tab="about"></a>
-        <a href="#support" class="tab tab--mobile" data-tab="support"></a>
-        <a href="#membership" class="tab tab--mobile" data-tab="membership"></a>
-        <a href="#goods" class="tab tab--mobile" data-tab="goods"></a>
-        <a href="#crowdfunding" class="tab tab--mobile" data-tab="crowdfunding"></a>
-        <a href="#contest" class="tab tab--mobile" data-tab="contest"></a>
-        <a href="#log" class="tab tab--mobile" data-tab="log"></a>
-        <a href="#notice" class="tab tab--mobile" data-tab="notice"></a>
-        <a href="#contact" class="tab tab--mobile" data-tab="contact"></a>
-
-      </div>
+<div id="app">
+  <div id="heart-wrap">
+    <canvas id="emoji-canvas"></canvas>
+    <canvas id="heart-canvas"></canvas>
+    <div id="progress-text">
+      <div id="reactions-label">REACTIONS</div>
+      <div id="reactions-count">0</div>
+      <div id="reactions-max">/ 100</div>
     </div>
   </div>
+  <div id="level-badge">Lv. 1</div>
+</div>
 
-  <!-- PC用タブ（スマホではCSSで非表示にする） -->
-  <nav class="tabs" id="tabs">
-    <a href="#home" class="tab" data-tab="home"></a>
-    <a href="#about" class="tab" data-tab="about"></a>
-    <a href="#support" class="tab" data-tab="support"></a>
-    <a href="#membership" class="tab" data-tab="membership"></a>
-    <a href="#goods" class="tab" data-tab="goods"></a>
-    <a href="#crowdfunding" class="tab" data-tab="crowdfunding"></a>
-    <a href="#contest" class="tab" data-tab="contest"></a>
-    <a href="#log" class="tab" data-tab="log"></a>
-    <a href="#notice" class="tab" data-tab="notice"></a>
-    <a href="#contact" class="tab" data-tab="contact"></a>
+<canvas id="burst-canvas" style="position:fixed;top:0;left:0;width:540px;height:640px;pointer-events:none;z-index:50;"></canvas>
+<div id="levelup-msg">LEVEL UP!</div>
+<div id="clear-overlay"><div id="clear-text">CLEAR!</div></div>
 
-  </nav>
+<script>
+const EMOJI_TRIGGERS = {
+  '🧡': ['🤍','🖤','🩷'],
+  '🎉': ['⭐'],
+  '💯': ['💯'],
+  '😄': ['🚽','🧻'],
+  '😳': ['😳'],
+};
 
-  <main class="container">
-    <!-- HOME -->
-    <section class="page" id="page-home">
-      <div class="hero">
-        <div class="hero__left">
-          <p class="muted" id="homeLead"></p>
-        </div>
-      </div>
+function pickFromTrigger(key){
+  const list = EMOJI_TRIGGERS[key];
+  if(!list) return null;
+  return list[Math.floor(Math.random() * list.length)];
+}
 
-      <div class="home-split">
-        <div class="home-left">
-          <section class="card">
-            <div class="card__head">
-              <h2 id="scheduleTitle"></h2>
-              <span class="muted" id="scheduleHint"></span>
-            </div>
+const REACTION_EMOJIS = ['🤍','🖤','🩷','🦝','🚽','🧻','🎉',];
 
-            <div class="schedule">
-              <img id="scheduleImg" src="./assets/スケジュール12.png" alt="Weekly schedule" />
-            </div>
+const LEVEL_SIZES = [
+  { cw: 160, r: 5 }, // Lv1
+  { cw: 185, r: 6 }, // Lv2
+  { cw: 210, r: 6 }, // Lv3
+  { cw: 240, r: 6 }, // Lv4
+  { cw: 270, r: 6 }, // Lv5
+  { cw: 300, r: 6 }, // Lv6
+  { cw: 325, r: 6 }, // Lv7
+  { cw: 350, r: 6 }, // Lv8
+  { cw: 370, r: 6 }, // Lv9
+  { cw: 390, r: 6 }, // Lv10
+  { cw: 405, r: 6 }, // Lv11
+  { cw: 420, r: 6 }, // Lv12
+  { cw: 435, r: 6 }, // Lv13
+  { cw: 448, r: 6 }, // Lv14
+  { cw: 460, r: 6 }, // Lv15
+  { cw: 470, r: 6 }, // Lv16
+  { cw: 480, r: 6 }, // Lv17
+  { cw: 488, r: 6 }, // Lv18
+  { cw: 494, r: 6 }, // Lv19
+  { cw: 500, r: 6 }, // Lv20
+];
+const LEVEL_CAPS = [100, 100, 200, 200, 300, 300, 400, 400, 500, 500, 600, 600, 700, 700, 800, 800, 900, 900, 1000, 9999999];
+const MAX_LEVEL = 20;
 
-            <div class="asobu-note">
-              <div class="asobu-note__label" id="scheduleNoteLabel"></div>
-              <div class="asobu-note__text prose" id="scheduleNoteText"></div>
-            </div>
-          </section>
-        </div>
+const GRAVITY     = 0.25;
+const RESTITUTION = 0.18;
+const DAMPING     = 0.970;
+const STOP_SPD    = 1.2;
+const STOP_F      = 35;
 
-        <div class="home-right">
-          <section class="card">
-            <div class="card__head">
-              <h2 id="eventsTitle"></h2>
-              <span class="muted" id="eventsHint"></span>
-            </div>
-            <div class="events-scroll"><div class="grid" id="eventsGrid"></div></div>
-          </section>
-        </div>
-      </div>
-    
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    
-    </section>
+function getLevelCap(lv){ return LEVEL_CAPS[Math.min(lv-1, LEVEL_CAPS.length-1)]; }
+function pickEmoji(){ return REACTION_EMOJIS[Math.floor(Math.random()*REACTION_EMOJIS.length)]; }
 
-    <!-- ABOUT -->
-    <section class="page" id="page-about">
-      <div id="aboutBody"></div>
-    
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    </section>
+let totalReactions = 0, currentLevel = 1, levelBase = 0;
+let particles = [];
+let R = 8, CW = 0, CH = 0, heartPath = null;
+let isCleared = false;
 
-    <!-- SUPPORT -->
-    <section class="page" id="page-support">
-      <div id="supportBody"></div>
-    </section>
+const heartWrap      = document.getElementById('heart-wrap');
+const emojiCanvas    = document.getElementById('emoji-canvas');
+const heartCanvas    = document.getElementById('heart-canvas');
+const ec             = emojiCanvas.getContext('2d');
+const hc             = heartCanvas.getContext('2d');
+const levelBadge     = document.getElementById('level-badge');
+const reactionsCount = document.getElementById('reactions-count');
+const reactionsMax   = document.getElementById('reactions-max');
+const levelupMsg     = document.getElementById('levelup-msg');
+const burstCanvas    = document.getElementById('burst-canvas');
+const bc             = burstCanvas.getContext('2d');
+burstCanvas.width = 540; burstCanvas.height = 640;
+let burstParticles = [];
 
-        <!-- membership -->
-    <section class="page" id="page-membership">
-      <div id="membershipBody"></div>
-    
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    
-    </section>
+function buildHeartPath(cw, ch){
+  const sx = cw/200, sy = ch/190;
+  const X = v => v*sx, Y = v => v*sy;
+  const p = new Path2D();
+  p.moveTo(X(100),Y(170));
+  p.bezierCurveTo(X(100),Y(170), X(20),Y(120), X(20),Y(65));
+  p.bezierCurveTo(X(20),Y(40),   X(38),Y(22),  X(60),Y(22));
+  p.bezierCurveTo(X(75),Y(22),   X(88),Y(30),  X(100),Y(42));
+  p.bezierCurveTo(X(112),Y(30),  X(125),Y(22), X(140),Y(22));
+  p.bezierCurveTo(X(162),Y(22),  X(180),Y(40), X(180),Y(65));
+  p.bezierCurveTo(X(180),Y(120), X(100),Y(170),X(100),Y(170));
+  p.closePath();
+  return p;
+}
 
-    <!-- GOODS -->
-    <section class="page" id="page-goods">
-      <div id="goodsBody"></div>
-    
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    </section>
+function inside(px, py){ return hc.isPointInPath(heartPath, px, py); }
 
-    <!-- LOG -->
-    <section class="page" id="page-log">
-      <div id="logBody"></div>
-    
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    </section>
+function wallPushVec(px, py, r){
+  let nx=0, ny=0, hit=0;
+  for(let i=0; i<12; i++){
+    const a = i/12*Math.PI*2;
+    const tx = px+Math.cos(a)*r, ty = py+Math.sin(a)*r;
+    if(!inside(tx,ty)){ nx-=Math.cos(a); ny-=Math.sin(a); hit++; }
+  }
+  if(!inside(px,py)){
+    const dx=CW*0.5-px, dy=CH*0.53-py, l=Math.sqrt(dx*dx+dy*dy)||1;
+    return { nx:dx/l, ny:dy/l, hit:99 };
+  }
+  if(hit===0) return null;
+  const l=Math.sqrt(nx*nx+ny*ny)||1;
+  return { nx:nx/l, ny:ny/l, hit };
+}
 
-    <!-- NOTICE -->
-    <section class="page" id="page-notice">
-      <div id="noticeBody"></div>
-    
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    </section>
+function drawHeart(){
+  hc.clearRect(0,0,CW,CH);
 
-    <!-- CROWDFUNDING -->
-    <section class="page" id="page-crowdfunding">
-      <div id="crowdfundingBody"></div>
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    </section>
+  // Lv20: ピンクのグロー＋アウトラインを追加
+  if(currentLevel >= MAX_LEVEL){
+    // 外側ピンクグロー（太め）
+    hc.save();
+    hc.shadowBlur = 40;
+    hc.shadowColor = 'rgba(255,80,160,1)';
+    hc.strokeStyle = 'rgba(255,100,180,0.9)';
+    hc.lineWidth = 10;
+    hc.lineJoin = 'round';
+    hc.stroke(heartPath);
+    hc.restore();
 
-    <!-- CONTEST -->
-    <section class="page" id="page-contest">
-      <div id="contestBody"></div>
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    </section>
+    // ピンクアウトライン（くっきり）
+    hc.save();
+    hc.shadowBlur = 20;
+    hc.shadowColor = 'rgba(255,120,200,1)';
+    hc.strokeStyle = 'rgba(255,160,210,1)';
+    hc.lineWidth = 5;
+    hc.lineJoin = 'round';
+    hc.stroke(heartPath);
+    hc.restore();
+  }
 
-    <!-- CONTACT -->
-    <section class="page" id="page-contact">
-      <div id="contactBody"></div>
-    
-      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
-    </section>
-  </main>
+  // 通常の白アウトライン
+  hc.save();
+  hc.shadowBlur=24; hc.shadowColor='rgba(255,255,255,1.0)';
+  hc.strokeStyle='rgba(255,255,255,1.0)';
+  hc.lineWidth=4.5; hc.lineJoin='round';
+  hc.stroke(heartPath);
+  hc.restore();
+}
 
-  <!-- EVENT MODAL -->
-  <div class="modal" id="modal" aria-hidden="true">
-    <div class="modal__backdrop" id="modalBackdrop"></div>
+function setHeartSize(lv){
+  const cfg = LEVEL_SIZES[Math.min(lv-1, LEVEL_SIZES.length-1)];
+  CW=cfg.cw; CH=Math.round(CW*(190/200)); R=cfg.r;
+  heartWrap.style.width=CW+'px'; heartWrap.style.height=CH+'px';
+  emojiCanvas.width=CW; emojiCanvas.height=CH;
+  heartCanvas.width=CW; heartCanvas.height=CH;
+  heartPath=buildHeartPath(CW,CH);
+  drawHeart(); buildBumpyFloor();
+}
+setHeartSize(1);
 
-    <div class="modal__panel" role="dialog" aria-modal="true">
-      <button class="modal__close" id="modalClose" aria-label="Close">×</button>
-      <button class="carbtn carbtn--prev" id="carPrev" aria-label="Prev">‹</button>
-      <button class="carbtn carbtn--next" id="carNext" aria-label="Next">›</button>
+function buildBumpyFloor(){
+  const floorY=CH*0.87, spacing=R*2.1;
+  let x=R*2;
+  while(x < CW-R*2){
+    const y=floorY+(Math.random()-0.5)*R*3;
+    if(inside(x,y)) particles.push({ x,y,vx:0,vy:0,r:R,emoji:null,frozen:true,stillF:STOP_F,angle:0,angularVel:0,invisible:true });
+    x+=spacing;
+  }
+}
 
-      <div class="modal__carousel">
-        <section class="carpage" data-page="0">
-          <div class="modal__media" id="modalMediaMain"></div>
-          <div class="modal__navhint muted" id="modalHint"></div>
-        </section>
+let spawnSide=0;
+function spawnEmoji(emoji){
+  const peaks=[{x:CW*0.30,y:CH*0.13},{x:CW*0.70,y:CH*0.13}];
+  const peak=peaks[spawnSide]; spawnSide=1-spawnSide;
+  const sx=peak.x+(Math.random()-0.5)*R*2;
+  const angle=-Math.PI*0.5+(Math.random()-0.5)*Math.PI*1.4;
+  const speed=3.5+Math.random()*4.0;
+  particles.push({
+    x:sx, y:peak.y, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed,
+    r:R, emoji, frozen:false, stillF:0,
+    angle:Math.random()*Math.PI*2, angularVel:Math.cos(angle)*speed*0.10, invisible:false,
+  });
+}
 
-        <section class="carpage" data-page="1">
-          <div class="modal__media modal__media--detail" id="modalMediaDetail"></div>
-          <div class="modal__text">
-            <h3 id="modalTitle"></h3>
-            <p class="muted" id="modalPeriod"></p>
-            <div class="prose" id="modalDesc"></div>
-            <div class="modal__links" id="modalLinks"></div>
-          </div>
-        </section>
-      </div>
-    </div>
-  </div>
+function resolveCircleCollision(a,b){
+  const dx=b.x-a.x, dy=b.y-a.y, dist2=dx*dx+dy*dy, minD=a.r+b.r;
+  if(dist2>=minD*minD||dist2<0.0001) return;
+  const dist=Math.sqrt(dist2), nx=dx/dist, ny=dy/dist;
+  const overlap=(minD-dist)*0.5;
+  if(!a.frozen){a.x-=nx*overlap;a.y-=ny*overlap;}
+  if(!b.frozen){b.x+=nx*overlap;b.y+=ny*overlap;}
+  const dvn=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;
+  if(dvn>=0) return;
+  const impulse=-(1+RESTITUTION)*dvn*0.5;
+  if(!a.frozen){a.vx-=impulse*nx;a.vy-=impulse*ny;}
+  if(!b.frozen){b.vx+=impulse*nx;b.vy+=impulse*ny;}
+  const tx=-ny, ty=nx, relTang=(b.vx-a.vx)*tx+(b.vy-a.vy)*ty;
+  if(!a.frozen) a.angularVel+=relTang*0.015;
+  if(!b.frozen) b.angularVel-=relTang*0.015;
+}
 
-  <!-- LIGHTBOX (image zoom) -->
-  <div class="lightbox" id="lightbox" aria-hidden="true">
-    <div class="lightbox__backdrop" id="lightboxBackdrop"></div>
-    <img class="lightbox__img" id="lightboxImg" alt="">
-  </div>
+function tick(){
+  const n=particles.length;
+  for(let iter=0;iter<3;iter++)
+    for(let i=0;i<n;i++) for(let j=i+1;j<n;j++){
+      if(particles[i].frozen&&particles[j].frozen) continue;
+      resolveCircleCollision(particles[i],particles[j]);
+    }
+  for(const p of particles){
+    if(p.frozen) continue;
+    p.vy+=GRAVITY; p.x+=p.vx; p.y+=p.vy; p.vx*=DAMPING; p.vy*=DAMPING;
+    p.angularVel+=p.vx*(0.06/p.r); p.angularVel*=0.85; p.angle+=p.angularVel;
+    const wall=wallPushVec(p.x,p.y,p.r);
+    if(wall){
+      const pd=wall.hit>=99?p.r*2:p.r*0.6;
+      p.x+=wall.nx*pd; p.y+=wall.ny*pd;
+      const vn=p.vx*wall.nx+p.vy*wall.ny;
+      if(vn<0){p.vx-=(1+RESTITUTION)*vn*wall.nx;p.vy-=(1+RESTITUTION)*vn*wall.ny;}
+    }
+    const spd=Math.abs(p.vx)+Math.abs(p.vy);
+    if(spd<STOP_SPD) p.stillF++; else p.stillF=0;
+  }
+  let maxStill=STOP_F, candidate=null;
+  for(const p of particles) if(!p.frozen&&p.stillF>=maxStill){maxStill=p.stillF;candidate=p;}
+  if(candidate){candidate.frozen=true;candidate.vx=0;candidate.vy=0;candidate.angularVel=0;}
+}
 
-  <footer class="footer">
-    <span class="muted" id="footerNote"></span>
-  </footer>
+function draw(){
+  ec.clearRect(0,0,CW,CH);
+  ec.textAlign='center'; ec.textBaseline='middle';
+  ec.font=`${R*2.5}px serif`; ec.globalAlpha=0.95;
+  for(const p of particles){
+    if(p.invisible) continue;
+    ec.save(); ec.translate(p.x,p.y); ec.rotate(p.angle); ec.fillText(p.emoji,0,0); ec.restore();
+  }
+  ec.globalAlpha=1;
+}
 
-  <script src="./app.js"></script>
+let lastTime=0;
+function loop(ts){
+  if(ts-lastTime>=16){
+    tick(); draw();
+    bc.clearRect(0,0,540,640); bc.textAlign='center'; bc.textBaseline='middle';
+    for(let i=burstParticles.length-1;i>=0;i--){
+      const b=burstParticles[i];
+      b.vy+=0.4;b.x+=b.vx;b.y+=b.vy;b.vx*=0.97;b.vy*=0.97;b.angle+=b.angularVel;b.alpha-=0.018;
+      if(b.alpha<=0){burstParticles.splice(i,1);continue;}
+      bc.save();bc.globalAlpha=b.alpha;bc.font=`${b.size}px serif`;
+      bc.translate(b.x,b.y);bc.rotate(b.angle);bc.fillText(b.emoji,0,0);bc.restore();
+    }
+    lastTime=ts;
+  }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function updateUI(){
+  reactionsCount.textContent=totalReactions-levelBase;
+  reactionsMax.textContent='/ '+getLevelCap(currentLevel);
+  levelBadge.textContent='Lv. '+currentLevel;
+}
+
+function doLevelUp(){
+  levelBase+=getLevelCap(currentLevel); currentLevel++;
+  const burstEmojis=['🤍','🖤','🩷'];
+  const rect=heartWrap.getBoundingClientRect();
+  const cx=rect.left+rect.width*0.5, cy=rect.top+rect.height*0.5;
+  for(let i=0;i<6;i++){
+    const a=(i/6)*Math.PI*2+Math.random()*0.5, spd=7+Math.random()*8;
+    burstParticles.push({x:cx,y:cy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd-3,
+      emoji:burstEmojis[Math.floor(Math.random()*burstEmojis.length)],
+      size:R*2.8,alpha:1.0,angle:Math.random()*Math.PI*2,angularVel:(Math.random()-0.5)*0.35});
+  }
+  setTimeout(()=>{particles=[];setHeartSize(currentLevel);updateUI();},800);
+  levelupMsg.style.animation='none'; void levelupMsg.offsetWidth;
+  levelupMsg.style.animation='levelUpFlash 1.8s ease forwards';
+  heartWrap.classList.remove('pop'); void heartWrap.offsetWidth;
+  heartWrap.classList.add('pop');
+  updateUI();
+}
+
+// ── CLEAR演出 ──
+function doClear(){
+  isCleared = true;
+  const app = document.getElementById('app');
+  const clearOverlay = document.getElementById('clear-overlay');
+  const clearTextEl = document.getElementById('clear-text');
+
+  // たくさんのハートを飛び散らせる
+  const burstEmojis = ['🩷','🖤','🤍','🩷','🖤','🤍','🩷'];
+  const cx = 270, cy = 320;
+  for(let i = 0; i < 40; i++){
+    const a = (i / 40) * Math.PI * 2 + Math.random() * 0.3;
+    const spd = 4 + Math.random() * 14;
+    const delay = Math.random() * 400;
+    setTimeout(() => {
+      burstParticles.push({
+        x: cx + (Math.random()-0.5)*60,
+        y: cy + (Math.random()-0.5)*60,
+        vx: Math.cos(a)*spd,
+        vy: Math.sin(a)*spd - 4,
+        emoji: burstEmojis[Math.floor(Math.random()*burstEmojis.length)],
+        size: 20 + Math.random()*24,
+        alpha: 1.0,
+        angle: Math.random()*Math.PI*2,
+        angularVel: (Math.random()-0.5)*0.3
+      });
+    }, delay);
+  }
+
+  // CLEAR!テキスト表示
+  clearOverlay.style.opacity = '1';
+  clearTextEl.style.animation = 'clearAppear 3.0s ease forwards';
+
+  // 2.5秒後に全要素フェードアウト
+  setTimeout(() => {
+    app.style.animation = 'appFadeOut 1.2s ease forwards';
+    clearOverlay.style.animation = 'appFadeOut 1.2s ease forwards';
+    document.getElementById('burst-canvas').style.animation = 'appFadeOut 1.2s ease forwards';
+    setTimeout(() => {
+      app.style.display = 'none';
+      clearOverlay.style.display = 'none';
+      document.getElementById('burst-canvas').style.display = 'none';
+    }, 1200);
+  }, 2500);
+}
+
+window.addReaction = function(emoji){
+  if(isCleared) return;
+  totalReactions++;
+  spawnEmoji(emoji||pickEmoji());
+  if(currentLevel >= MAX_LEVEL && totalReactions-levelBase >= getLevelCap(currentLevel)){
+    // Lv20クリア
+    updateUI();
+    setTimeout(doClear, 600);
+  } else if(totalReactions-levelBase>=getLevelCap(currentLevel)){
+    doLevelUp();
+  } else {
+    updateUI();
+  }
+};
+
+let seenIds = new Set();
+
+function handleComments(comments){
+  comments.forEach(comment => {
+    const id = comment.data.id;
+    if(seenIds.has(id)) return;
+    seenIds.add(id);
+
+    const text = comment.data.comment || '';
+    for(const trigger of Object.keys(EMOJI_TRIGGERS)){
+      if(text.includes(trigger)){
+        window.addReaction(pickFromTrigger(trigger));
+        break;
+      }
+    }
+  });
+}
+
+// デモ
+let demoTimer=null;
+function startDemo(){
+  stopDemo();
+  const TARGET=getLevelCap(1)+getLevelCap(2)+20; let sent=0;
+  function fire(){
+    if(sent>=TARGET){stopDemo();return;}
+    window.addReaction(pickEmoji()); sent++;
+    const rem=getLevelCap(currentLevel)-(totalReactions-levelBase);
+    demoTimer=setTimeout(fire,rem<=8?60:130);
+  }
+  fire();
+}
+function stopDemo(){if(demoTimer){clearTimeout(demoTimer);demoTimer=null;}}
+function resetAll(){
+  stopDemo();totalReactions=0;currentLevel=1;levelBase=0;particles=[];isCleared=false;
+  seenIds.clear();setHeartSize(1);updateUI();
+  document.getElementById('app').style.display='';
+  document.getElementById('app').style.animation='';
+  document.getElementById('clear-overlay').style.display='';
+  document.getElementById('clear-overlay').style.opacity='0';
+  document.getElementById('burst-canvas').style.display='';
+}
+
+heartWrap.addEventListener('click',()=>window.addReaction(pickEmoji()));
+updateUI();
+
+// ══════════════════════════════════════════════════════
+//  デバッグコマンド（コンソールから呼び出し可能）
+//  debug.toLv20() … Lv19状態に瞬時にジャンプ（あと1リアクションでLv20）
+//  debug.clear()  … Lv20クリア演出を即発火
+//  debug.reset()  … 全リセット
+// ══════════════════════════════════════════════════════
+window.debug = {
+  // Lv19の最後の1手前まで一気に進める
+  toLv20: function(){
+    stopDemo(); isCleared = false;
+    // Lv1〜18の累計をlevelBaseに
+    let base = 0;
+    for(let i = 1; i <= 18; i++) base += getLevelCap(i);
+    currentLevel = 19;
+    levelBase = base;
+    totalReactions = base + getLevelCap(19) - 1;
+    particles = [];
+    setHeartSize(19);
+    updateUI();
+    console.log('[debug] Lv19 ラスト1手前にセット。あと1クリックoraddReaction()でLv20へ。');
+  },
+  // Lv20クリア演出を即発火
+  clear: function(){
+    if(isCleared){ console.log('[debug] すでにクリア済み。debug.reset()でリセットできます。'); return; }
+    isCleared = false; // doClear内でセットされる
+    doClear();
+    console.log('[debug] CLEAR演出を発火しました。');
+  },
+  // フルリセット
+  reset: function(){
+    resetAll();
+    console.log('[debug] リセット完了。');
+  }
+};
+console.log('%c[debug commands ready]', 'color:#ff85b3;font-weight:bold',
+  '\n  debug.toLv20() … Lv19ラスト1手前にジャンプ',
+  '\n  debug.clear()  … CLEAR演出を即発火',
+  '\n  debug.reset()  … 全リセット'
+);
+</script>
+
+<!-- わんこめ SDK（onesdk.jsだけでOK） -->
+<script src="../__origin/js/onesdk.js"></script>
+
+<script>
+OneSDK.ready().then(() => {
+  OneSDK.setup({
+    commentLimit: 30,
+    permissions: ['comments', 'reactions']
+  });
+
+  OneSDK.subscribe({
+    action: 'reactions',
+    callback: (data) => {
+      const reactions = data.reactions || data;
+      if(!Array.isArray(reactions)) return;
+      reactions.forEach(item => {
+        const emoji = pickFromTrigger(item.key);
+        if(!emoji) return;
+        const count = Math.min(item.value || 1, 10);
+        for(let i = 0; i < count; i++){
+          setTimeout(() => window.addReaction(emoji), i * 80);
+        }
+      });
+    }
+  });
+
+  OneSDK.subscribe({
+    action: 'comments',
+    callback: (comments) => {
+      handleComments(comments);
+    }
+  });
+
+  OneSDK.connect();
+});
+</script>
+
 </body>
 </html>
