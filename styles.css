@@ -109,7 +109,7 @@ a{color:inherit}
   margin:0 auto;
   padding:18px 14px 80px;
   position: relative;
-  z-index: 3;        /* 雨レイヤー(z:2)より上、topbar(10)/tabs(9)より下 */
+  z-index: 3;        /* topbar(10)/tabs(9)より下 */
   isolation: isolate;
 }
 
@@ -178,7 +178,7 @@ a{color:inherit}
 .event__title{ margin:0; font-size:15px; font-weight:700; }
 .event__meta{ margin-top:6px; font-size:12px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
 
-.page{display:none}
+.page{display:none; position:relative;}
 .page.active{display:block}
 
 .prose{
