@@ -398,18 +398,16 @@ function setActiveTab(tabKey) {
   s.id = '__rain_styles';
   s.textContent = `
     /* ── 全タブ共通：固定レインキャンバス ── */
+    /* bodyにisolation:isolateを付与することでrainを確実にbody内の最背面に */
+    body {
+      isolation: isolate;
+    }
     #__rain_root {
       position: fixed;
       inset: 0;
       pointer-events: none;
-      z-index: 2;
+      z-index: -1;
       overflow: hidden;
-    }
-    /* containerはrainより上、topbar/tabs/modalより下 */
-    .container {
-      position: relative;
-      z-index: 3;
-      isolation: isolate;
     }
     /* ── SVGハート ── */
     .rain-heart {
@@ -508,6 +506,9 @@ function startHeartRain() {
 
   const COLORS = ['#ff79b0','#ff3d9a','#ffaadd','#ff6eb4','rgba(255,121,176,.8)'];
   const COUNT = 32;
+  const tab = _rain.activeTab;
+  const isHomeOrAbout = (tab === 'home' || tab === 'about');
+  const isMobile = window.innerWidth <= 768;
 
   for (let i = 0; i < COUNT; i++) {
     const size    = 12 + Math.random() * 22;
@@ -518,6 +519,17 @@ function startHeartRain() {
     const rot     = (Math.random() - 0.5) * 50;
     const col     = COLORS[Math.floor(Math.random() * COLORS.length)];
     const outline = Math.random() < 0.45; // 約45%を縁線のみ
+
+    // home/about: PC版は中央エリア(left 18%〜82%)のハートを50%間引き
+    //             スマホ版は全ハートを50%間引き
+    if (isHomeOrAbout) {
+      const inCenter = left >= 18 && left <= 82;
+      if (isMobile) {
+        if (i % 2 === 1) continue; // 全体を半分に
+      } else if (inCenter) {
+        if (i % 2 === 1) continue; // 中央のみ半分に
+      }
+    }
 
     const div = document.createElement('div');
     div.className = 'rain-heart';
