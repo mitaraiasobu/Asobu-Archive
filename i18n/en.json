@@ -23,7 +23,7 @@
     "title": "This Week's Stream Schedule",
     "hint": "",
     "noteLabel": "A note from Asobu",
-    "noteHtml": "March 10th is Mita Day!? The Mita Festival is happening! …It’s supposed to be good news, so why are we doing something called “Chaos Hotpot”…? You’ll stay and see it through to the end with me, right?"
+    "noteHtml": "We finally achieved monetization! Thank you all so much! 🤍 Three years since starting YouTube, and it's so wonderful that all the effort has paid off! I'm also so grateful to be surrounded by all of you — my \"Jumyou\" — who enjoy streaming with me and support me! Let's keep living these days slowly together~!"
   },
   "events": {
     "title": "Contests / Events",
@@ -66,7 +66,8 @@
     "surveyStreamTime": "About Stream Time Slots",
     "surveyPrivateWeek": "Impressions of Personal Indulgence Week",
     "surveyDayWatchTime": "About Time Slots by Day of the Week",
-    "detailsBtn": "Details →"
+    "detailsBtn": "Details →",
+    "sendMarshmallow": "Send a Marshmallow"
   },
   "eventStatus": {
     "active": "Ongoing"
@@ -75,6 +76,10 @@
     "after_3000_subs_plus_7d": "One week after reaching 3,000 subscribers"
   },
   "eventDetails": {
+    "marshmallow_3000": {
+      "title": "Marshmallow Submissions Open!",
+      "descHtml": "Sending marshmallows for the 3,000 subscriber milestone stream! Send your questions, words of encouragement, compliments, event requests, and more~"
+    },
     "illustration_contest": {
       "title": "Illustration Contest",
       "descHtml": "You can see submitted works via the hashtag.<br>Check the link for details!",
@@ -121,4 +126,3 @@
     "sub": "Let's make the most of our time!"
   }
 }
-
