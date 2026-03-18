@@ -1324,14 +1324,44 @@ async function openModal(ev) {
       linksWrap.appendChild(btn);
     }
 
-    // 通常の外部リンク
+    // 通常の外部リンク / 内部アンカー
     (ev.links || []).forEach((l) => {
       const a = document.createElement("a");
       a.className = "btn primary";
-      a.href = l.url;
-      a.target = "_blank";
-      a.rel = "noopener";
       a.textContent = t(l.labelKey) || "Open";
+
+      if (l.url && l.url.startsWith("#")) {
+        // 内部アンカー：hashchange を一切発火させず直接スクロール
+        a.href = "javascript:void(0)";
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          closeModal();
+          const anchorId = l.url.slice(1);
+          const targetTab = l.linkTab || null;
+          const scrollToAnchor = () => {
+            const el = document.getElementById(anchorId);
+            if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+          };
+          if (targetTab) {
+            // すでに対象タブがアクティブなら即スクロール、そうでなければ切り替えてから待機
+            const alreadyActive = document.querySelector(`#page-${targetTab}`)?.classList.contains("active");
+            if (alreadyActive) {
+              scrollToAnchor();
+            } else {
+              setActiveTab(targetTab);
+              setTimeout(scrollToAnchor, 300);
+            }
+          } else {
+            scrollToAnchor();
+          }
+        });
+      } else {
+        a.href = l.url;
+        a.target = "_blank";
+        a.rel = "noopener";
+      }
+
       linksWrap.appendChild(a);
     });
   }
@@ -1495,9 +1525,20 @@ async function setLang(lang) {
 function handleRoute() {
   const hash = location.hash.replace("#", "") || "home";
   const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest"];
-  const tab = known.includes(hash) ? hash : "home";
 
-  setActiveTab(tab);
+  // 完全一致ならそのままタブ切り替え
+  if (known.includes(hash)) {
+    setActiveTab(hash);
+    return;
+  }
+
+  // ハッシュがタブ内アンカー（例: "contest-results"）の場合はタブ切り替えしない
+  // → hashchange はブラウザのスクロールに任せる
+  // ただし現在アクティブなタブがなければ home を表示
+  const activeTab = document.querySelector(".page.active");
+  if (!activeTab) {
+    setActiveTab("home");
+  }
 }
 
 // ページの表示/非表示を監視して動画を停止
