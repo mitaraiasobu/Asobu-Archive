@@ -41,6 +41,11 @@
       {
         "labelKey": "event.openOnX",
         "url": "https://x.com/hashtag/%E5%BE%A1%E6%89%8B%E6%B4%97%E9%81%8A%E3%82%A4%E3%83%A9%E3%82%B3%E3%83%B3?src=hashtag_click&f=live"
+      },
+      {
+        "labelKey": "event.viewAwardWorks",
+        "url": "#contest",
+        "linkTab": "contest"
       }
     ]
   },
@@ -50,8 +55,8 @@
     "src": "./assets/切り抜き動画コンテスト.mp4",
     "poster": "./assets/切り抜き動画コンテスト.png",
     "status": "active",
-    "start": "2026-01-03",
-    "end": "2026-02-28"
+    "start": "all-the-time",
+    "end": ""
   },
   {
     "id": "soundproof_crowdfunding",
