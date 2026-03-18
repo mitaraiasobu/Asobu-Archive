@@ -44,7 +44,7 @@
       },
       {
         "labelKey": "event.viewAwardWorks",
-        "url": "#contest",
+        "url": "#contest-results",
         "linkTab": "contest"
       }
     ]
