@@ -1,5 +1,19 @@
 [
   {
+    "id": "marshmallow_3000",
+    "mediaType": "image",
+    "src": "./assets/マシュマロ.png",
+    "status": "active",
+    "start": "2026-03-19",
+    "end": "after_3000_subs_plus_7d",
+    "links": [
+      {
+        "labelKey": "event.sendMarshmallow",
+        "url": "https://marshmallow-qa.com/g2t47f2przg3nzd"
+      }
+    ]
+  },
+  {
     "id": "coloring_contest_new_outfit",
     "mediaType": "video",
     "src": "./assets/学園衣装塗り絵.mp4",
