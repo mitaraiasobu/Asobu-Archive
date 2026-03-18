@@ -62,6 +62,7 @@
   },
   "event": {
     "openOnX": "Xで見る",
+    "viewAwardWorks": "受賞作品を見る",
     "openPage": "ページを開く",
     "surveyStreamTime": "配信の時間帯について",
     "surveyPrivateWeek": "私利私欲週間の感想",
