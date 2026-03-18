@@ -32,8 +32,8 @@
   {
     "id": "illustration_contest",
     "mediaType": "video",
-    "src": "./assets/illustcontest.mp4",
-    "poster": "./assets/イラコン.png",
+    "src": "./assets/ミードリ.png",
+    "poster": "./assets/ミードリ.png",
     "status": "active",
     "start": "2026-01-03",
     "end": "2026-02-28",
