@@ -31,7 +31,7 @@
   },
   {
     "id": "illustration_contest",
-    "mediaType": "video",
+    "mediaType": "image",
     "src": "./assets/ミードリ.png",
     "poster": "./assets/ミードリ.png",
     "status": "active",
