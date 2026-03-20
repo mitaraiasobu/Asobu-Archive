@@ -1,0 +1,39 @@
+{
+  "goals": [
+    {
+      "icon": "🕓",
+      "title": "収益化までの再生時間",
+      "subtitle": "4000時間",
+      "type": "done",
+      "note": "達成！"
+    },
+    {
+      "icon": "📈",
+      "title": "チャンネル登録者1万人",
+      "subtitle": "現在 約2700人",
+      "type": "progress",
+      "current": 2700,
+      "target": 10000
+    },
+    {
+      "icon": "💰",
+      "title": "月収10万円",
+      "subtitle": "YouTube収益2026！がっぽがっぽ儲け...じゃなくて、みんな応援ありがとう！🖤",
+      "type": "monthly",
+      "months": [
+        { "label": "1月", "status": "empty",     "value": "収益化前" },
+        { "label": "2月", "status": "done",     "value": "11万円" },
+        { "label": "3月", "status": "current",  "value": "挑戦中！" },
+        { "label": "4月", "status": "empty",    "value": "" },
+        { "label": "5月", "status": "empty",    "value": "" },
+        { "label": "6月", "status": "empty",    "value": "" },
+        { "label": "7月", "status": "empty",    "value": "" },
+        { "label": "8月", "status": "empty",    "value": "" },
+        { "label": "9月", "status": "empty",    "value": "" },
+        { "label": "10月","status": "empty",    "value": "" },
+        { "label": "11月","status": "empty",    "value": "" },
+        { "label": "12月","status": "empty",    "value": "" }
+      ]
+    }
+  ]
+}
