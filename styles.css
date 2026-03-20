@@ -2807,14 +2807,17 @@ body:not(.no-anim) .chip {
 }
 
 .sp-wish__bubble-wrap {
-  flex: 1;          /* bodyの残り幅を使う */
-  min-width: 0;     /* flexアイテムの縮小を許可 */
-  margin-top: 18px; /* 吹き出しを下げてアイコン中心に◀が来るよう調整 */
+  display: inline-flex;   /* 内容幅に収縮 */
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: 520px;       /* 最大横幅 */
+  margin-top: 18px;
 }
 
 .sp-wish__bubble {
-  display: block;   /* 親幅に従う */
-  width: 100%;
+  display: inline-block;  /* 内容幅に合わせる */
+  max-width: 100%;
   box-sizing: border-box;
   background: rgba(255,121,176,.1);
   border: 1px solid rgba(255,121,176,.35);
@@ -2830,7 +2833,7 @@ body:not(.no-anim) .chip {
 
 /* 長文・改行ありの吹き出し（既存との互換性） */
 .sp-wish__bubble--long {
-  display: block;
+  display: inline-block;
   white-space: normal;
 }
 
