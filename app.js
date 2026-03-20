@@ -11,6 +11,16 @@
     return;
   }
 
+  // 過去に訪問済みの場合はイントロをスキップ
+  if (localStorage.getItem("introPlayed") === "1") {
+    window.__introFinishPromise = Promise.resolve();
+    window.__introFinishResolve = () => {};
+    return;
+  }
+  // 初回訪問フラグ（MISSIONアニメ判定に使用）
+  window.__freshVisit = true;
+  localStorage.setItem("introPlayed", "1");
+
   const savedLang = (localStorage.getItem("lang") || "ja");
   const DOT_FONT  = savedLang === "ko"
     ? "'DotGothic16', 'NeoDunggeunmoPro', monospace"
@@ -353,19 +363,24 @@ function setActiveTab(tabKey) {
       if (cfBody && !cfBody.dataset.missionDone) {
         cfBody.dataset.missionDone = "1";
         const missionTitle = t("crowdfunding.missionTitle") || "防音室を導入して絶叫を防げ！";
-        // まず即座にコンテンツを隠す
-        cfBody.querySelectorAll(".cf-split > div, .support-header").forEach(el => {
-          el.style.opacity = "0"; el.style.transition = "none"; el.style.transform = "translateY(16px)";
-        });
-        const doMission = () => {
-          triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
-          // ミッション演出終了後にタンク初期化
-          setTimeout(initCfPhysicsTank, 3400);
-        };
-        if (window.__introFinishPromise) {
-          window.__introFinishPromise.then(doMission);
+        // キャッシュ済み（再訪問）ならMISSIONアニメをスキップ
+        if (localStorage.getItem("introPlayed") === "1" && !window.__freshVisit) {
+          initCfPhysicsTank();
         } else {
-          doMission();
+          // まず即座にコンテンツを隠す
+          cfBody.querySelectorAll(".cf-split > div, .support-header").forEach(el => {
+            el.style.opacity = "0"; el.style.transition = "none"; el.style.transform = "translateY(16px)";
+          });
+          const doMission = () => {
+            triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
+            // ミッション演出終了後にタンク初期化
+            setTimeout(initCfPhysicsTank, 3400);
+          };
+          if (window.__introFinishPromise) {
+            window.__introFinishPromise.then(doMission);
+          } else {
+            doMission();
+          }
         }
       }
     } else if (tabKey === "contest") {
@@ -373,16 +388,21 @@ function setActiveTab(tabKey) {
       if (contestBody && !contestBody.dataset.missionDone) {
         contestBody.dataset.missionDone = "1";
         const missionTitle = t("contest.missionTitle") || "学園衣装をコーディネートしよう！";
-        // まず即座にコンテンツを隠す
-        const contestRoot = contestBody.querySelector("#contest-root");
-        if (contestRoot) {
-          contestRoot.style.opacity = "0"; contestRoot.style.transition = "none"; contestRoot.style.transform = "translateY(16px)";
-        }
-        const doMission = () => triggerMissionAnim(contestBody, missionTitle, "#contest-root");
-        if (window.__introFinishPromise) {
-          window.__introFinishPromise.then(doMission);
+        // キャッシュ済み（再訪問）ならMISSIONアニメをスキップ
+        if (localStorage.getItem("introPlayed") === "1" && !window.__freshVisit) {
+          // スキップ（コンテンツをそのまま表示）
         } else {
-          doMission();
+          // まず即座にコンテンツを隠す
+          const contestRoot = contestBody.querySelector("#contest-root");
+          if (contestRoot) {
+            contestRoot.style.opacity = "0"; contestRoot.style.transition = "none"; contestRoot.style.transform = "translateY(16px)";
+          }
+          const doMission = () => triggerMissionAnim(contestBody, missionTitle, "#contest-root");
+          if (window.__introFinishPromise) {
+            window.__introFinishPromise.then(doMission);
+          } else {
+            doMission();
+          }
         }
       }
     }
@@ -1108,7 +1128,7 @@ function renderStaticTexts() {
   const aboutTitle = $("#aboutTitle");
   const aboutBody = $("#aboutBody");
   if (aboutTitle) aboutTitle.textContent = t("about.title");
-  if (aboutBody) { aboutBody.innerHTML = t("about.bodyHtml"); animateSupportHeader(aboutBody); animateTimeline(aboutBody); }
+  if (aboutBody) { aboutBody.innerHTML = t("about.bodyHtml"); animateSupportHeader(aboutBody); animateTimeline(aboutBody); initThumbGallery(); initDreamGoals(); }
 
   const supportTitle = $("#supportTitle");
   const supportBody = $("#supportBody");
@@ -2592,6 +2612,201 @@ function initContest() {
   saveCtState();
   _ct._keyController = _keyCtrl;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   叶えたい夢ゴール描画
+   ───────────────────────────────────────────────────────────── */
+async function initDreamGoals() {
+  const wrap = document.getElementById("dreamGoals");
+  if (!wrap) return;
+
+  let data;
+  try {
+    const res = await fetch("./goals.json", { cache: "no-store" });
+    if (!res.ok) throw new Error();
+    data = await res.json();
+  } catch(e) { return; }
+
+  /* 達成済み(done)を末尾に移動 */
+  const goals = (data.goals || []).slice().sort(function(a, b) {
+    return (a.type === 'done' ? 1 : 0) - (b.type === 'done' ? 1 : 0);
+  });
+  wrap.innerHTML = "";
+
+  goals.forEach(function(g) {
+    const card = document.createElement("div");
+    card.className = "dg-card";
+
+    if (g.type === "done") {
+      /* ── 達成済み ── */
+      card.className = "dg-card dg-card--done";
+      card.innerHTML =
+        '<div class="dg-head">' +
+          '<span class="dg-icon">' + g.icon + '</span>' +
+          '<div class="dg-titles">' +
+            '<div class="dg-title">' + g.title + '</div>' +
+            '<div class="dg-sub">' + g.subtitle + '</div>' +
+          '</div>' +
+          '<span class="dg-badge dg-badge--done dg-badge--lg">' + (g.note || '達成！') + '</span>' +
+        '</div>' +
+        '<div class="dg-bar-wrap"><div class="dg-bar dg-bar--done" style="width:100%"></div></div>';
+
+    } else if (g.type === "progress") {
+      /* ── プログレスバー ── */
+      var pct = Math.min(100, Math.round((g.current / g.target) * 100));
+      card.innerHTML =
+        '<div class="dg-head">' +
+          '<span class="dg-icon">' + g.icon + '</span>' +
+          '<div class="dg-titles">' +
+            '<div class="dg-title">' + g.title + '</div>' +
+            '<div class="dg-sub">' + g.subtitle + '</div>' +
+          '</div>' +
+          '<span class="dg-pct">' + pct + '%</span>' +
+        '</div>' +
+        '<div class="dg-bar-wrap"><div class="dg-bar dg-bar--prog" style="width:' + pct + '%"></div></div>';
+
+    } else if (g.type === "monthly") {
+      /* ── 月別カード ── */
+      var monthsHtml = (g.months || []).map(function(m) {
+        var cls = "dg-month";
+        if      (m.status === "none")    cls += " dg-month--none";
+        else if (m.status === "done")    cls += " dg-month--done";
+        else if (m.status === "current") cls += " dg-month--current";
+        else                             cls += " dg-month--empty";
+        var inner = m.status === "none"
+          ? '<span class="dg-month-x">✕</span>'
+          : '<span class="dg-month-val">' + (m.value || '') + '</span>';
+        return '<div class="' + cls + '"><div class="dg-month-label">' + m.label + '</div>' + inner + '</div>';
+      }).join('');
+
+      card.innerHTML =
+        '<div class="dg-head">' +
+          '<span class="dg-icon">' + g.icon + '</span>' +
+          '<div class="dg-titles">' +
+            '<div class="dg-title">' + g.title + '</div>' +
+            '<div class="dg-sub">' + g.subtitle + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="dg-months">' + monthsHtml + '</div>';
+    }
+
+    wrap.appendChild(card);
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   サムネイルギャラリー
+   ───────────────────────────────────────────────────────────── */
+(function () {
+
+  let _thumbs   = null; // null=未ロード / [] 以上=ロード済み
+  let _current  = 0;
+  let _timer    = null;
+  let _paused   = false;
+  const INTERVAL = 3200;
+
+  async function loadThumbs() {
+    if (_thumbs !== null) return _thumbs;
+    try {
+      const res = await fetch("./thumbnails.json", { cache: "no-store" });
+      if (!res.ok) throw new Error("not found");
+      _thumbs = await res.json();
+    } catch (e) {
+      _thumbs = [];
+    }
+    return _thumbs;
+  }
+
+  function updateDots(total, idx) {
+    const dots = document.getElementById("thumbGalleryDots");
+    if (!dots) return;
+    dots.innerHTML = "";
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement("button");
+      d.className = "tg-dot" + (i === idx ? " active" : "");
+      d.setAttribute("aria-label", (i + 1) + "枚目");
+      d.addEventListener("click", (function(n){ return function(){ goTo(n); }; })(i));
+      dots.appendChild(d);
+    }
+  }
+
+  function goTo(idx) {
+    const track = document.getElementById("thumbGalleryTrack");
+    if (!track) return;
+    const items = track.querySelectorAll(".tg-item");
+    if (!items.length) return;
+    _current = ((idx % items.length) + items.length) % items.length;
+    /* PC(>=768px)は2枚並び(50%幅)、スマホは1枚(100%幅) */
+    const pct = window.innerWidth >= 768 ? 50 : 100;
+    track.style.transform = "translateX(-" + (_current * pct) + "%)";
+    updateDots(items.length, _current);
+  }
+
+  function startSlider() {
+    clearInterval(_timer);
+    _timer = setInterval(function() {
+      if (!_paused) goTo(_current + 1);
+    }, INTERVAL);
+  }
+
+  async function render(thumbs) {
+    const track = document.getElementById("thumbGalleryTrack");
+    if (!track) return;
+    const section = track.closest(".thumb-gallery-section");
+    if (!thumbs.length) {
+      if (section) section.style.display = "none";
+      return;
+    }
+    if (section) section.style.display = "";
+
+    /* 左右ボタン */
+    const btnPrev = section && section.querySelector(".tg-btn--prev");
+    const btnNext = section && section.querySelector(".tg-btn--next");
+    if (btnPrev) btnPrev.onclick = function() { goTo(_current - 1); };
+    if (btnNext) btnNext.onclick = function() { goTo(_current + 1); };
+
+    track.innerHTML = "";
+    thumbs.forEach(function(thumb) {
+      const file = thumb.file;
+      const url  = thumb.url || "";
+      const item = document.createElement("div");
+      item.className = "tg-item";
+
+      const img = document.createElement("img");
+      img.src     = "./thumbnails/" + file;
+      img.alt     = file;
+      img.loading = "eager"; /* lazyをやめて確実にロード */
+      img.style.cursor = url ? "pointer" : "default";
+
+      if (url) {
+        img.addEventListener("click", (function(u){ return function(){ window.open(u, "_blank", "noopener"); }; })(url));
+      }
+
+      item.appendChild(img);
+      track.appendChild(item);
+    });
+
+    _current = 0;
+    track.style.transform = "translateX(0)";
+    updateDots(thumbs.length, 0);
+    startSlider();
+  }
+
+  window.initThumbGallery = async function() {
+    clearInterval(_timer);
+    _paused  = false;
+    _current = 0;
+    _thumbs  = null; /* 毎回フレッシュにフェッチ */
+
+    const track = document.getElementById("thumbGalleryTrack");
+    if (!track) return;
+
+    const thumbs = await loadThumbs();
+    await render(thumbs);
+  };
+
+})();
+
 
 init().catch((err) => {
   console.error(err);
