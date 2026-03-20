@@ -1540,6 +1540,12 @@ async function setLang(lang) {
     renderStaticTexts();
     renderEvents();
   }
+
+  // goals再描画（言語切り替え時にDOMが存在すれば即更新）
+  const goalsWrap = document.getElementById("dreamGoals");
+  if (goalsWrap && _goalsData) {
+    renderDreamGoals(goalsWrap, _goalsData);
+  }
 }
 
 function handleRoute() {
@@ -2616,16 +2622,32 @@ function initContest() {
 /* ─────────────────────────────────────────────────────────────
    叶えたい夢ゴール描画
    ───────────────────────────────────────────────────────────── */
+/* goals.jsonキャッシュ */
+let _goalsData = null;
+
 async function initDreamGoals() {
   const wrap = document.getElementById("dreamGoals");
   if (!wrap) return;
 
-  let data;
-  try {
-    const res = await fetch("./goals.json", { cache: "no-store" });
-    if (!res.ok) throw new Error();
-    data = await res.json();
-  } catch(e) { return; }
+  if (!_goalsData) {
+    try {
+      const res = await fetch("./goals.json", { cache: "no-store" });
+      if (!res.ok) throw new Error();
+      _goalsData = await res.json();
+    } catch(e) { return; }
+  }
+
+  renderDreamGoals(wrap, _goalsData);
+}
+
+function renderDreamGoals(wrap, data) {
+  /* 現在の言語を取得 */
+  var lang = (state && state.lang) ? state.lang : (localStorage.getItem("lang") || "ja");
+  var sfx = lang === "ja" ? "" : ("_" + lang);
+
+  function gl(g, key) {
+    return g[key + sfx] || g[key] || "";
+  }
 
   /* 達成済み(done)を末尾に移動 */
   const goals = (data.goals || []).slice().sort(function(a, b) {
@@ -2644,10 +2666,10 @@ async function initDreamGoals() {
         '<div class="dg-head">' +
           '<span class="dg-icon">' + g.icon + '</span>' +
           '<div class="dg-titles">' +
-            '<div class="dg-title">' + g.title + '</div>' +
-            '<div class="dg-sub">' + g.subtitle + '</div>' +
+            '<div class="dg-title">' + gl(g, "title") + '</div>' +
+            '<div class="dg-sub">' + gl(g, "subtitle") + '</div>' +
           '</div>' +
-          '<span class="dg-badge dg-badge--done dg-badge--lg">' + (g.note || '達成！') + '</span>' +
+          '<span class="dg-badge dg-badge--done dg-badge--lg">' + (gl(g, "note") || '達成！') + '</span>' +
         '</div>' +
         '<div class="dg-bar-wrap"><div class="dg-bar dg-bar--done" style="width:100%"></div></div>';
 
@@ -2658,8 +2680,8 @@ async function initDreamGoals() {
         '<div class="dg-head">' +
           '<span class="dg-icon">' + g.icon + '</span>' +
           '<div class="dg-titles">' +
-            '<div class="dg-title">' + g.title + '</div>' +
-            '<div class="dg-sub">' + g.subtitle + '</div>' +
+            '<div class="dg-title">' + gl(g, "title") + '</div>' +
+            '<div class="dg-sub">' + gl(g, "subtitle") + '</div>' +
           '</div>' +
           '<span class="dg-pct">' + pct + '%</span>' +
         '</div>' +
@@ -2673,18 +2695,22 @@ async function initDreamGoals() {
         else if (m.status === "done")    cls += " dg-month--done";
         else if (m.status === "current") cls += " dg-month--current";
         else                             cls += " dg-month--empty";
+        var label = m["label" + sfx] || m.label;
+        var value = (m.status !== "none" && m["value" + sfx] !== undefined)
+          ? m["value" + sfx]
+          : (m.value || "");
         var inner = m.status === "none"
           ? '<span class="dg-month-x">✕</span>'
-          : '<span class="dg-month-val">' + (m.value || '') + '</span>';
-        return '<div class="' + cls + '"><div class="dg-month-label">' + m.label + '</div>' + inner + '</div>';
+          : '<span class="dg-month-val">' + value + '</span>';
+        return '<div class="' + cls + '"><div class="dg-month-label">' + label + '</div>' + inner + '</div>';
       }).join('');
 
       card.innerHTML =
         '<div class="dg-head">' +
           '<span class="dg-icon">' + g.icon + '</span>' +
           '<div class="dg-titles">' +
-            '<div class="dg-title">' + g.title + '</div>' +
-            '<div class="dg-sub">' + g.subtitle + '</div>' +
+            '<div class="dg-title">' + gl(g, "title") + '</div>' +
+            '<div class="dg-sub">' + gl(g, "subtitle") + '</div>' +
           '</div>' +
         '</div>' +
         '<div class="dg-months">' + monthsHtml + '</div>';
