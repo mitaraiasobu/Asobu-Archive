@@ -577,14 +577,7 @@ body.modal-open {
 
 /* ===== Goods redesign ===== */
 .goods-hero{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:14px 14px 12px;
-  border:1px solid var(--line);
-  border-radius:16px;
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+  display:block;
   margin: 6px 0 14px;
 }
 .goods-hero h3{ margin:0; font-size:20px; font-weight:900; letter-spacing:.01em; }
