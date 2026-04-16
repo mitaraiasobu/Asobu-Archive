@@ -50,6 +50,7 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: center; gap: 20px;
       background: #080408; overflow: hidden;
+      contain: layout paint;
       cursor: default; user-select: none;
     }
     /* スキャンライン */
@@ -91,6 +92,10 @@
       text-shadow: 0 0 6px #ff6eb4, 0 0 18px #ff3d9a,
                    0 0 40px #ff3d9a, 0 0 80px rgba(255,60,154,0.35);
       white-space: nowrap; min-height: 1.3em;
+      width: 100%; max-width: min(90vw, 720px);
+      text-align: center;
+      overflow: hidden;
+      font-variant-ligatures: none;
     }
     /* サブテキスト */
     #intro-sub {
@@ -100,6 +105,9 @@
       color: rgba(255,200,230,0.85); letter-spacing: 0.07em;
       text-shadow: 0 0 10px rgba(255,100,180,0.5);
       white-space: nowrap; min-height: 1.5em;
+      width: 100%; max-width: min(90vw, 720px);
+      text-align: center;
+      overflow: hidden;
     }
     /* バー */
     #intro-bar-wrap {
@@ -110,7 +118,9 @@
       overflow: hidden;
     }
     #intro-bar {
-      height: 100%; width: 0%;
+      height: 100%; width: 100%;
+      transform: scaleX(0);
+      transform-origin: left center;
       background: linear-gradient(90deg, #c0006a, #ff3d9a, #ffaadd, #ff3d9a, #c0006a);
       background-size: 300% 100%;
       box-shadow: 0 0 12px #ff3d9a, 0 0 24px rgba(255,60,154,0.4);
@@ -291,8 +301,8 @@
     const subLen   = (texts.sub   || '').replace(/\s/g, '').length;
     const estimatedScrambleMs = (titleLen + subLen) * FRAME_MS * 0.75 + SCRAMBLE_FRAMES * FRAME_MS + 500;
     // バーは「サブテキスト表示完了の直前」に100%に達するよう transition を設定
-    bar.style.transition = `width ${estimatedScrambleMs}ms cubic-bezier(0.15, 1, 0.3, 1)`;
-    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.width = '100%'; }));
+    bar.style.transition = `transform ${estimatedScrambleMs}ms cubic-bezier(0.15, 1, 0.3, 1)`;
+    requestAnimationFrame(() => requestAnimationFrame(() => { bar.style.transform = 'scaleX(1)'; }));
 
     // 文字スクランブル（バーと並行して走る）
     await scrambleTo(titleEl, texts.title, 60);
@@ -1128,7 +1138,10 @@ function renderStaticTexts() {
   const aboutTitle = $("#aboutTitle");
   const aboutBody = $("#aboutBody");
   if (aboutTitle) aboutTitle.textContent = t("about.title");
-  if (aboutBody) { aboutBody.innerHTML = t("about.bodyHtml"); animateSupportHeader(aboutBody); animateTimeline(aboutBody); initThumbGallery(); initDreamGoals(); }
+  if (aboutBody) { aboutBody.innerHTML = t("about.bodyHtml"); animateSupportHeader(aboutBody); animateTimeline(aboutBody); initDreamGoals(); }
+
+  // ホームのサムネイルギャラリー初期化（ホームタブに移動したため）
+  initThumbGallery();
 
   const supportTitle = $("#supportTitle");
   const supportBody = $("#supportBody");
@@ -1223,6 +1236,18 @@ function renderStaticTexts() {
       setTimeout(initCfPhysicsTank, 300);
     }
   }
+
+  // ★ 言語切り替え後、コンテスト・クラファン内の全要素の
+  //   横スクロール位置を強制リセット（スクロールバー再表示防止）
+  requestAnimationFrame(function() {
+    ["contestBody", "crowdfundingBody"].forEach(function(id) {
+      const body = document.getElementById(id);
+      if (!body) return;
+      body.querySelectorAll("*").forEach(function(el) {
+        if (el.scrollLeft > 0) el.scrollLeft = 0;
+      });
+    });
+  });
 }
 
 function renderEvents() {
