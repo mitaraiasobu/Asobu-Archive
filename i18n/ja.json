@@ -23,7 +23,7 @@
     "title": "今週の配信スケジュール",
     "hint": "",
     "noteLabel": "遊からのコメント",
-    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"御手洗 遊\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">3000人記念配信の予定が【4月25日(土) 21時】に決定！ 締切が出来たから頑張らないとヤバいって気がしてきた！ 現在スパチャが止まってるのでお祝い(?)はGooglePlayカード等のプレゼントが嬉しいな！頼んだぞ、大人たち🖤 あとグッズも出るから財布の管理に気をつけてねっ✌</div></div></div></div>"
+    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"御手洗 遊\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">ゲーム配信を我慢してがんばります（涙目）　今週も続けて記念配信の準備をがんばるから、絶対来てねっ　通知オンにして待ってて🤍　塗り絵コンテストはまだまだ募集中！23日までに #御手洗みたら？のタグで投稿してね！</div></div></div></div>"
   },
   "events": {
     "title": "コンテスト / イベント",
@@ -34,7 +34,7 @@
   },
   "about": {
     "title": "自己紹介",
-    "bodyHtml": "<div class=\"about-profile-wrap\">\n\n  <!-- ===== 立ち絵＋名前エリア ===== -->\n  <div class=\"about-stand-col\">\n    <div class=\"about-stand-img-wrap\">\n      <img src=\"./assets/default-2.png\" alt=\"御手洗 遊\" class=\"about-stand-img\" />\n    </div>\n  </div>\n\n  <!-- ===== プロフィール情報エリア ===== -->\n  <div class=\"about-info-col\">\n\n    <div class=\"about-name-block\">\n      <h1 class=\"about-name-ja\">御手洗 遊</h1>\n      <p class=\"about-name-roman\">Mitarai Asobu</p>\n </div>\n\n    <div class=\"about-catch\">イタズラ好きで結構やんちゃだけど......仲良くしてね～？</div>\n\n    <div class=\"about-stats\">\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🦝</span><span class=\"about-stat-label\">種族</span><span class=\"about-stat-val\">人間とアライグマのハーフ</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🎂</span><span class=\"about-stat-label\">デビュー＆誕生日</span><span class=\"about-stat-val\">1月3日</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">⋈</span><span class=\"about-stat-label\">推しマーク</span><span class=\"about-stat-val\">⋈🦝（蝶ネクタイとアライグマ）</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">💗</span><span class=\"about-stat-label\">ファンネーム</span><span class=\"about-stat-val\">寿命</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🌅</span><span class=\"about-stat-label\">おはよう</span><span class=\"about-stat-val\">おはみた</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">☀️</span><span class=\"about-stat-label\">こんにちは</span><span class=\"about-stat-val\">こんみた</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🌙</span><span class=\"about-stat-label\">おつかれ / またね</span><span class=\"about-stat-val\">おつみた</span></div>\n   <div class=\"about-stat-row\"><span class=\"about-stat-icon\">💵</span><span class=\"about-stat-label\">ナイスパ/ナイメン</span><span class=\"about-stat-val\">献上/寿命の献上/素晴らしき寿命の献上</span></div>   <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🎮</span><span class=\"about-stat-label\">活動内容</span><span class=\"about-stat-val\">雑談・ゲーム・お絵描き</span></div>\n    </div>\n\n    <div class=\"about-bio-text\">\n      おてあらいじゃないよっ　みたらい あそぶ です！<br>楽しいときは遊と過ごす<br>寂しいときは遊と過ごす<br>苦しいときは遊と過ごす<br>あなたの人生プランはこれで決定🖤<br>寿命はゼッタイ有効活用🖤\n    </div>\n\n    <div class=\"about-note-box\">\n      <div class=\"about-note-label\">お願い🤍</div>\n      <div class=\"about-note-text\">私の配信では「ナイスパ」という言葉はできるだけ使わないでください！<br>理由は寿命の重みを感じないからです！</div>\n    </div>\n\n  </div>\n</div>\n\n<!-- ===== 詳細アコーディオン ===== -->\n\n\n<!-- ===== 自己紹介動画 ===== -->\n<div class=\"about-intro-video\">\n  <div class=\"about-intro-video__wrap\">\n    <iframe\n      src=\"https://www.youtube.com/embed/0x1XEsxoS6g\"\n      frameborder=\"0\"\n      allowfullscreen\n      allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\">\n    </iframe>\n  </div>\n</div>\n\n<!-- ===== サムネイルギャラリー ===== -->\n<div class=\"thumb-gallery-section\">\n  <div class=\"thumb-gallery-header\">\n    <span class=\"thumb-gallery-title\">📺 最近の配信や動画</span>\n  </div>\n  <div class=\"thumb-gallery-wrap\">\n    <button class=\"tg-btn tg-btn--prev\" aria-label=\"前へ\">‹</button>\n    <div class=\"thumb-gallery-track\" id=\"thumbGalleryTrack\"></div>\n    <button class=\"tg-btn tg-btn--next\" aria-label=\"次へ\">›</button>\n  </div>\n  <div class=\"thumb-gallery-dots\" id=\"thumbGalleryDots\"></div>\n</div>\n\n<div class=\"about-details-section\">\n\n  <div class=\"about-details-section__item\">\n <br> <div class=\"support-sec-head\"><span class=\"support-sec-icon\">✨</span> 叶えたい夢</div>\n<div class=\"dream-goals\" id=\"dreamGoals\">\n        <!-- goals.json から JS で描画 -->\n      </div>\n\n      <p style=\"margin-top:14px;\">私も頑張るから、あなたも頑張って、ね？</p>\n     <br>   <div class=\"sp-wish\">\n        <div class=\"support-sec-head\"><span class=\"support-sec-icon\">🎁</span> 欲しい物</div>\n        <div class=\"sp-wish__item-title\">防音室</div>\n        <div class=\"sp-wish__body\">\n          <img class=\"sp-wish__icon\" src=\"./mita/happy.png\" alt=\"御手洗 遊\">\n          <div class=\"sp-wish__bubble-wrap\">\n            <div class=\"sp-wish__bubble sp-wish__bubble--long\">\n              実はずっと<b>防音室</b>が欲しくて……！<br>\n              夜も配信できるし、歌録りやASMRもしやすくなるんだ🤍<br>\n              クラウドファンディングで応援してくれると嬉しいな！\n            </div>\n            <button class=\"sp-wish__btn\" onclick=\"event.preventDefault();window.scrollTo(0,0);location.hash='crowdfunding'\">🔊 詳細を見る ➡</button>\n          </div>\n        </div>\n      </div>\n</div>\n\n\n</div>\n\n<div class=\"support-footer\"><div class=\"support-footer-hearts\">♡ ♡ ♡</div><div class=\"support-footer-name\">御手洗 遊</div><div class=\"support-footer-roman\">Mitarai Asobu</div></div>"
+    "bodyHtml": "<div class=\"about-profile-wrap\">\n\n  <!-- ===== 立ち絵＋名前エリア ===== -->\n  <div class=\"about-stand-col\">\n    <div class=\"about-stand-img-wrap\">\n      <img src=\"./assets/default-2.png\" alt=\"御手洗 遊\" class=\"about-stand-img\" />\n    </div>\n  </div>\n\n  <!-- ===== プロフィール情報エリア ===== -->\n  <div class=\"about-info-col\">\n\n    <div class=\"about-name-block\">\n      <h1 class=\"about-name-ja\">御手洗 遊</h1>\n      <p class=\"about-name-roman\">Mitarai Asobu</p>\n </div>\n\n    <div class=\"about-catch\">イタズラ好きで結構やんちゃだけど......仲良くしてね～？</div>\n\n    <div class=\"about-stats\">\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🦝</span><span class=\"about-stat-label\">種族</span><span class=\"about-stat-val\">人間とアライグマのハーフ</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🎂</span><span class=\"about-stat-label\">デビュー＆誕生日</span><span class=\"about-stat-val\">1月3日</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">⋈</span><span class=\"about-stat-label\">推しマーク</span><span class=\"about-stat-val\">⋈🦝（蝶ネクタイとアライグマ）</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">💗</span><span class=\"about-stat-label\">ファンネーム</span><span class=\"about-stat-val\">寿命</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🌅</span><span class=\"about-stat-label\">おはよう</span><span class=\"about-stat-val\">おはみた</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">☀️</span><span class=\"about-stat-label\">こんにちは</span><span class=\"about-stat-val\">こんみた</span></div>\n      <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🌙</span><span class=\"about-stat-label\">おつかれ / またね</span><span class=\"about-stat-val\">おつみた</span></div>\n   <div class=\"about-stat-row\"><span class=\"about-stat-icon\">💵</span><span class=\"about-stat-label\">ナイスパ/ナイメン</span><span class=\"about-stat-val\">献上/寿命の献上/素晴らしき寿命の献上</span></div>   <div class=\"about-stat-row\"><span class=\"about-stat-icon\">🎮</span><span class=\"about-stat-label\">活動内容</span><span class=\"about-stat-val\">雑談・ゲーム・お絵描き</span></div>\n    </div>\n\n    <div class=\"about-bio-text\">\n      おてあらいじゃないよっ　みたらい あそぶ です！<br>楽しいときは遊と過ごす<br>寂しいときは遊と過ごす<br>苦しいときは遊と過ごす<br>あなたの人生プランはこれで決定🖤<br>寿命はゼッタイ有効活用🖤\n    </div>\n\n    <div class=\"about-note-box\">\n      <div class=\"about-note-label\">お願い🤍</div>\n      <div class=\"about-note-text\">私の配信では「ナイスパ」という言葉はできるだけ使わないでください！<br>理由は寿命の重みを感じないからです！</div>\n    </div>\n\n  </div>\n</div>\n\n<!-- ===== 詳細アコーディオン ===== -->\n\n\n<!-- ===== 自己紹介動画 ===== -->\n<div class=\"about-intro-video\">\n  <div class=\"about-intro-video__wrap\">\n    <iframe\n      src=\"https://www.youtube.com/embed/0x1XEsxoS6g\"\n      frameborder=\"0\"\n      allowfullscreen\n      allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\">\n    </iframe>\n  </div>\n</div>\n\n<div class=\"about-details-section\">\n\n  <div class=\"about-details-section__item\">\n <br> <div class=\"support-sec-head\"><span class=\"support-sec-icon\">✨</span> 叶えたい夢</div>\n<div class=\"dream-goals\" id=\"dreamGoals\">\n        <!-- goals.json から JS で描画 -->\n      </div>\n\n      <p style=\"margin-top:14px;\">私も頑張るから、あなたも頑張って、ね？</p>\n     <br>   <div class=\"sp-wish\">\n        <div class=\"support-sec-head\"><span class=\"support-sec-icon\">🎁</span> 欲しい物</div>\n        <div class=\"sp-wish__item-title\">防音室</div>\n        <div class=\"sp-wish__body\">\n          <img class=\"sp-wish__icon\" src=\"./mita/happy.png\" alt=\"御手洗 遊\">\n          <div class=\"sp-wish__bubble-wrap\">\n            <div class=\"sp-wish__bubble sp-wish__bubble--long\">\n              実はずっと<b>防音室</b>が欲しくて……！<br>\n              夜も配信できるし、歌録りやASMRもしやすくなるんだ🤍<br>\n              クラウドファンディングで応援してくれると嬉しいな！\n            </div>\n            <button class=\"sp-wish__btn\" onclick=\"event.preventDefault();window.scrollTo(0,0);location.hash='crowdfunding'\">🔊 詳細を見る ➡</button>\n          </div>\n        </div>\n      </div>\n</div>\n\n\n</div>\n\n<div class=\"support-footer\"><div class=\"support-footer-hearts\">♡ ♡ ♡</div><div class=\"support-footer-name\">御手洗 遊</div><div class=\"support-footer-roman\">Mitarai Asobu</div></div>"
   },
   "support": {
     "title": "",
@@ -68,16 +68,42 @@
     "surveyPrivateWeek": "私利私欲週間の感想",
     "surveyDayWatchTime": "曜日ごとの時間帯について",
     "detailsBtn": "詳細 →",
-    "sendMarshmallow": "マシュマロを送る"
+    "sendMarshmallow": "マシュマロを送る",
+    "streamBtn_3000": "配信を見に行く",
+    "coloringContestBtn_3000": "新衣装塗り絵コンテスト",
+    "debutArchiveBtn_3000": "デビュー記念配信アーカイブ"
   },
   "eventStatus": {
     "active": "開催中"
   },
   "eventPeriod": {
     "after_3000_subs_plus_7d": "登録者3000人の1週間後",
-    "all-the-time": "常時開催中"
+    "all-the-time": "常時開催中",
+    "subs_3000_stream": "2026年4月25日(土) 21:00〜"
   },
   "eventDetails": {
+    "subs_3000_stream": {
+      "title": "登録者3000人記念配信",
+      "date": "2026-04-25T21:00",
+      "descHtml": "新衣装の発表やコメント欄対抗のミニゲームがあるよ！数カ月に一回のお祭り配信だ！今回の目標は同接50人！皆で集まろう～🤍　イベントにあわせて新衣装塗り絵コンテストもチェックしてね！過去のイベント配信も見てみる？",
+      "links": [
+        {
+          "label": "配信を見に行く",
+          "url": "https://www.youtube.com/live/6aWcyKT8uh0",
+          "type": "external"
+        },
+        {
+          "label": "新衣装塗り絵コンテスト",
+          "linkTab": "contest",
+          "type": "tab"
+        },
+        {
+          "label": "デビュー記念配信アーカイブ",
+          "url": "https://youtube.com/live/OUEHTFDx-Sw?feature=share",
+          "type": "external"
+        }
+      ]
+    },
     "marshmallow_3000": {
       "title": "マシュマロ募集中",
       "descHtml": "チャンネル登録者3000人の記念配信で読むマシュマロを募集中！私に聞きたいこと、応援メッセージ、褒め言葉、企画リクエストなどをぜひ送ってね～"
