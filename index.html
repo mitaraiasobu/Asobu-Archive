@@ -97,10 +97,18 @@
         </div>
       </div>
 
-      <!-- おすすめ動画 -->
-      <section class="fv-section">
-        <div class="fv-grid" id="featuredVideos"></div>
-      </section>
+      <!-- 最近の配信や動画（自己紹介タブから移動） -->
+      <div class="thumb-gallery-section" id="homeThumbGallerySection">
+        <div class="thumb-gallery-header">
+          <span class="thumb-gallery-title">📺 最近の配信や動画</span>
+        </div>
+        <div class="thumb-gallery-wrap">
+          <button class="tg-btn tg-btn--prev" aria-label="前へ">‹</button>
+          <div class="thumb-gallery-track" id="thumbGalleryTrack"></div>
+          <button class="tg-btn tg-btn--next" aria-label="次へ">›</button>
+        </div>
+        <div class="thumb-gallery-dots" id="thumbGalleryDots"></div>
+      </div>
 
       <div class="home-split">
         <div class="home-left">
@@ -111,7 +119,7 @@
             </div>
 
             <div class="schedule">
-              <img id="scheduleImg" src="./assets/スケジュール19.gif" alt="Weekly schedule" />
+              <img id="scheduleImg" src="./assets/スケジュール15-2.gif" alt="Weekly schedule" />
             </div>
 
             <div class="asobu-note">
@@ -120,13 +128,16 @@
           </section>
         </div>
 
+        <!-- イベント：右カラム -->
         <div class="home-right">
           <section class="card">
             <div class="card__head">
               <h2 id="eventsTitle"></h2>
               <span class="muted" id="eventsHint"></span>
             </div>
-            <div class="events-scroll"><div class="grid" id="eventsGrid"></div></div>
+            <div class="events-scroll">
+              <div class="grid home-events-grid" id="eventsGrid"></div>
+            </div>
           </section>
         </div>
       </div>
