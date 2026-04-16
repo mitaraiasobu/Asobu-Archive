@@ -23,7 +23,7 @@
     "title": "이번 주 방송 스케줄",
     "hint": "",
     "noteLabel": "아소부의 한마디",
-    "noteHtml": "<div class=\"sp-wish\" style=\"margin:16px 0;\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">3000명 기념 방송 일정이 4월 25일 토요일 밤 9시로 정해졌어요!  마감이 생기니까 이제 진짜 열심히 해야겠다는 생각이 들어요 😭  현재 슈퍼챗이 안 되니까 축하(?)는 구글 플레이 카드 같은 선물이면 정말 기쁠 것 같아요!  어른들, 믿을게요 🖤  그리고 굿즈도 나올 예정이니까 지갑 관리 잘 해주세요 ✌</div></div></div></div>"
+    "noteHtml": "<div class=\"sp-wish\" style=\"margin:16px 0;\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">게임 방송은 참고 열심히 할게요 (눈물) 이번 주도 계속 기념 방송 준비 열심히 할 테니까 꼭 와줘요! 알림 켜고 기다려줘 🤍 색칠하기 콘테스트는 아직도 모집 중이에요! 23일까지 #御手洗みたら？ 해시태그로投稿해 주세요!</div></div></div></div>"
   },
   "events": {
     "title": "콘테스트 / 이벤트",
@@ -68,14 +68,18 @@
     "surveyPrivateWeek": "사리사욕 주간의 감상",
     "surveyDayWatchTime": "요일별 시간대에 대해",
     "detailsBtn": "자세히 →",
-    "sendMarshmallow": "마시멜로 보내기"
+    "sendMarshmallow": "마시멜로 보내기",
+    "streamBtn_3000": "방송 보러 가기",
+    "coloringContestBtn_3000": "신의상 색칠하기 콘테스트",
+    "debutArchiveBtn_3000": "데뷔 기념 방송 아카이브"
   },
   "eventStatus": {
     "active": "진행 중"
   },
   "eventPeriod": {
     "after_3000_subs_plus_7d": "구독자 3000명의 1주일 후",
-    "all-the-time": "상시 개최 중"
+    "all-the-time": "상시 개최 중",
+    "subs_3000_stream": "2026년 4월 25일 (토) 21:00~"
   },
   "eventDetails": {
     "illustration_contest": {
@@ -105,6 +109,28 @@
     "marshmallow_3000": {
       "title": "마시멜로 모집 중",
       "descHtml": "구독자 3000명 기념 방송에서 읽을 마시멜로를 모집 중이에요！묻고 싶은 것, 응원 메시지, 기획 요청 등을 보내 주세요～"
+    },
+    "subs_3000_stream": {
+      "title": "登録者3000人記念配信",
+      "date": "2026-04-25T21:00",
+      "descHtml": "新衣装の発表やコメント欄対抗のミニゲームがあるよ！数カ月に一回のお祭り配信だ！今回の目標は同接50人！皆で集まろう～🤍　イベントにあわせて新衣装塗り絵コンテストもチェックしてね！過去のイベント配信も見てみる？",
+      "links": [
+        {
+          "label": "配信を見に行く",
+          "url": "https://www.youtube.com/live/6aWcyKT8uh0",
+          "type": "external"
+        },
+        {
+          "label": "新衣装塗り絵コンテスト",
+          "linkTab": "contest",
+          "type": "tab"
+        },
+        {
+          "label": "デビュー記念配信アーカイブ",
+          "url": "https://youtube.com/live/OUEHTFDx-Sw?feature=share",
+          "type": "external"
+        }
+      ]
     }
   },
   "crowdfunding": {
