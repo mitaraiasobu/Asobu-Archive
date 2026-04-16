@@ -23,7 +23,7 @@
     "title": "This Week's Stream Schedule",
     "hint": "",
     "noteLabel": "A note from Asobu",
-    "noteHtml": "<div class=\"sp-wish\" style=\"margin:16px 0;\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">The schedule for my 3,000 subscriber celebration stream is set for Saturday, April 25th at 9 PM!(JST)  Now that there's a deadline, I’m starting to feel like I really need to get things done 😭  Super Chats are currently unavailable, so I’d really appreciate gifts like Google Play cards as a way to celebrate (?)!  I’m counting on you, adults 🖤  Also, I’ll be releasing some merch, so be careful with your wallet ✌</div></div></div></div>"
+    "noteHtml": "<div class=\"sp-wish\" style=\"margin:16px 0;\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">I’ll hold back on streaming games and keep working hard (teary-eyed). I’ll keep preparing for the anniversary stream this week too, so please make sure to come! Turn on notifications and wait for it 🤍 The coloring contest is still open! Please post with the hashtag #御手洗みたら？ by the 23rd!</div></div></div></div>"
   },
   "events": {
     "title": "Contests / Events",
@@ -68,14 +68,18 @@
     "surveyPrivateWeek": "Impressions of Personal Indulgence Week",
     "surveyDayWatchTime": "About Time Slots by Day of the Week",
     "detailsBtn": "Details →",
-    "sendMarshmallow": "Send a Marshmallow"
+    "sendMarshmallow": "Send a Marshmallow",
+    "streamBtn_3000": "Watch the stream",
+    "coloringContestBtn_3000": "New Outfit Coloring Contest",
+    "debutArchiveBtn_3000": "Debut Anniversary Stream Archive"
   },
   "eventStatus": {
     "active": "Ongoing"
   },
   "eventPeriod": {
     "after_3000_subs_plus_7d": "One week after reaching 3,000 subscribers",
-    "all-the-time": "Always ongoing"
+    "all-the-time": "Always ongoing",
+    "subs_3000_stream": "April 25, 2026 (Sat) from 9:00 PM"
   },
   "eventDetails": {
     "illustration_contest": {
@@ -105,6 +109,28 @@
     "marshmallow_3000": {
       "title": "Marshmallow Submissions Open",
       "descHtml": "Collecting marshmallows to read at the 3,000 subscriber milestone stream! Send me questions, encouraging messages, plans requests, etc.～"
+    },
+    "subs_3000_stream": {
+      "title": "登録者3000人記念配信",
+      "date": "2026-04-25T21:00",
+      "descHtml": "新衣装の発表やコメント欄対抗のミニゲームがあるよ！数カ月に一回のお祭り配信だ！今回の目標は同接50人！皆で集まろう～🤍　イベントにあわせて新衣装塗り絵コンテストもチェックしてね！過去のイベント配信も見てみる？",
+      "links": [
+        {
+          "label": "配信を見に行く",
+          "url": "https://www.youtube.com/live/6aWcyKT8uh0",
+          "type": "external"
+        },
+        {
+          "label": "新衣装塗り絵コンテスト",
+          "linkTab": "contest",
+          "type": "tab"
+        },
+        {
+          "label": "デビュー記念配信アーカイブ",
+          "url": "https://youtube.com/live/OUEHTFDx-Sw?feature=share",
+          "type": "external"
+        }
+      ]
     }
   },
   "crowdfunding": {
