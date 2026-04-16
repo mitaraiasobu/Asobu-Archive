@@ -1,5 +1,27 @@
 [
   {
+    "id": "subs_3000_stream",
+    "start": "2026-04-25 21:00",
+    "status": "active",
+    "mediaType": "image",
+    "src": "./assets/三千人.png",
+    "links": [
+      {
+        "labelKey": "event.streamBtn_3000",
+        "url": "https://www.youtube.com/live/6aWcyKT8uh0"
+      },
+      {
+        "labelKey": "event.coloringContestBtn_3000",
+        "url": "#contest",
+        "linkTab": "contest"
+      },
+      {
+        "labelKey": "event.debutArchiveBtn_3000",
+        "url": "https://youtube.com/live/OUEHTFDx-Sw?feature=share"
+      }
+    ]
+  },
+  {
     "id": "marshmallow_3000",
     "mediaType": "image",
     "src": "./assets/マシュマロ.png",
