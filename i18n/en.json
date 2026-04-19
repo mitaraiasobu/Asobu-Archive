@@ -17,7 +17,8 @@
   },
   "home": {
     "headline": "This Week's Schedule & Ongoing Events",
-    "lead": "Make sure to check it out on days you can come visit 🤍"
+    "lead": "Make sure to check it out on days you can come visit 🤍",
+    "thumbGalleryTitle": "📺 Recent Streams & Videos"
   },
   "schedule": {
     "title": "This Week's Stream Schedule",
@@ -121,130 +122,86 @@
     "goals": [
       {
         "icon": "🕓",
-        "title": "収益化までの再生時間",
-        "subtitle": "4000時間",
+        "title": "Watch Hours for Monetization",
+        "subtitle": "4,000 hours",
         "type": "done",
-        "note": "達成！",
-        "title_en": "Watch Hours for Monetization",
-        "subtitle_en": "4,000 hours",
-        "title_ko": "수익화를 위한 시청 시간",
-        "subtitle_ko": "4000시간",
-        "note_en": "Achieved!",
-        "note_ko": "달성！"
+        "note": "Achieved!"
       },
       {
         "icon": "📈",
-        "title": "チャンネル登録者1万人",
-        "subtitle": "現在 約2700人",
+        "title": "10,000 Channel Subscribers",
+        "subtitle": "Currently ~2,700",
         "type": "progress",
         "current": 2700,
-        "target": 10000,
-        "title_en": "10,000 Channel Subscribers",
-        "subtitle_en": "Currently ~2,700",
-        "title_ko": "채널 구독자 1만 명",
-        "subtitle_ko": "현재 약 2700명"
+        "target": 10000
       },
       {
         "icon": "💰",
-        "title": "月収10万円",
-        "subtitle": "YouTube収益2026！がっぽがっぽ儲け...じゃなくて、みんな応援ありがとう！🖤",
+        "title": "Monthly Income ¥100,000",
+        "subtitle": "YouTube Revenue 2026! Getting rich... just kidding, thank you all for your support! 🖤",
         "type": "monthly",
         "months": [
           {
-            "label": "1月",
+            "label": "Jan",
             "status": "empty",
-            "value": "収益化前",
-            "label_en": "Jan",
-            "label_ko": "1월",
-            "value_en": "Pre-monetization",
-            "value_ko": "수익화 전"
+            "value": "Pre-monetization"
           },
           {
-            "label": "2月",
+            "label": "Feb",
             "status": "done",
-            "value": "¥110,000",
-            "label_en": "Feb",
-            "label_ko": "2월"
+            "value": "¥110,000"
           },
           {
-            "label": "3月",
+            "label": "Mar",
             "status": "current",
-            "value": "¥73,574",
-            "label_en": "Mar",
-            "label_ko": "3월",
-            "value_en": "In progress!",
-            "value_ko": "도전 중！"
+            "value": "¥73,574"
           },
           {
-            "label": "4月",
+            "label": "Apr",
             "status": "current",
-            "value": "挑戦中！",
-            "label_en": "Apr",
-            "label_ko": "4월",
-            "value_en": "In progress!",
-            "value_ko": "도전 중！"
+            "value": "In progress!"
           },
           {
-            "label": "5月",
+            "label": "May",
             "status": "empty",
-            "value": "",
-            "label_en": "May",
-            "label_ko": "5월"
+            "value": ""
           },
           {
-            "label": "6月",
+            "label": "Jun",
             "status": "empty",
-            "value": "",
-            "label_en": "Jun",
-            "label_ko": "6월"
+            "value": ""
           },
           {
-            "label": "7月",
+            "label": "Jul",
             "status": "empty",
-            "value": "",
-            "label_en": "Jul",
-            "label_ko": "7월"
+            "value": ""
           },
           {
-            "label": "8月",
+            "label": "Aug",
             "status": "empty",
-            "value": "",
-            "label_en": "Aug",
-            "label_ko": "8월"
+            "value": ""
           },
           {
-            "label": "9月",
+            "label": "Sep",
             "status": "empty",
-            "value": "",
-            "label_en": "Sep",
-            "label_ko": "9월"
+            "value": ""
           },
           {
-            "label": "10月",
+            "label": "Oct",
             "status": "empty",
-            "value": "",
-            "label_en": "Oct",
-            "label_ko": "10월"
+            "value": ""
           },
           {
-            "label": "11月",
+            "label": "Nov",
             "status": "empty",
-            "value": "",
-            "label_en": "Nov",
-            "label_ko": "11월"
+            "value": ""
           },
           {
-            "label": "12月",
+            "label": "Dec",
             "status": "empty",
-            "value": "",
-            "label_en": "Dec",
-            "label_ko": "12월"
+            "value": ""
           }
-        ],
-        "title_en": "Monthly Income ¥100,000",
-        "subtitle_en": "YouTube Revenue 2026! Getting rich... just kidding, thank you all for your support! 🖤",
-        "title_ko": "월수입 10만 엔",
-        "subtitle_ko": "YouTube 수익 2026！왕창 벌기...가 아니라, 모두 응원해 줘서 고마워요！🖤"
+        ]
       }
     ]
   }
