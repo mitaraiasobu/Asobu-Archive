@@ -1125,6 +1125,9 @@ function renderStaticTexts() {
   if (homeHeadline) homeHeadline.textContent = t("home.headline");
   if (homeLead) homeLead.textContent = t("home.lead");
 
+  const thumbGalleryTitle = $("#thumbGalleryTitle");
+  if (thumbGalleryTitle) thumbGalleryTitle.textContent = t("home.thumbGalleryTitle");
+
   const scheduleTitle = $("#scheduleTitle");
   const scheduleHint = $("#scheduleHint");
   if (scheduleTitle) scheduleTitle.textContent = t("schedule.title");
@@ -1139,13 +1142,6 @@ function renderStaticTexts() {
   const aboutBody = $("#aboutBody");
   if (aboutTitle) aboutTitle.textContent = t("about.title");
   if (aboutBody) { aboutBody.innerHTML = t("about.bodyHtml"); animateSupportHeader(aboutBody); animateTimeline(aboutBody); initDreamGoals(); }
-
-  // ホームのサムネイルギャラリーのタイトルを翻訳
-  const thumbGalleryTitle = document.querySelector(".thumb-gallery-title");
-  if (thumbGalleryTitle) {
-    const label = t("home.thumbGalleryTitle");
-    if (label && label !== "home.thumbGalleryTitle") thumbGalleryTitle.textContent = label;
-  }
 
   // ホームのサムネイルギャラリー初期化（ホームタブに移動したため）
   initThumbGallery();
@@ -2685,12 +2681,9 @@ async function initDreamGoals() {
 }
 
 function renderDreamGoals(wrap, data) {
-  /* 現在の言語を取得 */
-  var lang = (state && state.lang) ? state.lang : (localStorage.getItem("lang") || "ja");
-  var sfx = lang === "ja" ? "" : ("_" + lang);
-
+  /* 各言語JSONはその言語のフィールドのみ持つため sfx 不要 */
   function gl(g, key) {
-    return g[key + sfx] || g[key] || "";
+    return g[key] || "";
   }
 
   /* 達成済み(done)を末尾に移動 */
@@ -2739,10 +2732,8 @@ function renderDreamGoals(wrap, data) {
         else if (m.status === "done")    cls += " dg-month--done";
         else if (m.status === "current") cls += " dg-month--current";
         else                             cls += " dg-month--empty";
-        var label = m["label" + sfx] || m.label;
-        var value = (m.status !== "none" && m["value" + sfx] !== undefined)
-          ? m["value" + sfx]
-          : (m.value || "");
+        var label = m.label;
+        var value = m.status !== "none" ? (m.value || "") : "";
         var inner = m.status === "none"
           ? '<span class="dg-month-x">✕</span>'
           : '<span class="dg-month-val">' + value + '</span>';
