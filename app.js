@@ -1140,6 +1140,13 @@ function renderStaticTexts() {
   if (aboutTitle) aboutTitle.textContent = t("about.title");
   if (aboutBody) { aboutBody.innerHTML = t("about.bodyHtml"); animateSupportHeader(aboutBody); animateTimeline(aboutBody); initDreamGoals(); }
 
+  // ホームのサムネイルギャラリーのタイトルを翻訳
+  const thumbGalleryTitle = document.querySelector(".thumb-gallery-title");
+  if (thumbGalleryTitle) {
+    const label = t("home.thumbGalleryTitle");
+    if (label && label !== "home.thumbGalleryTitle") thumbGalleryTitle.textContent = label;
+  }
+
   // ホームのサムネイルギャラリー初期化（ホームタブに移動したため）
   initThumbGallery();
 
@@ -1551,7 +1558,12 @@ async function setLang(lang) {
   const mobileDropdown = document.getElementById("mobileLangDropdown");
   if (mobileDropdown) mobileDropdown.value = lang;
 
-  state.i18n = await loadJSON(`./i18n/${lang}.json`);
+  // lang.json（軽量テキスト系）と lang2.json（HTMLボディ重量系）をマージして読み込む
+  const [part1, part2] = await Promise.all([
+    loadJSON(`./i18n/${lang}.json`),
+    loadJSON(`./i18n/${lang}2.json`),
+  ]);
+  state.i18n = Object.assign({}, part1, part2);
   document.documentElement.lang = lang === "ja" ? "ja" : (lang === "ko" ? "ko" : "en");
   // 韓国語フォント切り替え用クラス
   document.body.classList.toggle("lang-ko", lang === "ko");
@@ -2654,6 +2666,13 @@ async function initDreamGoals() {
   const wrap = document.getElementById("dreamGoals");
   if (!wrap) return;
 
+  // i18nのgoalsが存在すればそちらを優先（言語切替対応）
+  if (state.i18n && state.i18n.goals) {
+    renderDreamGoals(wrap, state.i18n.goals);
+    return;
+  }
+
+  // fallback: goals.jsonを直接fetch
   if (!_goalsData) {
     try {
       const res = await fetch("./goals.json", { cache: "no-store" });
