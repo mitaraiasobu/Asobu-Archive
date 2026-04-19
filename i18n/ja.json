@@ -17,7 +17,8 @@
   },
   "home": {
     "headline": "今週の予定&開催中のイベント",
-    "lead": "遊びに来れる日はちゃ～んと見に来てね🤍"
+    "lead": "遊びに来れる日はちゃ～んと見に来てね🤍",
+    "thumbGalleryTitle": "📺 最近の配信や動画"
   },
   "schedule": {
     "title": "今週の配信スケジュール",
@@ -124,13 +125,7 @@
         "title": "収益化までの再生時間",
         "subtitle": "4000時間",
         "type": "done",
-        "note": "達成！",
-        "title_en": "Watch Hours for Monetization",
-        "subtitle_en": "4,000 hours",
-        "title_ko": "수익화를 위한 시청 시간",
-        "subtitle_ko": "4000시간",
-        "note_en": "Achieved!",
-        "note_ko": "달성！"
+        "note": "達成！"
       },
       {
         "icon": "📈",
@@ -138,11 +133,7 @@
         "subtitle": "現在 約2700人",
         "type": "progress",
         "current": 2700,
-        "target": 10000,
-        "title_en": "10,000 Channel Subscribers",
-        "subtitle_en": "Currently ~2,700",
-        "title_ko": "채널 구독자 1만 명",
-        "subtitle_ko": "현재 약 2700명"
+        "target": 10000
       },
       {
         "icon": "💰",
@@ -153,98 +144,64 @@
           {
             "label": "1月",
             "status": "empty",
-            "value": "収益化前",
-            "label_en": "Jan",
-            "label_ko": "1월",
-            "value_en": "Pre-monetization",
-            "value_ko": "수익화 전"
+            "value": "収益化前"
           },
           {
             "label": "2月",
             "status": "done",
-            "value": "¥110,000",
-            "label_en": "Feb",
-            "label_ko": "2월"
+            "value": "¥110,000"
           },
           {
             "label": "3月",
             "status": "current",
-            "value": "¥73,574",
-            "label_en": "Mar",
-            "label_ko": "3월",
-            "value_en": "In progress!",
-            "value_ko": "도전 중！"
+            "value": "¥73,574"
           },
           {
             "label": "4月",
             "status": "current",
-            "value": "挑戦中！",
-            "label_en": "Apr",
-            "label_ko": "4월",
-            "value_en": "In progress!",
-            "value_ko": "도전 중！"
+            "value": "挑戦中！"
           },
           {
             "label": "5月",
             "status": "empty",
-            "value": "",
-            "label_en": "May",
-            "label_ko": "5월"
+            "value": ""
           },
           {
             "label": "6月",
             "status": "empty",
-            "value": "",
-            "label_en": "Jun",
-            "label_ko": "6월"
+            "value": ""
           },
           {
             "label": "7月",
             "status": "empty",
-            "value": "",
-            "label_en": "Jul",
-            "label_ko": "7월"
+            "value": ""
           },
           {
             "label": "8月",
             "status": "empty",
-            "value": "",
-            "label_en": "Aug",
-            "label_ko": "8월"
+            "value": ""
           },
           {
             "label": "9月",
             "status": "empty",
-            "value": "",
-            "label_en": "Sep",
-            "label_ko": "9월"
+            "value": ""
           },
           {
             "label": "10月",
             "status": "empty",
-            "value": "",
-            "label_en": "Oct",
-            "label_ko": "10월"
+            "value": ""
           },
           {
             "label": "11月",
             "status": "empty",
-            "value": "",
-            "label_en": "Nov",
-            "label_ko": "11월"
+            "value": ""
           },
           {
             "label": "12月",
             "status": "empty",
-            "value": "",
-            "label_en": "Dec",
-            "label_ko": "12월"
+            "value": ""
           }
-        ],
-        "title_en": "Monthly Income ¥100,000",
-        "subtitle_en": "YouTube Revenue 2026! Getting rich... just kidding, thank you all for your support! 🖤",
-        "title_ko": "월수입 10만 엔",
-        "subtitle_ko": "YouTube 수익 2026！왕창 벌기...가 아니라, 모두 응원해 줘서 고마워요！🖤"
+        ]
       }
     ]
   }
