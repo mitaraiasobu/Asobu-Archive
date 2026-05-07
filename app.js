@@ -11,14 +11,18 @@
     return;
   }
 
-  // 過去に訪問済みの場合はイントロをスキップ
-  if (localStorage.getItem("introPlayed") === "1") {
+  // 1日1回イントロを表示（日付が変わったらまた表示）
+  var _today = new Date().toDateString();
+  var _introDate = localStorage.getItem("introPlayedDate");
+  if (_introDate === _today) {
     window.__introFinishPromise = Promise.resolve();
     window.__introFinishResolve = () => {};
     return;
   }
-  // 初回訪問フラグ（MISSIONアニメ判定に使用）
+  // 本日分を記録
   window.__freshVisit = true;
+  localStorage.setItem("introPlayedDate", _today);
+  // 後方互換のためintroPlayedも設定
   localStorage.setItem("introPlayed", "1");
 
   const savedLang = (localStorage.getItem("lang") || "ja");
@@ -356,6 +360,11 @@ function setActiveTab(tabKey) {
   // パーティクルレイン起動
   triggerTabRain(tabKey);
 
+  // 自己紹介タブ：画像スライダー自動再生を起動
+  if (tabKey === "about" && typeof window._aboutSliderStartAuto === "function") {
+    window._aboutSliderStartAuto();
+  }
+
   // タブを開いたときにアニメーション発火
   if (!document.body.classList.contains("no-anim")) {
     if (tabKey === "support") {
@@ -374,9 +383,12 @@ function setActiveTab(tabKey) {
         cfBody.dataset.missionDone = "1";
         const missionTitle = t("crowdfunding.missionTitle") || "防音室を導入して絶叫を防げ！";
         // キャッシュ済み（再訪問）ならMISSIONアニメをスキップ
-        if (localStorage.getItem("introPlayed") === "1" && !window.__freshVisit) {
+        var _todayCf = new Date().toDateString();
+        var _cfMissionDate = localStorage.getItem("cfMissionDate");
+        if (_cfMissionDate === _todayCf && !window.__freshVisit) {
           initCfPhysicsTank();
         } else {
+          localStorage.setItem("cfMissionDate", _todayCf);
           // まず即座にコンテンツを隠す
           cfBody.querySelectorAll(".cf-split > div, .support-header").forEach(el => {
             el.style.opacity = "0"; el.style.transition = "none"; el.style.transform = "translateY(16px)";
@@ -399,9 +411,12 @@ function setActiveTab(tabKey) {
         contestBody.dataset.missionDone = "1";
         const missionTitle = t("contest.missionTitle") || "学園衣装をコーディネートしよう！";
         // キャッシュ済み（再訪問）ならMISSIONアニメをスキップ
-        if (localStorage.getItem("introPlayed") === "1" && !window.__freshVisit) {
+        var _todayCt = new Date().toDateString();
+        var _ctMissionDate = localStorage.getItem("ctMissionDate");
+        if (_ctMissionDate === _todayCt && !window.__freshVisit) {
           // スキップ（コンテンツをそのまま表示）
         } else {
+          localStorage.setItem("ctMissionDate", _todayCt);
           // まず即座にコンテンツを隠す
           const contestRoot = contestBody.querySelector("#contest-root");
           if (contestRoot) {
@@ -732,7 +747,7 @@ function triggerTabRain(tabKey) {
   } else if (tabKey === 'crowdfunding' || tabKey === 'support') {
     startMoneyRain();
   } else if (tabKey === 'contest') {
-    _rainClear();
+    startHeartRain();
   } else {
     // home を含む残りタブ全てにハート雨
     startHeartRain();
@@ -1554,11 +1569,13 @@ async function setLang(lang) {
   const mobileDropdown = document.getElementById("mobileLangDropdown");
   if (mobileDropdown) mobileDropdown.value = lang;
 
-  // lang.json（軽量テキスト系）と lang2.json（HTMLボディ重量系）をマージして読み込む
-  const [part1, part2] = await Promise.all([
+  // lang.json（軽量テキスト系）と分割ファイル群をマージして読み込む
+  const _keys2 = ['support','membership','goods','log','notice','contact','crowdfunding','contest'];
+  const [part1, ...parts2] = await Promise.all([
     loadJSON(`./i18n/${lang}.json`),
-    loadJSON(`./i18n/${lang}2.json`),
+    ..._keys2.map(k => loadJSON(`./i18n/${k}-${lang.toUpperCase()}.json`).catch(() => ({}))),
   ]);
+  const part2 = Object.assign({}, ...parts2);
   state.i18n = Object.assign({}, part1, part2);
   document.documentElement.lang = lang === "ja" ? "ja" : (lang === "ko" ? "ko" : "en");
   // 韓国語フォント切り替え用クラス
@@ -2138,6 +2155,57 @@ async function init() {
   // ────────────────────────────────────────────────────────────────
 
   wireOnce();
+
+/* ── クラファン内タブ切り替え ── */
+window.cfTabSwitch = function(name, btn) {
+  document.querySelectorAll('.cf-inner-panel').forEach(function(p) { p.classList.remove('active'); });
+  document.querySelectorAll('.cf-inner-tab').forEach(function(b) { b.classList.remove('active'); });
+  var panel = document.getElementById('cf-panel-' + name);
+  if (panel) panel.classList.add('active');
+  if (btn) btn.classList.add('active');
+};
+
+  // ── ヘッダー＆タブ: スクロールで隠す ＋ フロートボタン ──
+  (function() {
+    var topbar = document.querySelector('.topbar');
+    var tabs = document.getElementById('tabs');
+    var lastY = 0;
+    var threshold = 80;
+
+    // フロートボタンをbodyに追加
+    var floatBtn = document.createElement('button');
+    floatBtn.className = 'scroll-top-float';
+    floatBtn.setAttribute('aria-label', 'ページトップへ');
+    floatBtn.innerHTML = '↑';
+    floatBtn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    document.body.appendChild(floatBtn);
+
+    window.addEventListener('scroll', function() {
+      var y = window.scrollY;
+
+      // ヘッダー＆タブの表示制御
+      if (y > threshold && y > lastY) {
+        // 下にスクロール → 隠す
+        if (topbar) topbar.classList.add('topbar--hidden');
+        if (tabs) tabs.classList.add('tabs--hidden');
+      } else {
+        // 上にスクロール or トップ付近 → 表示
+        if (topbar) topbar.classList.remove('topbar--hidden');
+        if (tabs) tabs.classList.remove('tabs--hidden');
+      }
+
+      // フロートボタンの表示制御
+      if (y > 300) {
+        floatBtn.classList.add('visible');
+      } else {
+        floatBtn.classList.remove('visible');
+      }
+
+      lastY = y;
+    }, { passive: true });
+  })();
 
   // Events (optional)
   try {
@@ -2726,19 +2794,48 @@ function renderDreamGoals(wrap, data) {
 
     } else if (g.type === "monthly") {
       /* ── 月別カード ── */
-      var monthsHtml = (g.months || []).map(function(m) {
+      // グループ別にwrapperで囲んでHTMLを生成
+      var monthsHtml = '';
+      var months = g.months || [];
+      var i = 0;
+      while (i < months.length) {
+        var m = months[i];
         var cls = "dg-month";
         if      (m.status === "none")    cls += " dg-month--none";
         else if (m.status === "done")    cls += " dg-month--done";
         else if (m.status === "current") cls += " dg-month--current";
         else                             cls += " dg-month--empty";
-        var label = m.label;
         var value = m.status !== "none" ? (m.value || "") : "";
         var inner = m.status === "none"
           ? '<span class="dg-month-x">✕</span>'
           : '<span class="dg-month-val">' + value + '</span>';
-        return '<div class="' + cls + '"><div class="dg-month-label">' + label + '</div>' + inner + '</div>';
-      }).join('');
+        var cell = '<div class="' + cls + '"><div class="dg-month-label">' + m.label + '</div>' + inner + '</div>';
+
+        // グループの先頭ならまとめてwrapperに入れる
+        if (m.group) {
+          var groupName = m.group;
+          var groupCells = cell;
+          i++;
+          while (i < months.length && months[i].group === groupName) {
+            var gm = months[i];
+            var gcls = "dg-month";
+            if      (gm.status === "none")    gcls += " dg-month--none";
+            else if (gm.status === "done")    gcls += " dg-month--done";
+            else if (gm.status === "current") gcls += " dg-month--current";
+            else                              gcls += " dg-month--empty";
+            var gvalue = gm.status !== "none" ? (gm.value || "") : "";
+            var ginner = gm.status === "none"
+              ? '<span class="dg-month-x">✕</span>'
+              : '<span class="dg-month-val">' + gvalue + '</span>';
+            groupCells += '<div class="' + gcls + '"><div class="dg-month-label">' + gm.label + '</div>' + ginner + '</div>';
+            i++;
+          }
+          monthsHtml += '<div class="dg-month-group-wrap">' + groupCells + '</div>';
+        } else {
+          monthsHtml += cell;
+          i++;
+        }
+      }
 
       card.innerHTML =
         '<div class="dg-head">' +
@@ -2873,3 +2970,136 @@ init().catch((err) => {
   console.error(err);
   alert("初期化に失敗しました。コンソールを確認してください。");
 });
+/* ─────────────────────────────────────────────────────────────
+   自己紹介タブ - スライド式立ち絵（フェード・自動再生・ボタンハイライト）
+   ───────────────────────────────────────────────────────────── */
+(function () {
+  let _idx = 0;
+  let _autoTimer = null;
+  let _autoStarted = false;
+  const FADE_MS = 400;
+  const INTERVAL_MS = 2000;
+
+  function updateButtons(n) {
+    document.querySelectorAll('.about-stand-icon-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === n);
+    });
+    // .about-stand-dot があれば更新
+    document.querySelectorAll('.about-stand-dot').forEach((dot, i) => {
+      dot.classList.toggle('active', i === n);
+    });
+  }
+
+  function goTo(n, fromAuto) {
+    const slides = document.querySelectorAll('.about-stand-slide');
+    if (!slides.length) return;
+    const total = slides.length;
+    const next = ((n % total) + total) % total;
+    if (next === _idx && !fromAuto) return;
+
+    const current = slides[_idx];
+    const target  = slides[next];
+
+    // フェードアウト → フェードイン
+    current.style.transition = 'opacity ' + FADE_MS + 'ms ease';
+    current.style.opacity = '0';
+
+    setTimeout(() => {
+      current.style.display = 'none';
+      current.style.transition = '';
+      current.style.opacity = '1';
+
+      target.style.opacity = '0';
+      target.style.display = 'block';
+      // 強制リフロー
+      void target.offsetWidth;
+      target.style.transition = 'opacity ' + FADE_MS + 'ms ease';
+      target.style.opacity = '1';
+
+      setTimeout(() => {
+        target.style.transition = '';
+      }, FADE_MS);
+
+      _idx = next;
+      updateButtons(_idx);
+    }, FADE_MS);
+  }
+
+  // 自動再生：全画像を1周したら停止（0→1→…→last→0で停止）
+  function startAuto() {
+    if (_autoStarted) return;
+    _autoStarted = true;
+    const slides = document.querySelectorAll('.about-stand-slide');
+    if (!slides.length || slides.length < 2) return;
+    const total = slides.length;
+    let steps = 0; // 進んだ枚数
+
+    _autoTimer = setInterval(() => {
+      steps++;
+      if (steps >= total) {
+        // 最後のステップ：最初（index 0）に戻って停止
+        clearInterval(_autoTimer);
+        _autoTimer = null;
+        goTo(0, true);
+      } else {
+        goTo(_idx + 1, true);
+      }
+    }, INTERVAL_MS);
+  }
+
+  window.aboutSliderGo = function(n) {
+    // 手動操作で自動を止める
+    if (_autoTimer) {
+      clearInterval(_autoTimer);
+      _autoTimer = null;
+    }
+    goTo(n, false);
+  };
+
+  // 自己紹介タブが表示されたタイミングで自動再生を開始
+  // MutationObserver で page-about の表示を監視
+  const aboutPage = document.getElementById('page-about');
+  if (aboutPage) {
+    const obs = new MutationObserver(() => {
+      if (aboutPage.classList.contains('active') || aboutPage.style.display !== 'none') {
+        startAuto();
+      }
+    });
+    obs.observe(aboutPage, { attributes: true, attributeFilter: ['class', 'style'] });
+  }
+
+  // タブクリックでも起動できるように、グローバルフックを追加
+  window._aboutSliderStartAuto = startAuto;
+})();
+
+/* ─────────────────────────────────────────────────────────────
+   オニギリスライダー
+   ───────────────────────────────────────────────────────────── */
+let _onigiriIndex = 0;
+window.onigiriGo = function(n) {
+  _onigiriIndex = n;
+  const track = document.getElementById('onigiriTrack');
+  const dots = document.querySelectorAll('.onigiri-dot');
+  
+  if (track) {
+    track.style.transform = 'translateX(' + (-n * 100) + '%)';
+  }
+  
+  dots.forEach((dot, i) => {
+    if (i === n) {
+      dot.classList.add('active');
+    } else {
+      dot.classList.remove('active');
+    }
+  });
+};
+
+/* ─────────────────────────────────────────────────────────────
+   コンテスト - 塗り絵ツールトグル
+   ───────────────────────────────────────────────────────────── */
+window.toggleColoringTool = function() {
+  const tool = document.getElementById('contestColoringTool');
+  if (tool) {
+    tool.style.display = tool.style.display === 'none' ? 'block' : 'none';
+  }
+};
