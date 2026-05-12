@@ -3405,3 +3405,28 @@ body:not(.no-anim) .chip {
     max-width: 240px;
   }
 }
+
+/* ============================================================
+   グッズソートボタン
+   ============================================================ */
+.goods-sort-btn:hover {
+  background: rgba(255,255,255,.15) !important;
+  border-color: rgba(255,255,255,.3) !important;
+  transform: translateY(-1px);
+}
+
+.goods-sort-btn--active {
+  background: rgba(255,110,180,.3) !important;
+  border: 1px solid rgba(255,110,180,.5) !important;
+}
+
+.goods-sort-btn--active:hover {
+  background: rgba(255,110,180,.4) !important;
+  border-color: rgba(255,110,180,.6) !important;
+}
+
+#goods-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
