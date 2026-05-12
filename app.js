@@ -1179,7 +1179,13 @@ function renderStaticTexts() {
   const goodsTitle = $("#goodsTitle");
   const goodsBody = $("#goodsBody");
   if (goodsTitle) goodsTitle.textContent = t("goods.title");
-  if (goodsBody) { goodsBody.innerHTML = t("goods.bodyHtml"); animateSupportHeader(goodsBody); animateTimeline(goodsBody); }
+  if (goodsBody) { 
+    goodsBody.innerHTML = t("goods.bodyHtml"); 
+    animateSupportHeader(goodsBody); 
+    animateTimeline(goodsBody);
+    // グッズソート機能を初期化
+    initGoodsSort();
+  }
 
   const logTitle = $("#logTitle");
   const logBody = $("#logBody");
@@ -3103,3 +3109,66 @@ window.toggleColoringTool = function() {
     tool.style.display = tool.style.display === 'none' ? 'block' : 'none';
   }
 };
+
+/* ─────────────────────────────────────────────────────────────
+   グッズソート機能
+   ───────────────────────────────────────────────────────────── */
+function initGoodsSort() {
+  const container = document.getElementById('goods-container');
+  const sortButtons = document.querySelectorAll('.goods-sort-btn');
+  
+  if (!container || sortButtons.length === 0) return;
+  
+  // 現在のソート状態を保持（デフォルトは新しい順）
+  let currentSort = 'new';
+  
+  // 初期表示時に新しい順にソート
+  sortGoods('new');
+  
+  sortButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const sortType = this.dataset.sort;
+      
+      // ボタンのアクティブ状態を更新
+      sortButtons.forEach(b => b.classList.remove('goods-sort-btn--active'));
+      this.classList.add('goods-sort-btn--active');
+      
+      // ソートを実行
+      sortGoods(sortType);
+      currentSort = sortType;
+    });
+  });
+  
+  function sortGoods(sortType) {
+    const goodsBoxes = Array.from(container.querySelectorAll('.goods-box'));
+    
+    // order=0のアイテム（寿命同盟限定グッズ）を固定
+    const fixedBox = goodsBoxes.find(box => box.dataset.goodsOrder === '0');
+    // order=1以上のアイテムをソート対象とする
+    const sortableBoxes = goodsBoxes.filter(box => {
+      const order = box.dataset.goodsOrder;
+      return order !== undefined && order !== '0';
+    });
+    
+    // ソート
+    sortableBoxes.sort((a, b) => {
+      const orderA = parseInt(a.dataset.goodsOrder);
+      const orderB = parseInt(b.dataset.goodsOrder);
+      
+      if (sortType === 'new') {
+        // 新しい順（order番号の降順）
+        return orderB - orderA;
+      } else {
+        // 古い順（order番号の昇順）
+        return orderA - orderB;
+      }
+    });
+    
+    // コンテナをクリアして再配置
+    // 固定アイテム（寿命同盟限定グッズ）は常に最初
+    if (fixedBox) {
+      container.appendChild(fixedBox);
+    }
+    sortableBoxes.forEach(box => container.appendChild(box));
+  }
+}
