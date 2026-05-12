@@ -3129,9 +3129,15 @@ function initGoodsSort() {
     btn.addEventListener('click', function() {
       const sortType = this.dataset.sort;
       
-      // ボタンのアクティブ状態を更新
-      sortButtons.forEach(b => b.classList.remove('goods-sort-btn--active'));
+      // ボタンのアクティブ状態を更新（インラインスタイルもリセット）
+      sortButtons.forEach(b => {
+        b.classList.remove('goods-sort-btn--active');
+        b.style.background = 'rgba(255,255,255,.1)';
+        b.style.border = '1px solid rgba(255,255,255,.2)';
+      });
       this.classList.add('goods-sort-btn--active');
+      this.style.background = 'rgba(255,110,180,.3)';
+      this.style.border = '1px solid rgba(255,110,180,.5)';
       
       // ソートを実行
       sortGoods(sortType);
