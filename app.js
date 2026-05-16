@@ -2851,7 +2851,10 @@ function renderDreamGoals(wrap, data) {
             '<div class="dg-sub">' + gl(g, "subtitle") + '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="dg-months">' + monthsHtml + '</div>';
+        '<div class="dg-months">' + monthsHtml + '</div>' +
+        (g.buttonText ? '<div style="margin-top: 16px; text-align: center;">' +
+          '<a href="#crowdfunding" class="chip" style="display: inline-block; padding: 10px 20px; text-decoration: none; background: rgba(255,121,176,.25); border-color: rgba(255,121,176,.6); box-shadow: 0 0 0 2px rgba(255,121,176,.1); font-weight: 500;">' + gl(g, "buttonText") + '</a>' +
+        '</div>' : '');
     }
 
     wrap.appendChild(card);
