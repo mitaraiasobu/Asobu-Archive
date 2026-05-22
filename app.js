@@ -387,6 +387,8 @@ function setActiveTab(tabKey) {
         var _cfMissionDate = localStorage.getItem("cfMissionDate");
         if (_cfMissionDate === _todayCf && !window.__freshVisit) {
           initCfPhysicsTank();
+          // PayPalボタンをレンダリング（MISSION演出スキップ時）
+          setTimeout(renderPayPalButtons, 300);
         } else {
           localStorage.setItem("cfMissionDate", _todayCf);
           // まず即座にコンテンツを隠す
@@ -395,8 +397,11 @@ function setActiveTab(tabKey) {
           });
           const doMission = () => {
             triggerMissionAnim(cfBody, missionTitle, ".cf-split > div, .support-header");
-            // ミッション演出終了後にタンク初期化
-            setTimeout(initCfPhysicsTank, 3400);
+            // ミッション演出終了後にタンク初期化とPayPalボタンをレンダリング
+            setTimeout(() => {
+              initCfPhysicsTank();
+              renderPayPalButtons();
+            }, 3400);
           };
           if (window.__introFinishPromise) {
             window.__introFinishPromise.then(doMission);
@@ -404,6 +409,9 @@ function setActiveTab(tabKey) {
             doMission();
           }
         }
+      } else if (cfBody) {
+        // 既にmissionDone済みの場合（タブ再訪問時）
+        setTimeout(renderPayPalButtons, 300);
       }
     } else if (tabKey === "contest") {
       const contestBody = document.getElementById("contestBody");
@@ -1208,6 +1216,8 @@ function renderStaticTexts() {
     delete cfBody.dataset.physicsDone;
     animateSupportHeader(cfBody);
     animateTimeline(cfBody);
+    // PayPalボタンをレンダリング
+    setTimeout(renderPayPalButtons, 300);
     // タンク初期化は翻訳処理が全部終わった後にまとめて行う（後述）
     if (_rain.activeTab === "crowdfunding") {
       cfBody.dataset.missionDone = "1";
@@ -3181,3 +3191,58 @@ function initGoodsSort() {
     sortableBoxes.forEach(box => container.appendChild(box));
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   PayPalボタンレンダリング
+   ───────────────────────────────────────────────────────────── */
+function renderPayPalButtons() {
+  // 言語別ボタンID
+  const PAYPAL_BUTTON_IDS = {
+    ja: "RK2RCL2TGJWVU",
+    en: "JV7MAH6NJSJ78",
+    ko: "LJRWNXZZMM3Z2",
+  };
+  const lang = (localStorage.getItem("lang") || "ja").toLowerCase();
+  const hostedButtonId = PAYPAL_BUTTON_IDS[lang] || PAYPAL_BUTTON_IDS.ja;
+
+  // PayPal SDKが読み込まれるまで待機
+  function attemptRender() {
+    if (typeof paypal !== 'undefined' && paypal.HostedButtons) {
+      // ページ内の全PayPalコンテナを対象（クラファン・supportタブ両対応）
+      const containers = document.querySelectorAll('[id^="paypal-container-"]');
+      containers.forEach(function(container) {
+        // 中身が空の場合のみレンダリング（再注入後も確実に描画）
+        if (!container.hasChildNodes()) {
+          paypal.HostedButtons({
+            hostedButtonId: hostedButtonId,
+            styles: {
+              shape: "pill",
+              color: "gold",
+              label: "paypal",
+            },
+          }).render("#" + container.id);
+        }
+      });
+    } else {
+      // PayPal SDKがまだ読み込まれていない場合は100ms後に再試行
+      setTimeout(attemptRender, 100);
+    }
+  }
+  attemptRender();
+}
+
+/* ─────────────────────────────────────────────────────────────
+   クラウドファンディングタブ切り替え
+   ───────────────────────────────────────────────────────────── */
+window.cfTabSwitch = function(panelId, btn) {
+  // すべてのタブとパネルから active を削除
+  document.querySelectorAll('.cf-inner-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.cf-inner-panel').forEach(p => p.classList.remove('active'));
+  
+  // クリックされたタブとパネルに active を追加
+  btn.classList.add('active');
+  const panel = document.getElementById('cf-panel-' + panelId);
+  if (panel) {
+    panel.classList.add('active');
+  }
+};

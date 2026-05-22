@@ -3429,4 +3429,110 @@ body:not(.no-anim) .chip {
   display: flex;
   flex-direction: column;
   gap: 0;
+}/* PayPalボタンコンテナの幅を確保 */
+[id^="paypal-container-"] {
+  min-width: 150px;
+  width: auto;
+}
+
+/* ============================================================
+   PayPal スタンドアロンボタン（⋈の下）
+   ============================================================ */
+.paypal-standalone-wrap {
+  margin: 10px 0 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.paypal-standalone-wrap [id^="paypal-container-"] {
+  width: 100%;
+  max-width: 340px;
+  border: 2px solid #ff79b0;
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(255, 121, 176, 0.05);
+  box-shadow: 0 0 0 1px rgba(255, 121, 176, 0.15), 0 4px 20px rgba(255, 121, 176, 0.12);
+}
+
+/* PayPal フォーム内：通常テキストは白 */
+.paypal-standalone-wrap span,
+.paypal-standalone-wrap label,
+.paypal-standalone-wrap p,
+.paypal-standalone-wrap div {
+  color: #ffffff !important;
+}
+
+/* 金額入力ボックスを白に近い灰色に */
+.paypal-standalone-wrap input#amount {
+  background: #ffffff !important;
+}
+
+/* ¥ と JPY だけピンク */
+.paypal-standalone-wrap .currency-symbol,
+.paypal-standalone-wrap [class*="currency-symbol"],
+.paypal-standalone-wrap [class*="currency-code"],
+.paypal-standalone-wrap [class*="currencyCode"],
+.paypal-standalone-wrap [class*="currency-label"] {
+  color: #ff79b0 !important;
+}
+
+/* PayPal iframeにフィルターを適用 */
+/* 記入ボックス：灰色背景・白文字 / ボタン：暗めの色調 */
+/* PayPalで支払う ボタン（title属性あり） */
+.paypal-standalone-wrap iframe[title]:not([title=""]) {
+  filter: hue-rotate(200deg) saturate(1) brightness(1.05) contrast(1.5);
+}
+
+/* チェックアウト ボタン（title属性が空） */
+.paypal-standalone-wrap iframe[title=""] {
+  filter: hue-rotate(200deg) saturate(1) brightness(1.05) contrast(1.5);
+}
+
+.support-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.support-item-row .support-item {
+  flex: 1;
+  min-width: 0;
+}
+
+/* PayPalボタンを含む右側のラッパー */
+.support-item-row > div:last-child {
+  flex-shrink: 0;
+  min-width: 150px;
+}
+
+/* PayPalボタンのための特別なスタイル */
+.support-item-arrow:has([id^="paypal-container-"]) {
+  cursor: default;
+  background: transparent;
+  border: none;
+  padding: 0;
+  min-width: 150px;
+}
+
+.support-item-arrow:has([id^="paypal-container-"]):hover {
+  transform: none;
+  color: inherit;
+}
+/* ============================================================
+   PayPal - Supportタブ用ワイド版
+   ============================================================ */
+.paypal-standalone-wrap--wide {
+  justify-content: center;
+  width: 100%;
+}
+.paypal-standalone-wrap--wide [id^="paypal-container-"],
+.paypal-standalone-wrap--wide [id^="paypal-form-fields-container-"],
+.paypal-standalone-wrap--wide [id^="paypal-form-fields-container-"] > *,
+.paypal-standalone-wrap--wide [id^="paypal-form-fields-container-"] input,
+.paypal-standalone-wrap--wide [id^="paypal-form-fields-container-"] textarea,
+.paypal-standalone-wrap--wide [id^="paypal-form-fields-container-"] button,
+.paypal-standalone-wrap--wide [id^="paypal-form-fields-container-"] div {
+  max-width: 100% !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
