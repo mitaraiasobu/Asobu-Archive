@@ -7,7 +7,8 @@
     "goods": "굿즈",
     "log": "활동 기록",
     "notice": "지침",
-    "contact": "편지＆문의하기",
+    "contact": "편지",
+    "inquiry": "문의·안건 의뢰",
     "crowdfunding": "크라우드펀딩",
     "contest": "콘테스트"
   },
@@ -24,7 +25,7 @@
     "title": "이번 주 방송 스케줄",
     "hint": "",
     "noteLabel": "아소부의 한마디",
-    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"미타라이 아소부\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">내일 18시에 자기소개 쇼츠 영상을 올릴게요! (화요일)　그걸 보고 잡담 방송을 보러 와주는 초면 분들이 있으면 좋겠네~　멤버십은 현재 ASMR 영상을 준비 중이에요!　다음 주말까지 완성하고 싶은데. 잘 만들 수 있으려나~...　멤버 한정 가틱폰도 다음 주말이에요! 기대해줘요🤍</div></div></div></div>"
+    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"미타라이 아소부\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">드디어 토모다치 컬렉션과 NTE를 첫 플레이! 특히 토모코레 캐릭터 만들기가 기대돼서, 그것만 하는 방송도 해볼까 고민 중이야. 멤버 한정으로 다른 섬도 만들 예정~! 쿠킹은 참여형이지만 한 번만 할 거야 (너무 어려웠어). 직접 구매해서 플레이할 예정인 사람은 그 점 참고해서 구매해줘!</div></div></div></div>"
   },
   "events": {
     "title": "콘테스트 / 이벤트",
