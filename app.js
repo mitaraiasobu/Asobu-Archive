@@ -413,6 +413,20 @@ function setActiveTab(tabKey) {
         // 既にmissionDone済みの場合（タブ再訪問時）
         setTimeout(renderPayPalButtons, 300);
       }
+    } else if (tabKey === "contact") {
+      const contactBody = document.getElementById("contactBody");
+      if (contactBody) {
+        contactBody.innerHTML = t("contact.bodyHtml");
+        animateSupportHeader(contactBody);
+        animateTimeline(contactBody);
+      }
+    } else if (tabKey === "inquiry") {
+      const inquiryBody = document.getElementById("inquiryBody");
+      if (inquiryBody) {
+        inquiryBody.innerHTML = t("inquiry.bodyHtml");
+        animateSupportHeader(inquiryBody);
+        animateTimeline(inquiryBody);
+      }
     } else if (tabKey === "contest") {
       const contestBody = document.getElementById("contestBody");
       if (contestBody && !contestBody.dataset.missionDone) {
@@ -1258,6 +1272,9 @@ function renderStaticTexts() {
   if (contactTitle) contactTitle.textContent = t("contact.title");
   if (contactBody) { contactBody.innerHTML = t("contact.bodyHtml"); animateSupportHeader(contactBody); animateTimeline(contactBody); }
 
+  const inquiryBody = $("#inquiryBody");
+  if (inquiryBody) { inquiryBody.innerHTML = t("inquiry.bodyHtml"); animateSupportHeader(inquiryBody); animateTimeline(inquiryBody); }
+
   const footerNote = $("#footerNote");
   if (footerNote) footerNote.textContent = t("footer.note");
 
@@ -1586,7 +1603,7 @@ async function setLang(lang) {
   if (mobileDropdown) mobileDropdown.value = lang;
 
   // lang.json（軽量テキスト系）と分割ファイル群をマージして読み込む
-  const _keys2 = ['support','membership','goods','log','notice','contact','crowdfunding','contest'];
+  const _keys2 = ['support','membership','goods','log','notice','contact','crowdfunding','contest','inquiry'];
   const [part1, ...parts2] = await Promise.all([
     loadJSON(`./i18n/${lang}.json`),
     ..._keys2.map(k => loadJSON(`./i18n/${k}-${lang.toUpperCase()}.json`).catch(() => ({}))),
@@ -1616,7 +1633,7 @@ async function setLang(lang) {
 
 function handleRoute() {
   const hash = location.hash.replace("#", "") || "home";
-  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest"];
+  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest", "inquiry"];
 
   // 完全一致ならそのままタブ切り替え
   if (known.includes(hash)) {
