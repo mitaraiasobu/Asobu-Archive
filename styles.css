@@ -3536,3 +3536,84 @@ body:not(.no-anim) .chip {
   width: 100% !important;
   box-sizing: border-box !important;
 }
+/* ── biz-info-block: 企業様向け情報 ── */
+.biz-info-block {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.biz-section {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,122,191,.18);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.biz-section-title {
+  font-weight: 700;
+  font-size: .95em;
+  color: #ff7abf;
+  margin-bottom: 8px;
+  letter-spacing: .02em;
+}
+.biz-section-body {
+  font-size: .88em;
+  line-height: 1.75;
+  color: #fff;
+}
+.biz-updated {
+  display: inline-block;
+  font-size: .8em;
+  opacity: .6;
+  margin-bottom: 10px;
+}
+.biz-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+  margin: 10px 0;
+}
+.biz-stat-group {
+  background: rgba(255,255,255,.04);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.biz-stat-label {
+  font-size: .78em;
+  font-weight: 700;
+  color: #ff7abf;
+  opacity: .85;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.biz-stat-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: .85em;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.biz-stat-row:last-child { border-bottom: none; }
+.biz-details summary {
+  cursor: pointer;
+  color: #ff7abf;
+  font-size: .88em;
+  margin: 8px 0 4px;
+  opacity: .85;
+}
+.biz-details summary:hover { opacity: 1; }
+.biz-list {
+  margin: 8px 0 4px 18px;
+  line-height: 1.8;
+  font-size: 1.2em;
+  color: #fff;
+}
+.biz-list li {
+  margin-bottom: 6px;
+  color: #fff;
+  list-style-type: disc;
+}
+@media (max-width: 520px) {
+  .biz-stats-grid { grid-template-columns: 1fr 1fr; }
+}

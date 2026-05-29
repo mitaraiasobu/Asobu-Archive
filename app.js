@@ -1134,7 +1134,8 @@ function renderStaticTexts() {
 
   // Tabs label
   document.querySelectorAll(".tab").forEach((a) => {
-    a.textContent = t(`tabs.${a.dataset.tab}`);
+    const label = t(`tabs.${a.dataset.tab}`);
+    a.textContent = (label && label !== `tabs.${a.dataset.tab}`) ? label : (a.dataset.tab === "inquiry" ? "問い合わせ・案件依頼" : a.dataset.tab);
   });
 
   // Static texts
@@ -1257,6 +1258,11 @@ function renderStaticTexts() {
   const contactBody = $("#contactBody");
   if (contactTitle) contactTitle.textContent = t("contact.title");
   if (contactBody) { contactBody.innerHTML = t("contact.bodyHtml"); animateSupportHeader(contactBody); animateTimeline(contactBody); }
+
+  const inquiryTitle = $("#inquiryTitle");
+  const inquiryBody = $("#inquiryBody");
+  if (inquiryTitle) inquiryTitle.textContent = t("inquiry.title");
+  if (inquiryBody) { inquiryBody.innerHTML = t("inquiry.bodyHtml"); animateSupportHeader(inquiryBody); animateTimeline(inquiryBody); }
 
   const footerNote = $("#footerNote");
   if (footerNote) footerNote.textContent = t("footer.note");
@@ -1586,7 +1592,7 @@ async function setLang(lang) {
   if (mobileDropdown) mobileDropdown.value = lang;
 
   // lang.json（軽量テキスト系）と分割ファイル群をマージして読み込む
-  const _keys2 = ['support','membership','goods','log','notice','contact','crowdfunding','contest'];
+  const _keys2 = ['support','membership','goods','log','notice','contact','inquiry','crowdfunding','contest'];
   const [part1, ...parts2] = await Promise.all([
     loadJSON(`./i18n/${lang}.json`),
     ..._keys2.map(k => loadJSON(`./i18n/${k}-${lang.toUpperCase()}.json`).catch(() => ({}))),
@@ -1616,7 +1622,7 @@ async function setLang(lang) {
 
 function handleRoute() {
   const hash = location.hash.replace("#", "") || "home";
-  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest"];
+  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "inquiry", "crowdfunding", "contest"];
 
   // 完全一致ならそのままタブ切り替え
   if (known.includes(hash)) {
