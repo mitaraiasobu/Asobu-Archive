@@ -2897,8 +2897,8 @@ function renderDreamGoals(wrap, data) {
   let _current  = 0;
   let _timer    = null;
   let _paused   = false;
-  const INTERVAL = 4000;
-  const INITIAL_DELAY = 4000;
+  const INTERVAL = 5000;
+  const INITIAL_DELAY = 8000;
 
   async function loadThumbs() {
     if (_thumbs !== null) return _thumbs;
