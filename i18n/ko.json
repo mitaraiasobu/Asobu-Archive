@@ -25,7 +25,7 @@
     "title": "이번 주 방송 스케줄",
     "hint": "",
     "noteLabel": "아소부의 한마디",
-    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"미타라이 아소부\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">🍣 기다리고 기다리던 초밥 안건 방송 🍣이 6월 6일 오후 4시에 시작됩니다!　제가 먹을 초밥 메뉴가 여러분의 댓글로 결정될지도!?　꼭 놀러 와서 함께 참여해 주세요! 🤍　멤버십에서는 멤버 한정 잡담 방송을 진행할 예정입니다!　그리고 ASMR 영상도 열심히 준비 중이며, 6월 중 업로드를 목표로 하고 있어요~　또한 어제까지 주문해 주신 모든 굿즈는 6월 중 배송을 목표로 준비하고 있습니다! 🤍</div></div></div></div>"
+    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"미타라이 아소부\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">드디어 토모다치 컬렉션과 NTE를 첫 플레이! 특히 토모코레 캐릭터 만들기가 기대돼서, 그것만 하는 방송도 해볼까 고민 중이야. 멤버 한정으로 다른 섬도 만들 예정~! 쿠킹은 참여형이지만 한 번만 할 거야 (너무 어려웠어). 직접 구매해서 플레이할 예정인 사람은 그 점 참고해서 구매해줘!</div></div></div></div>"
   },
   "events": {
     "title": "콘테스트 / 이벤트",
@@ -178,13 +178,13 @@
           },
           {
             "label": "5월",
-            "status": "current",
-            "value": "도전 중!"
+            "status": "failed",
+            "value": "미달성"
           },
           {
             "label": "6월",
-            "status": "empty",
-            "value": ""
+            "status": "current",
+            "value": "도전 중!"
           },
           {
             "label": "7월",
