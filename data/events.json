@@ -1,5 +1,34 @@
 [
   {
+    "id": "summer_illust_contest",
+    "mediaType": "image",
+    "src": "./assets/御手洗遊夏イラコン.png",
+    "status": "active",
+    "start": "2026-07-01",
+    "end": "2026-08-10",
+    "links": [],
+    "linkTab": "contest",
+
+    "i18n": {
+      "ja": {
+        "title": "御手洗遊夏イラコン",
+        "period": "8月上旬予定",
+        "descHtml": "今回のテーマは夏！描く衣装は自由、オリジナル衣装も可⭕<br>あなたが想像する「夏の御手洗遊」を描いてね🤍<br>締切は8月上旬予定。"
+      },
+      "en": {
+        "title": "Mitarai Asobu Summer Illustration Contest",
+        "period": "Early August (planned)",
+        "descHtml": "The theme this time is summer! Any outfit is OK, original outfits are welcome too ⭕<br>Draw your own vision of \"Mitarai Asobu in summer\" 🤍<br>Deadline: Early August (planned)."
+      },
+      "ko": {
+        "title": "미타라이 아소부 여름 일러스트 콘테스트",
+        "period": "8월 초 예정",
+        "descHtml": "이번 테마는 여름！의상은 자유, 오리지널 의상도 가능 ⭕<br>당신이 상상하는 「여름의 미타라이 아소부」를 그려줘 🤍<br>마감은 8월 초 예정."
+      }
+    }
+  },
+
+  {
     "id": "school_uniform_contest",
     "mediaType": "image",
     "src": "./assets/学生服イラストコンテスト.png",
@@ -12,8 +41,27 @@
         "url": "https://x.com/hashtag/%E5%BE%A1%E6%89%8B%E6%B4%97%E9%81%8A%E5%AD%A6%E7%94%9F%E6%9C%8D?src=hashtag_click&f=live"
       }
     ],
-    "linkTab": "contest"
+    "linkTab": "contest",
+
+    "i18n": {
+      "ja": {
+        "title": "学生服イラストコンテスト 結果発表",
+        "period": "2026年5月31日まで",
+        "descHtml": "コンテストは終了しました！たくさんの応募ありがとう🤍<br>受賞作品はコンテストタブで確認できます！"
+      },
+      "en": {
+        "title": "School Uniform Illustration Contest — Results Announced",
+        "period": "Until May 31, 2026",
+        "descHtml": "The contest has ended! Thank you so much for all the submissions 🤍<br>Check the award works in the Contest tab!"
+      },
+      "ko": {
+        "title": "교복 일러스트 콘테스트 — 결과 발표",
+        "period": "2026년 5월 31일까지",
+        "descHtml": "콘테스트가 종료됐어요！많은 응모 감사해요 🤍<br>수상작품은 콘테스트 탭에서 확인할 수 있어요！"
+      }
+    }
   },
+
   {
     "id": "onigiri_raccoon_contest",
     "mediaType": "image",
@@ -27,8 +75,27 @@
         "url": "https://x.com/hashtag/%E3%82%AA%E3%83%8B%E3%82%AE%E3%83%AA%E3%83%A9%E3%82%AF%E3%83%BC%E3%83%B3?src=hashtag_click&f=live"
       }
     ],
-    "linkTab": "contest"
+    "linkTab": "contest",
+
+    "i18n": {
+      "ja": {
+        "title": "オニギリラクーンコンテスト",
+        "period": "常時開催中",
+        "descHtml": "帽子をかぶせたり持ち物を持たせたりして、個性豊かなオニギリラクーンをデザインしよう！締切は未定、常時応募OK！"
+      },
+      "en": {
+        "title": "Onigiri Raccoon Contest",
+        "period": "Always accepting entries",
+        "descHtml": "Design your own unique Onigiri Raccoon with hats, accessories, and more! Deadline undecided, submissions always open!"
+      },
+      "ko": {
+        "title": "오니기리 라쿤 콘테스트",
+        "period": "상시 모집 중",
+        "descHtml": "모자나 소지품 등을 추가해서 개성 넘치는 오니기리 라쿤을 디자인해보자! 마감은 미정, 상시 응모 가능!"
+      }
+    }
   },
+
   {
     "id": "clip_contest",
     "mediaType": "video",
@@ -36,8 +103,27 @@
     "poster": "./assets/切り抜き動画コンテスト.png",
     "status": "active",
     "start": "all-the-time",
-    "end": ""
+    "end": "",
+
+    "i18n": {
+      "ja": {
+        "title": "切り抜き動画コンテスト",
+        "period": "常時開催中",
+        "descHtml": "切り抜き動画のイベントです。<br>完成した動画はXのDMもしくはメールに送ってください！応募期限は廃止しました、常時応募可能です！"
+      },
+      "en": {
+        "title": "Clip Video Contest",
+        "period": "Always open",
+        "descHtml": "An event for clip videos.<br>Please send your finished video via X DM or email! The deadline has been removed — submit anytime!"
+      },
+      "ko": {
+        "title": "클립 영상 콘테스트",
+        "period": "상시 개최 중",
+        "descHtml": "클립 영상 이벤트입니다.<br>완성된 영상은 X DM 또는 이메일로 보내주세요！응모 기한은 폐지됐어요, 상시 응모 가능！"
+      }
+    }
   },
+
   {
     "id": "soundproof_crowdfunding",
     "mediaType": "image",
@@ -46,8 +132,27 @@
     "start": "2026-01-18",
     "end": "",
     "links": [],
-    "linkTab": "crowdfunding"
+    "linkTab": "crowdfunding",
+
+    "i18n": {
+      "ja": {
+        "title": "防音室クラウドファンディング",
+        "period": "",
+        "descHtml": "防音室のための支援ページです。<br>詳細はリンク先へ！"
+      },
+      "en": {
+        "title": "Soundproof Room Crowdfunding",
+        "period": "",
+        "descHtml": "A support page for the soundproof room.<br>Check the link for details!"
+      },
+      "ko": {
+        "title": "방음실 크라우드펀딩",
+        "period": "",
+        "descHtml": "방음실을 위한 지원 페이지입니다.<br>자세한 내용은 링크로！"
+      }
+    }
   },
+
   {
     "id": "survey_forms",
     "mediaType": "image",
@@ -68,6 +173,24 @@
         "labelKey": "event.surveyDayWatchTime",
         "url": "https://docs.google.com/forms/d/e/1FAIpQLSf3o5S-v-BnMxS8hk20_MxAG9e3gDHGj_RNXT79DFmcTTtQNA/viewform?usp=header"
       }
-    ]
+    ],
+
+    "i18n": {
+      "ja": {
+        "title": "アンケートにご協力ください🤍",
+        "period": "",
+        "descHtml": "ここにあるものはすべて匿名のアンケートです。みんなの回答が活動に役立つよ！ぜひ回答してね～！"
+      },
+      "en": {
+        "title": "Please fill out our surveys 🤍",
+        "period": "",
+        "descHtml": "Everything here is an anonymous survey. Your answers help improve the activity! Please respond~!"
+      },
+      "ko": {
+        "title": "앙케이트에 협조해 주세요🤍",
+        "period": "",
+        "descHtml": "여기에 있는 것은 모두 익명 앙케이트입니다. 모두의 답변이 활동에 도움이 돼요！꼭 답변해줘요～！"
+      }
+    }
   }
 ]
