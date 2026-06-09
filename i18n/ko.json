@@ -59,7 +59,8 @@
     "all-the-time": "상시 개최 중",
     "subs_3000_stream": "2026년 4월 25일 (토) 21:00~",
     "school_uniform_contest": "2026년 5월 31일까지",
-    "onigiri_raccoon_contest": "상시 모집 중"
+    "onigiri_raccoon_contest": "상시 모집 중",
+    "summer_illust_contest": "8월 초 예정"
   },
   "eventDetails": {
     "illustration_contest": {
@@ -113,13 +114,18 @@
       ]
     },
     "school_uniform_contest": {
-      "title": "교복 일러스트 콘테스트",
-      "descHtml": "미타라이 아소부를 교복 의상으로 그려보자! 마감은 5월 31일.<br>#御手洗遊学生服 태그를 달아 올려줘!",
+      "title": "교복 일러스트 콘테스트 — 결과 발표",
+      "descHtml": "콘테스트가 종료됐어요！많은 응모 감사해요 🤍<br>수상작품은 콘테스트 탭에서 확인할 수 있어요！",
       "linkTab": "contest"
     },
     "onigiri_raccoon_contest": {
       "title": "오니기리 라쿤 콘테스트",
       "descHtml": "모자나 소지품 등을 추가해서 개성 넘치는 오니기리 라쿤을 디자인해보자! 마감은 미정, 상시 응모 가능!",
+      "linkTab": "contest"
+    },
+    "summer_illust_contest": {
+      "title": "미타라이 아소부 여름 일러스트 콘테스트",
+      "descHtml": "이번 테마는 여름！의상은 자유, 오리지널 의상도 가능 ⭕<br>당신이 상상하는 「여름의 미타라이 아소부」를 그려줘 🤍<br>마감은 8월 초 예정.",
       "linkTab": "contest"
     }
   },

@@ -59,7 +59,8 @@
     "all-the-time": "常時開催中",
     "subs_3000_stream": "2026年4月25日(土) 21:00〜",
     "school_uniform_contest": "2026年5月31日まで",
-    "onigiri_raccoon_contest": "常時開催中"
+    "onigiri_raccoon_contest": "常時開催中",
+    "summer_illust_contest": "8月上旬予定"
   },
   "eventDetails": {
     "subs_3000_stream": {
@@ -113,13 +114,18 @@
       "descHtml": "ここにあるものはすべて匿名のアンケートです。みんなの回答が活動に役立つよ！ぜひ回答してね～！"
     },
     "school_uniform_contest": {
-      "title": "学生服イラストコンテスト",
-      "descHtml": "御手洗遊を学生服衣装で描いてみよう！締切は5月31日。<br>#御手洗遊学生服 のタグをつけて投稿してね！",
+      "title": "学生服イラストコンテスト 結果発表",
+      "descHtml": "コンテストは終了しました！たくさんの応募ありがとう🤍<br>受賞作品はコンテストタブで確認できます！",
       "linkTab": "contest"
     },
     "onigiri_raccoon_contest": {
       "title": "オニギリラクーンコンテスト",
       "descHtml": "帽子をかぶせたり持ち物を持たせたりして、個性豊かなオニギリラクーンをデザインしよう！締切は未定、常時応募OK！",
+      "linkTab": "contest"
+    },
+    "summer_illust_contest": {
+      "title": "御手洗遊夏イラコン",
+      "descHtml": "今回のテーマは夏！描く衣装は自由、オリジナル衣装も可⭕<br>あなたが想像する「夏の御手洗遊」を描いてね🤍<br>締切は8月上旬予定。",
       "linkTab": "contest"
     }
   },
