@@ -25,7 +25,7 @@
     "title": "This Week's Stream Schedule",
     "hint": "",
     "noteLabel": "A note from Asobu",
-    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">Have you listened to my cover of *Looping the Rooms* yet? 📺 If not, be sure to check it out! This Saturday, I'll be doing a members-only stream for the first time in a while. Let's play Gartic Phone together! On Sunday, in addition to my usual drawing stream, I'll be playing Splatoon for the first time!</div></div></div></div>"
+    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">Finally playing Tomodachi Collection and NTE for the first time! I’m especially excited for the character creator in Tomodachi Collection, maybe I’ll even do a whole stream just for that. Planning to make another island for members too~! The cooking stream is participation-based, but I’ll only do it once (it was way too difficult). If you’re planning to buy and play the game yourself, keep that in mind before purchasing!</div></div></div></div>"
   },
   "events": {
     "title": "Contests / Events",
@@ -59,7 +59,8 @@
     "all-the-time": "Always ongoing",
     "subs_3000_stream": "April 25, 2026 (Sat) from 9:00 PM",
     "school_uniform_contest": "Until May 31, 2026",
-    "onigiri_raccoon_contest": "Always accepting entries"
+    "onigiri_raccoon_contest": "Always accepting entries",
+    "summer_illust_contest": "Early August (planned)"
   },
   "eventDetails": {
     "illustration_contest": {
@@ -113,13 +114,18 @@
       ]
     },
     "school_uniform_contest": {
-      "title": "School Uniform Illustration Contest",
-      "descHtml": "Draw Mitarai Asobu in a school uniform outfit! Deadline: May 31.<br>Post it with the hashtag #MitaraiAsobuSchoolUniform !",
+      "title": "School Uniform Illustration Contest — Results Announced",
+      "descHtml": "The contest has ended! Thank you so much for all the submissions 🤍<br>Check the award works in the Contest tab!",
       "linkTab": "contest"
     },
     "onigiri_raccoon_contest": {
       "title": "Onigiri Raccoon Contest",
       "descHtml": "Design your own unique Onigiri Raccoon with hats, accessories, and more! Deadline undecided, submissions always open!",
+      "linkTab": "contest"
+    },
+    "summer_illust_contest": {
+      "title": "Mitarai Asobu Summer Illustration Contest",
+      "descHtml": "The theme this time is summer! Any outfit is OK, original outfits are welcome too ⭕<br>Draw your own vision of \"Mitarai Asobu in summer\" 🤍<br>Deadline: Early August (planned).",
       "linkTab": "contest"
     }
   },
