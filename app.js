@@ -1139,6 +1139,13 @@ function formatPeriod(start, end) {
 }
 
 
+// events.jsonのi18n.periodを優先し、なければformatPeriod(start, end)にフォールバック
+function getEventPeriod(ev) {
+  const detail = ev.i18n?.[state.lang] || ev.i18n?.ja || {};
+  if (detail.period) return detail.period;
+  return formatPeriod(ev.start, ev.end);
+}
+
 function renderStaticTexts() {
   // ヘッダーのブランドタイトル・サブ
   const siteTitle = $("#siteTitle");
@@ -1309,8 +1316,9 @@ function renderEvents() {
   eventVideoElements = []; // リセット
 
   state.events.forEach((ev) => {
-    const detail = t(`eventDetails.${ev.id}`);
-    const title = detail?.title || ev.id;
+    // i18n はevents.jsonに直接書かれている。言語ごとに ev.i18n.ja / .en / .ko を参照する
+    const detail = ev.i18n?.[state.lang] || ev.i18n?.ja || {};
+    const title = detail.title || ev.id;
 
     // compat (old events.json)
     const mediaType = ev.mediaType || "image";
@@ -1349,8 +1357,8 @@ function renderEvents() {
     body.innerHTML = `
       <h3 class="event__title">${escapeHtml(title)}</h3>
       <div class="event__meta">
-        <span>${escapeHtml(ev.status || "")}</span>
-        <span>${escapeHtml(formatPeriod(ev.start, ev.end))}</span>
+        <span>${escapeHtml(t(`eventStatus.${ev.status}`) || ev.status || "")}</span>
+        <span>${escapeHtml(getEventPeriod(ev))}</span>
       </div>
     `;
 
@@ -1389,9 +1397,10 @@ async function openModal(ev) {
   const mediaWrapMain = $("#modalMediaMain");
   const mediaWrapDetail = $("#modalMediaDetail");
 
-  const detail = t(`eventDetails.${ev.id}`);
-  const title = detail?.title || ev.id;
-  const descHtml = detail?.descHtml || "";
+  // i18n はevents.jsonに直接書かれている。言語ごとに ev.i18n.ja / .en / .ko を参照する
+  const detail = ev.i18n?.[state.lang] || ev.i18n?.ja || {};
+  const title = detail.title || ev.id;
+  const descHtml = detail.descHtml || "";
 
   const mediaType = ev.mediaType || "image";
   const src = ev.src || ev.image || "";
@@ -1401,7 +1410,7 @@ async function openModal(ev) {
   const modalPeriod = $("#modalPeriod");
   const modalDesc = $("#modalDesc");
   if (modalTitle) modalTitle.textContent = title;
-  if (modalPeriod) modalPeriod.textContent = formatPeriod(ev.start, ev.end);
+  if (modalPeriod) modalPeriod.textContent = getEventPeriod(ev);
   if (modalDesc) modalDesc.innerHTML = descHtml;
 
   const linksWrap = $("#modalLinks");
