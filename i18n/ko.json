@@ -137,6 +137,9 @@
     "title": "아소부 아카이브⋈🦝",
     "sub": "미타라이 아소부 공식 사이트 / 생명을 의미 있게 사용해가요～！"
   },
+  "screenTakeover": {
+    "message": "알림 켜고 기다려 주면 정말 기쁠 것 같아... 🖤"
+  },
   "goals": {
     "goals": [
       {
@@ -189,13 +192,13 @@
           },
           {
             "label": "6월",
-            "status": "current",
-            "value": "도전 중!"
+            "status": "failed",
+            "value": "미달성"
           },
           {
             "label": "7월",
-            "status": "empty",
-            "value": ""
+            "status": "current",
+            "value": "도전 중!"
           },
           {
             "label": "8월",

@@ -137,6 +137,9 @@
     "title": "遊アーカイブ⋈🦝",
     "sub": "御手洗 遊の公式サイト/寿命を有意義につかっていこ～！"
   },
+  "screenTakeover": {
+    "message": "通知オンにして待っててくれたら嬉しいな……🖤"
+  },
   "goals": {
     "goals": [
       {
@@ -190,13 +193,13 @@
           },
           {
             "label": "6月",
-            "status": "current",
-            "value": "挑戦中！"
+            "status": "failed",
+            "value": "非達成"
           },
           {
             "label": "7月",
-            "status": "empty",
-            "value": ""
+            "status": "current",
+            "value": "挑戦中！"
           },
           {
             "label": "8月",

@@ -137,6 +137,9 @@
     "title": "Asobu Archive⋈🦝",
     "sub": "Mitarai Asobu's Official Site / Let's make the most of our time!"
   },
+  "screenTakeover": {
+    "message": "I'd be happy if you turned on notifications and waited for me... 🖤"
+  },
   "goals": {
     "goals": [
       {
@@ -190,13 +193,13 @@
           },
           {
             "label": "Jun",
-            "status": "current",
-            "value": "In progress!"
+            "status": "failed",
+            "value": "Not Achieved"
           },
           {
             "label": "Jul",
-            "status": "empty",
-            "value": ""
+            "status": "current",
+            "value": "In progress!"
           },
           {
             "label": "Aug",
