@@ -3278,3 +3278,106 @@ window.cfTabSwitch = function(panelId, btn) {
     panel.classList.add('active');
   }
 };
+/* ─────────────────────────────────────────────────────────────
+   画面ジャック（3000人記念/告知動画オーバーレイ）
+   2026/7/25 まで（当日を含む）サイトを開いたときに1回だけ表示。
+   ロードアニメーション終了後に発動。閉じたら同一セッション中は
+   ページ遷移しても再表示しない。次回サイトを開いたとき（新しい
+   セッション）には再度表示する。
+   ───────────────────────────────────────────────────────────── */
+(function () {
+  var DEADLINE_MS = new Date("2026-07-25T23:59:59+09:00").getTime();
+  var SESSION_KEY  = "asobuScreenJack_20260725";
+  var VIDEO_ID     = "y0qfsVoJCPU";
+  var VIDEO_SI     = "4d-alsV6SqUz0TEH";
+  var VIDEO_URL    = "https://youtu.be/" + VIDEO_ID + "?si=" + VIDEO_SI;
+
+  // 期限切れなら何もしない
+  if (Date.now() > DEADLINE_MS) return;
+  // 同一セッションで既に表示済みなら何もしない
+  if (sessionStorage.getItem(SESSION_KEY) === "1") return;
+
+  var overlayEl = null;
+  var msgEl     = null;
+
+  function currentLang() {
+    return localStorage.getItem("lang") || "ja";
+  }
+
+  async function fetchMessage(lang) {
+    try {
+      var res  = await fetch("./i18n/" + lang + ".json", { cache: "no-store" });
+      var json = await res.json();
+      return (json.screenTakeover && json.screenTakeover.message) || "";
+    } catch (e) {
+      return "";
+    }
+  }
+
+  async function refreshMessage() {
+    if (!msgEl) return;
+    var text = await fetchMessage(currentLang());
+    msgEl.textContent = text;
+  }
+
+  function onLangClick(e) {
+    var btn = e.target && e.target.closest && e.target.closest(".chip[data-lang]");
+    if (btn) setTimeout(refreshMessage, 0);
+  }
+
+  function closeOverlay() {
+    if (!overlayEl) return;
+    var el = overlayEl;
+    overlayEl = null;
+    el.classList.remove("screen-jack--open");
+    document.removeEventListener("click", onLangClick, true);
+    setTimeout(function () { el.remove(); }, 350);
+  }
+
+  function showOverlay() {
+    // 表示した時点でフラグを立てる（遷移しても再表示させないため）
+    sessionStorage.setItem(SESSION_KEY, "1");
+
+    overlayEl = document.createElement("div");
+    overlayEl.className = "screen-jack";
+    overlayEl.innerHTML =
+      '<div class="screen-jack__backdrop"></div>' +
+      '<button class="screen-jack__close" aria-label="Close">×</button>' +
+      '<div class="screen-jack__inner">' +
+        '<div class="screen-jack__message"></div>' +
+        '<div class="screen-jack__frame-wrap">' +
+          '<iframe class="screen-jack__iframe" ' +
+            'src="https://www.youtube.com/embed/' + VIDEO_ID + '?si=' + VIDEO_SI + '&autoplay=1&rel=0" ' +
+            'title="YouTube video player" frameborder="0" ' +
+            'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+            'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
+          '<a class="screen-jack__link-overlay" href="' + VIDEO_URL + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>' +
+        "</div>" +
+      "</div>";
+
+    document.body.appendChild(overlayEl);
+    msgEl = overlayEl.querySelector(".screen-jack__message");
+
+    overlayEl.querySelector(".screen-jack__close").addEventListener("click", closeOverlay);
+    document.addEventListener("click", onLangClick, true);
+
+    refreshMessage();
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        if (overlayEl) overlayEl.classList.add("screen-jack--open");
+      });
+    });
+  }
+
+  function boot() {
+    var p = window.__introFinishPromise || Promise.resolve();
+    p.then(showOverlay);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();

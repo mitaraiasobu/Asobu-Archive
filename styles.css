@@ -3617,3 +3617,97 @@ body:not(.no-anim) .chip {
 @media (max-width: 520px) {
   .biz-stats-grid { grid-template-columns: 1fr 1fr; }
 }
+/* ─────────────────────────────────────────────────────────────
+   画面ジャック（動画告知オーバーレイ）
+   ───────────────────────────────────────────────────────────── */
+.screen-jack {
+  position: fixed;
+  inset: 0;
+  z-index: 99500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .35s ease;
+  pointer-events: none;
+}
+.screen-jack--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.screen-jack__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 4, 8, .88);
+  backdrop-filter: blur(2px);
+}
+.screen-jack__close {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 99510;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,110,180,.45);
+  background: rgba(20,10,20,.85);
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(255,60,154,.35);
+  transition: transform .15s ease, background .15s ease;
+}
+.screen-jack__close:hover {
+  background: rgba(255,60,154,.35);
+  transform: scale(1.08);
+}
+.screen-jack__inner {
+  position: relative;
+  z-index: 99505;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: min(92vw, 900px);
+  padding: 0 12px;
+}
+.screen-jack__message {
+  text-align: center;
+  color: #fff;
+  font-size: clamp(15px, 2.6vw, 22px);
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-shadow: 0 0 8px rgba(255,110,180,.6), 0 0 20px rgba(255,60,154,.35);
+  line-height: 1.6;
+}
+.screen-jack__frame-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,110,180,.35), 0 10px 40px rgba(0,0,0,.6);
+  background: #000;
+}
+.screen-jack__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;
+}
+.screen-jack__link-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: pointer;
+  display: block;
+}
+@media (max-width: 560px) {
+  .screen-jack__close { top: 10px; left: 10px; width: 38px; height: 38px; font-size: 20px; }
+}
