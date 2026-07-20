@@ -2299,6 +2299,132 @@ body:not(.no-anim) .chip {
   margin-top: 8px;
 }
 
+/* ── ハッシュタグセクション（プロフィールカードとは別コンテナ） ─── */
+.about-hashtag-section {
+  margin: 20px 0 24px;
+  padding: 24px 28px;
+  background: linear-gradient(160deg, rgba(255,121,176,.06) 0%, rgba(255,255,255,.02) 60%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  .about-hashtag-section {
+    padding: 18px 16px;
+    margin: 16px 0 20px;
+  }
+}
+
+.about-hashtag-list-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-hashtag-item {
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 14px 0;
+}
+
+.about-hashtag-item:first-child {
+  padding-top: 2px;
+}
+
+.about-hashtag-item:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.about-hashtag-item > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  padding: 0;
+}
+.about-hashtag-item > summary::-webkit-details-marker { display: none; }
+.about-hashtag-item > summary::marker { display: none; }
+
+.about-hashtag-item > summary::after {
+  content: '▼';
+  font-size: 11px;
+  color: #ff79b0;
+  transition: transform .3s ease;
+  flex-shrink: 0;
+}
+.about-hashtag-item[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.about-hashtag-summary-text {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.about-hashtag-name {
+  font-family: 'Kaisei Tokumin', serif;
+  font-size: .98rem;
+  font-weight: 800;
+  color: #f3f3f5;
+  letter-spacing: .02em;
+}
+
+.about-hashtag-type {
+  font-size: .76rem;
+  color: rgba(255,121,176,.9);
+  font-family: 'DotGothic16', monospace;
+  letter-spacing: .02em;
+}
+:lang(ko) .about-hashtag-type {
+  font-family: 'NeoDunggeunmoPro', monospace;
+}
+
+.about-hashtag-body {
+  margin-top: 12px;
+  padding-left: 1px;
+}
+
+.about-hashtag-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .78rem;
+  color: #ff79b0;
+  text-decoration: none;
+  border: 1px solid rgba(255,121,176,.35);
+  border-radius: 999px;
+  padding: 4px 12px;
+  margin-bottom: 10px;
+  transition: background .15s;
+}
+.about-hashtag-link:hover {
+  background: rgba(255,121,176,.12);
+}
+
+.about-hashtag-list {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: .83rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.about-hashtag-footnote {
+  margin: 10px 0 0;
+  font-size: .78rem;
+  line-height: 1.6;
+  color: var(--muted);
+  opacity: .85;
+}
+
 /* ═══════════════════════════════════════════════════════════
    サムネイルギャラリー
    ═══════════════════════════════════════════════════════════ */
