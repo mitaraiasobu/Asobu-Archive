@@ -2,7 +2,7 @@
   {
     "id": "summer_illust_contest",
     "mediaType": "image",
-    "src": "./assets/御手洗遊夏イラコン.png",
+    "src": "./assets/御手洗THEサマーイラコンサムネ.png",
     "status": "active",
     "start": "2026-07-01",
     "end": "2026-08-10",
@@ -11,17 +11,17 @@
 
     "i18n": {
       "ja": {
-        "title": "御手洗遊夏イラコン",
+        "title": "御手洗THEサマーイラコン",
         "period": "8月上旬予定",
         "descHtml": "今回のテーマは夏！描く衣装は自由、オリジナル衣装も可⭕<br>あなたが想像する「夏の御手洗遊」を描いてね🤍<br>締切は8月上旬予定。"
       },
       "en": {
-        "title": "Mitarai Asobu Summer Illustration Contest",
+        "title": "Mitarai THE Summer Illust Contest",
         "period": "Early August (planned)",
         "descHtml": "The theme this time is summer! Any outfit is OK, original outfits are welcome too ⭕<br>Draw your own vision of \"Mitarai Asobu in summer\" 🤍<br>Deadline: Early August (planned)."
       },
       "ko": {
-        "title": "미타라이 아소부 여름 일러스트 콘테스트",
+        "title": "미타라이 THE 사마 일러스트 콘테스트",
         "period": "8월 초 예정",
         "descHtml": "이번 테마는 여름！의상은 자유, 오리지널 의상도 가능 ⭕<br>당신이 상상하는 「여름의 미타라이 아소부」를 그려줘 🤍<br>마감은 8월 초 예정."
       }
