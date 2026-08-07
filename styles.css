@@ -180,6 +180,39 @@ a{color:inherit}
 .event__meta{ margin-top:6px; font-size:12px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap; }
 
 .page{display:none; position:relative;}
+
+.temp-wrap{
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+.temp-card{
+  max-width: 560px;
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  text-align: center;
+}
+.temp-img{
+  max-width: 260px;
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  margin: 0 auto 24px;
+  display: block;
+}
+.temp-text{
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.9;
+  white-space: pre-line;
+  margin: 0;
+}
 .page.active{display:block}
 
 .prose{

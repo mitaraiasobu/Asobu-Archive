@@ -1693,7 +1693,7 @@ async function setLang(lang) {
 
 function handleRoute() {
   const hash = location.hash.replace("#", "") || "home";
-  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest", "inquiry"];
+  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest", "inquiry", "temporary"];
 
   // 完全一致ならそのままタブ切り替え
   if (known.includes(hash)) {
