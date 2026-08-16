@@ -2978,6 +2978,7 @@ function renderDreamGoals(wrap, data) {
         if      (m.status === "none")    cls += " dg-month--none";
         else if (m.status === "done")    cls += " dg-month--done";
         else if (m.status === "current") cls += " dg-month--current";
+        else if (m.status === "failed")  cls += " dg-month--failed";
         else                             cls += " dg-month--empty";
         var value = m.status !== "none" ? (m.value || "") : "";
         var inner = m.status === "none"
@@ -2996,6 +2997,7 @@ function renderDreamGoals(wrap, data) {
             if      (gm.status === "none")    gcls += " dg-month--none";
             else if (gm.status === "done")    gcls += " dg-month--done";
             else if (gm.status === "current") gcls += " dg-month--current";
+            else if (gm.status === "failed")  gcls += " dg-month--failed";
             else                              gcls += " dg-month--empty";
             var gvalue = gm.status !== "none" ? (gm.value || "") : "";
             var ginner = gm.status === "none"
@@ -3411,64 +3413,99 @@ window.cfTabSwitch = function(panelId, btn) {
   }
 };
 /* ─────────────────────────────────────────────────────────────
-   画面ジャック（3000人記念/告知動画オーバーレイ）
-   2026/7/25 まで（当日を含む）サイトを開いたときに1回だけ表示。
+   画面ジャック（告知オーバーレイ）
+   期間ごとに動画/画像・メッセージ・ボタンを切り替えて表示する。
+   PHASES を上から順にチェックし、現在時刻が最初に一致した
+   フェーズ（end が null、または現在時刻が end 以前）を表示する。
    ロードアニメーション終了後に発動。閉じたら同一セッション中は
-   ページ遷移しても再表示しない。次回サイトを開いたとき（新しい
-   セッション）には再度表示する。
+   同じフェーズを再表示しない（フェーズが切り替わった場合や、
+   次回サイトを開いたとき＝新しいセッションでは再度表示する）。
+   ※メッセージは日本語のみ固定表示（多言語i18n連動は廃止）。
    ───────────────────────────────────────────────────────────── */
 (function () {
-  var DEADLINE_MS = new Date("2026-07-25T23:59:59+09:00").getTime();
-  var SESSION_KEY  = "asobuScreenJack_20260725";
-  var VIDEO_ID     = "y0qfsVoJCPU";
-  var VIDEO_SI     = "4d-alsV6SqUz0TEH";
-  var VIDEO_URL    = "https://youtu.be/" + VIDEO_ID + "?si=" + VIDEO_SI;
+  var SESSION_KEY = "asobuScreenJack_phase";
 
-  // 期限切れなら何もしない
-  if (Date.now() > DEADLINE_MS) return;
-  // 同一セッションで既に表示済みなら何もしない
-  if (sessionStorage.getItem(SESSION_KEY) === "1") return;
+  var PHASES = [
+    {
+      id: "20260829-summer",
+      end: new Date("2026-08-29T23:59:59+09:00").getTime(),
+      type: "video",
+      videoId: "jm-2KiEF-Zs",
+      message: "御手洗THEサマー☀夏祭り配信！\n金魚すくい、スイカ割り、歌のステージ、花火大会、マイクラ企画など盛りだくさん！\n8月29日15:00からゼッタイ来てね～🤍"
+    },
+    {
+      id: "20260910-aroma",
+      end: new Date("2026-09-10T23:59:59+09:00").getTime(),
+      type: "image",
+      image: "./assets/aroma.png",
+      message: "アロマキャンドル販売中🤍私が選んだ癒しの香りと、私が描いた限定ポストカードをどうか受け取ってね。",
+      button: { text: "詳細を見る", url: "https://oaseed.com/products/a7k9xq-arotomfes-3-a137" }
+    },
+    {
+      id: "20260911-jinsengo",
+      end: null,
+      type: "video",
+      videoId: "cFpn8p2eaM0",
+      message: "第五人格、夜の番人杯を主催するぞ！選手としても参加するよ！大会を勝ち進めるように応援しに来てね🤍"
+    }
+  ];
+
+  function currentPhase() {
+    var now = Date.now();
+    for (var i = 0; i < PHASES.length; i++) {
+      if (PHASES[i].end === null || now <= PHASES[i].end) return PHASES[i];
+    }
+    return null;
+  }
+
+  var PHASE = currentPhase();
+  if (!PHASE) return;
+  // 同一セッションで同じフェーズを表示済みなら何もしない
+  if (sessionStorage.getItem(SESSION_KEY) === PHASE.id) return;
 
   var overlayEl = null;
-  var msgEl     = null;
-
-  function currentLang() {
-    return localStorage.getItem("lang") || "ja";
-  }
-
-  async function fetchMessage(lang) {
-    try {
-      var res  = await fetch("./i18n/" + lang + ".json", { cache: "no-store" });
-      var json = await res.json();
-      return (json.screenTakeover && json.screenTakeover.message) || "";
-    } catch (e) {
-      return "";
-    }
-  }
-
-  async function refreshMessage() {
-    if (!msgEl) return;
-    var text = await fetchMessage(currentLang());
-    msgEl.textContent = text;
-  }
-
-  function onLangClick(e) {
-    var btn = e.target && e.target.closest && e.target.closest(".chip[data-lang]");
-    if (btn) setTimeout(refreshMessage, 0);
-  }
 
   function closeOverlay() {
     if (!overlayEl) return;
     var el = overlayEl;
     overlayEl = null;
     el.classList.remove("screen-jack--open");
-    document.removeEventListener("click", onLangClick, true);
     setTimeout(function () { el.remove(); }, 350);
+  }
+
+  function buildMediaHtml() {
+    if (PHASE.type === "video") {
+      var videoUrl = "https://youtu.be/" + PHASE.videoId;
+      return (
+        '<div class="screen-jack__frame-wrap">' +
+          '<iframe class="screen-jack__iframe" ' +
+            'src="https://www.youtube.com/embed/' + PHASE.videoId + '?autoplay=1&rel=0" ' +
+            'title="YouTube video player" frameborder="0" ' +
+            'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+            'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
+          '<a class="screen-jack__link-overlay" href="' + videoUrl + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>' +
+        "</div>"
+      );
+    }
+    return (
+      '<div class="screen-jack__frame-wrap screen-jack__frame-wrap--image">' +
+        '<img class="screen-jack__image" src="' + PHASE.image + '" alt="">' +
+      "</div>"
+    );
+  }
+
+  function buildButtonHtml() {
+    if (!PHASE.button) return "";
+    return (
+      '<a class="screen-jack__cta-btn" href="' + PHASE.button.url + '" target="_blank" rel="noopener">' +
+        PHASE.button.text +
+      "</a>"
+    );
   }
 
   function showOverlay() {
     // 表示した時点でフラグを立てる（遷移しても再表示させないため）
-    sessionStorage.setItem(SESSION_KEY, "1");
+    sessionStorage.setItem(SESSION_KEY, PHASE.id);
 
     overlayEl = document.createElement("div");
     overlayEl.className = "screen-jack";
@@ -3476,24 +3513,13 @@ window.cfTabSwitch = function(panelId, btn) {
       '<div class="screen-jack__backdrop"></div>' +
       '<button class="screen-jack__close" aria-label="Close">×</button>' +
       '<div class="screen-jack__inner">' +
-        '<div class="screen-jack__message"></div>' +
-        '<div class="screen-jack__frame-wrap">' +
-          '<iframe class="screen-jack__iframe" ' +
-            'src="https://www.youtube.com/embed/' + VIDEO_ID + '?si=' + VIDEO_SI + '&autoplay=1&rel=0" ' +
-            'title="YouTube video player" frameborder="0" ' +
-            'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
-            'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
-          '<a class="screen-jack__link-overlay" href="' + VIDEO_URL + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>' +
-        "</div>" +
+        '<div class="screen-jack__message">' + PHASE.message.replace(/\n/g, "<br>") + "</div>" +
+        buildMediaHtml() +
+        buildButtonHtml() +
       "</div>";
 
     document.body.appendChild(overlayEl);
-    msgEl = overlayEl.querySelector(".screen-jack__message");
-
     overlayEl.querySelector(".screen-jack__close").addEventListener("click", closeOverlay);
-    document.addEventListener("click", onLangClick, true);
-
-    refreshMessage();
 
     requestAnimationFrame(function () {
       requestAnimationFrame(function () {
