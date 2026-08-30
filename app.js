@@ -4061,8 +4061,20 @@ function renderHomeNotice() {
       events: {
         onReady: function () {
           playerReady = true;
-          ytPlayer.mute();
-          ytPlayer.playVideo();
+          if (pendingVideoId) {
+            var vid = pendingVideoId;
+            pendingVideoId = null;
+            ytPlayer.loadVideoById(vid);
+          }
+          if (unlocked) {
+            // プレイヤー準備完了より先にユーザー操作で音量解除済みだった場合は
+            // ミュートし直さず、保存済み音量をそのまま適用する
+            applyVolume();
+            ytPlayer.playVideo();
+          } else {
+            ytPlayer.mute();
+            ytPlayer.playVideo();
+          }
         },
         onStateChange: function (e) {
           if (e.data === YT.PlayerState.ENDED) {
