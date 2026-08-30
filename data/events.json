@@ -1,4 +1,37 @@
 [
+
+  {
+    "id": "gigo_appearance",
+    "mediaType": "image",
+    "src": "./assets/gigo.png",
+    "status": "active",
+    "start": "2026-09-07",
+    "end": "2026-09-13",
+    "links": [
+      {
+        "labelKey": "event.detailsBtn",
+        "url": "https://www.gigo.co.jp/shops/dotonbori"
+      }
+    ],
+
+    "i18n": {
+      "ja": {
+        "title": "GiGOゲームセンターに御手洗遊が登場！？",
+        "period": "9月7日～13日",
+        "descHtml": "エスカレーターのてっぺんに私の写真が表示されます！<br>お客さんをみ～んな虜にさせちゃうぜ🖤<br>場所：GiGO大阪道頓堀本店２～３階間のエスカレーターのてっぺん<br>日程：9月7日～13日<br>私とツーショットを撮るとUFOキャッチャー全部とれる！？(かも)"
+      },
+      "en": {
+        "title": "Mitarai Asobu is coming to GiGO Game Center!?",
+        "period": "September 7–13",
+        "descHtml": "My photo will be displayed at the top of the escalator!<br>I'm gonna charm every single customer! 🖤<br>Location: GiGO Osaka Dotonbori Main Store, at the top of the escalator between the 2nd and 3rd floors<br>Dates: September 7–13<br>Take a two-shot photo with me and maybe you'll be able to win every single UFO Catcher prize!? (Maybe)"
+      },
+      "ko": {
+        "title": "GiGO 게임센터에 미타라이 아소부가 등장!?",
+        "period": "9월 7일~13일",
+        "descHtml": "에스컬레이터 꼭대기에 제 사진이 전시됩니다!<br>모든 손님들을 제 매력에 푹 빠지게 해버리겠어! 🖤<br>장소: GiGO 오사카 도톤보리 본점, 2층과 3층 사이 에스컬레이터 꼭대기<br>기간: 9월 7일~13일<br>저와 투샷을 찍으면 UFO 캐처 상품을 전부 뽑을 수 있을지도!? (아마도)"
+      }
+    }
+  },
   {
     "id": "summer_illust_contest",
     "mediaType": "image",
@@ -11,19 +44,19 @@
 
     "i18n": {
       "ja": {
-        "title": "御手洗THEサマーイラコン",
-        "period": "8月17日（月）締切",
-        "descHtml": "今回のテーマは夏！描く衣装は自由、オリジナル衣装も可⭕<br>あなたが想像する「夏の御手洗遊」を描いてね🤍<br>締切は8月17日（月）。"
+        "title": "御手洗THEサマーイラコン 結果発表",
+        "period": "2026年8月17日まで",
+        "descHtml": "コンテストは終了しました！たくさんの応募ありがとう🤍<br>受賞作品はコンテストタブで確認できます！"
       },
       "en": {
-        "title": "Mitarai THE Summer Illust Contest",
-        "period": "Deadline: Aug 17 (Mon)",
-        "descHtml": "The theme this time is summer! Any outfit is OK, original outfits are welcome too ⭕<br>Draw your own vision of \"Mitarai Asobu in summer\" 🤍<br>Deadline: August 17 (Mon)."
+        "title": "Mitarai THE Summer Illust Contest — Results Announced",
+        "period": "Until Aug 17, 2026",
+        "descHtml": "The contest has ended! Thank you so much for all the submissions 🤍<br>Check the award works in the Contest tab!"
       },
       "ko": {
-        "title": "미타라이 THE 사마 일러스트 콘테스트",
-        "period": "8월 17일（월）마감",
-        "descHtml": "이번 테마는 여름！의상은 자유, 오리지널 의상도 가능 ⭕<br>당신이 상상하는 「여름의 미타라이 아소부」를 그려줘 🤍<br>마감은 8월 17일（월）."
+        "title": "미타라이 THE 사마 일러스트 콘테스트 — 결과 발표",
+        "period": "2026년 8월 17일까지",
+        "descHtml": "콘테스트가 종료됐어요！많은 응모 감사해요 🤍<br>수상작품은 콘테스트 탭에서 확인할 수 있어요！"
       }
     }
   },
