@@ -16,16 +16,24 @@
     "on": "Anim ON",
     "off": "Anim OFF"
   },
+  "music": {
+    "watchMv": "Watch MV for this song",
+    "playlist": "Track list"
+  },
   "home": {
     "headline": "This Week's Schedule & Ongoing Events",
     "lead": "Make sure to check it out on days you can come visit 🤍",
-    "thumbGalleryTitle": "📺 Recent Streams & Videos"
+    "thumbGalleryTitle": "📺 Recent Streams & Videos",
+    "autoplayOn": "Autoplay: ON",
+    "autoplayOff": "Autoplay: OFF",
+    "noticeTitle": "🔥 Latest Events",
+    "noticeGoodsTitle": "🛍️ Latest Goods"
   },
   "schedule": {
     "title": "This Week's Stream Schedule",
     "hint": "",
     "noteLabel": "A note from Asobu",
-    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">This week, I’ll be making highlight videos from Mitarai THE SUMMER and doing a recap stream! During my drawing stream, I’ll also be announcing the winners of the illustration contest! And on Saturday and Sunday, I’ll be participating in the Identity V Geisha Cup!? I’ll be doing my best together with Anone Nirara, Tsukinagi Yoru, and two selected viewers! ꒰꒱💪(⑅︎ᐢ> , <ᐢ )و</div></div></div></div>"
+    "noteHtml": "<div class=\"sp-wish\"><div class=\"sp-wish__body\"><img class=\"sp-wish__icon\" src=\"./mita/icon.png\" alt=\"Mitarai Asobu\"><div class=\"sp-wish__bubble-wrap\"><div class=\"sp-wish__bubble sp-wish__bubble--long\">The deadline for the Mitarai THE Summer illustration contest is tonight! Let’s make one last push～!　I’ll be doing lots of interactive streams on Friday, Saturday, and Sunday～🤍　I’m working hard to prepare for the summer festival, so make sure to come and have fun with us on the day～!</div></div></div></div>"
   },
   "events": {
     "title": "Contests / Events",
