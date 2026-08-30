@@ -1216,6 +1216,9 @@ function renderStaticTexts() {
     initGoodsSort();
   }
 
+  // ホームの「お知らせ」コーナー（goods-containerが存在してから呼ぶ）
+  renderHomeNotice();
+
   const logTitle = $("#logTitle");
   const logBody = $("#logBody");
   if (logTitle) logTitle.textContent = t("log.title");
@@ -1284,6 +1287,9 @@ function renderStaticTexts() {
 
   const footerNote = $("#footerNote");
   if (footerNote) footerNote.textContent = t("footer.note");
+
+  // BGMプレイリストの「曲リスト」ラベル・「MVを見る」リンクの言語を更新
+  if (typeof window.__refreshBgmI18n === "function") window.__refreshBgmI18n();
 
   updateAnimToggleLabel();
 
@@ -3033,6 +3039,12 @@ function renderDreamGoals(wrap, data) {
 
 /* ─────────────────────────────────────────────────────────────
    サムネイルギャラリー
+   ・URLが動画への直リンク（youtu.be / watch / live / shorts）の場合、
+     そのスライドがアクティブになったら動画を直接埋め込んで自動再生する。
+   ・プレイリストや#contestのような通常リンクは今まで通りサムネイル画像＋
+     クリックで外部/内部リンクを開く。
+   ・「自動再生」ON/OFFはボタンで切り替え可能で、localStorageに保存され
+     次回サイトを開いた時も設定が引き継がれる。
    ───────────────────────────────────────────────────────────── */
 (function () {
 
@@ -3040,8 +3052,91 @@ function renderDreamGoals(wrap, data) {
   let _current  = 0;
   let _timer    = null;
   let _paused   = false;
-  const INTERVAL = 5000;
+  const INTERVAL = 8000;
   const INITIAL_DELAY = 8000;
+  const AUTOPLAY_KEY = "tgAutoplay";
+
+  function isAutoplayOn() {
+    return localStorage.getItem(AUTOPLAY_KEY) !== "0"; // デフォルトON
+  }
+  function setAutoplayOn(on) {
+    localStorage.setItem(AUTOPLAY_KEY, on ? "1" : "0");
+  }
+
+  // YouTubeへの直リンク（動画）ならvideoIdを返す。プレイリスト等はnull。
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    try {
+      const u = new URL(url);
+      const host = u.hostname.replace(/^www\./, "").replace(/^m\./, "");
+      if (host === "youtu.be") {
+        return u.pathname.slice(1).split("/")[0] || null;
+      }
+      if (host === "youtube.com") {
+        if (u.pathname === "/watch") return u.searchParams.get("v");
+        if (u.pathname.startsWith("/live/"))   return u.pathname.split("/")[2] || null;
+        if (u.pathname.startsWith("/shorts/")) return u.pathname.split("/")[2] || null;
+        if (u.pathname.startsWith("/embed/"))  return u.pathname.split("/")[2] || null;
+      }
+    } catch (e) {}
+    return null; // playlist等はここでnullになる
+  }
+
+  function autoplayLabel(on) {
+    const key = on ? "home.autoplayOn" : "home.autoplayOff";
+    const fallback = on ? "自動再生：ON" : "自動再生：OFF";
+    return (typeof t === "function" ? (t(key) || fallback) : fallback);
+  }
+
+  function updateAutoplayBtn() {
+    const btn = document.getElementById("tgAutoplayBtn");
+    if (!btn) return;
+    const on = isAutoplayOn();
+    btn.classList.toggle("is-off", !on);
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    const label = btn.querySelector(".tg-autoplay-btn__label");
+    if (label) label.textContent = autoplayLabel(on);
+  }
+
+  function bindAutoplayBtn() {
+    const btn = document.getElementById("tgAutoplayBtn");
+    if (!btn) return;
+    btn.onclick = function () {
+      setAutoplayOn(!isAutoplayOn());
+      updateAutoplayBtn();
+      applyActiveMedia();
+    };
+    updateAutoplayBtn();
+  }
+
+  // 現在表示中(アクティブ)のスライドだけ動画を埋め込み、他は画像に戻す
+  function applyActiveMedia() {
+    const track = document.getElementById("thumbGalleryTrack");
+    if (!track) return;
+    const items = track.querySelectorAll(".tg-item");
+    const on = isAutoplayOn();
+    items.forEach(function (item, i) {
+      const videoId = item.dataset.videoId || "";
+      const videoUrl = item.dataset.videoUrl || ("https://youtu.be/" + videoId);
+      const existingFrame = item.querySelector(".tg-video-frame");
+      if (i === _current && on && videoId) {
+        if (!existingFrame) {
+          const frame = document.createElement("div");
+          frame.className = "tg-video-frame";
+          frame.innerHTML =
+            '<iframe class="tg-video-frame__iframe" ' +
+              'src="https://www.youtube.com/embed/' + videoId + '?autoplay=1&mute=1&rel=0&playsinline=1&controls=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1&loop=1&playlist=' + videoId + '" ' +
+              'title="YouTube video player" frameborder="0" ' +
+              'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+              'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
+            '<a class="tg-video-frame__link-overlay" href="' + videoUrl + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>';
+          item.appendChild(frame);
+        }
+      } else if (existingFrame) {
+        existingFrame.remove();
+      }
+    });
+  }
 
   async function loadThumbs() {
     if (_thumbs !== null) return _thumbs;
@@ -3078,6 +3173,7 @@ function renderDreamGoals(wrap, data) {
     const pct = window.innerWidth >= 768 ? 50 : 100;
     track.style.transform = "translateX(-" + (_current * pct) + "%)";
     updateDots(items.length, _current);
+    applyActiveMedia();
   }
 
   function startSlider(isFirst) {
@@ -3111,8 +3207,13 @@ function renderDreamGoals(wrap, data) {
     thumbs.forEach(function(thumb) {
       const file = thumb.file;
       const url  = thumb.url || "";
+      const videoId = extractYouTubeId(url);
       const item = document.createElement("div");
       item.className = "tg-item";
+      if (videoId) {
+        item.dataset.videoId = videoId;
+        item.dataset.videoUrl = url;
+      }
 
       const img = document.createElement("img");
       img.src     = "./thumbnails/" + file;
@@ -3131,6 +3232,7 @@ function renderDreamGoals(wrap, data) {
     _current = 0;
     track.style.transform = "translateX(0)";
     updateDots(thumbs.length, 0);
+    applyActiveMedia();
     startSlider(true);
   }
 
@@ -3140,6 +3242,8 @@ function renderDreamGoals(wrap, data) {
     _paused  = false;
     _current = 0;
     _thumbs  = null; /* 毎回フレッシュにフェッチ */
+
+    bindAutoplayBtn();
 
     const track = document.getElementById("thumbGalleryTrack");
     if (!track) return;
@@ -3413,52 +3517,142 @@ window.cfTabSwitch = function(panelId, btn) {
   }
 };
 /* ─────────────────────────────────────────────────────────────
+   お知らせデータ（画面ジャック共通ソース）
+   期間ごとに動画/画像・メッセージ・ボタンを切り替える。
+   ASOBU_PHASES を上から順にチェックし、現在時刻が最初に一致した
+   フェーズ（end が null、または現在時刻が end 以前）を採用する。
+   ★ここが唯一のデータソース★
+   起動時ポップアップ（画面ジャック）とホームの「お知らせ」コーナーは
+   両方ともこのASOBU_PHASESを参照するだけで、内容を二重に書かない。
+   message / button.text は
+     ・文字列を渡す　→　日本語固定で全言語共通表示（従来通り）
+     ・{ ja, en, ko } オブジェクトを渡す　→　現在の表示言語に連動
+   のどちらでも指定できる。
+   ───────────────────────────────────────────────────────────── */
+var ASOBU_PHASES = [
+  {
+    id: "20260829-summer",
+    end: new Date("2026-08-29T23:59:59+09:00").getTime(),
+    type: "video",
+    videoId: "jm-2KiEF-Zs",
+    message: "御手洗THEサマー☀夏祭り配信！\n金魚すくい、スイカ割り、歌のステージ、花火大会、マイクラ企画など盛りだくさん！\n8月29日15:00からゼッタイ来てね～🤍"
+  },
+  {
+    id: "20260911-gigo",
+    end: new Date("2026-09-10T23:59:59+09:00").getTime(),
+    type: "image",
+    // TODO: GiGOコラボ用の画像を ./assets/gigo.png として配置してください
+    image: "./assets/gigo.png",
+    message: {
+      ja: "GiGO ゲームセンターに御手洗遊が登場！？\n一緒にツーショット、撮ろ？🤍",
+      en: "Mitarai Asobu is coming to GiGO amusement arcade!?\nWant to take a photo together? 🤍",
+      ko: "GiGO 오락실 미타라이 아소부가 등장!?\n같이 투샷 찍을래? 🤍"
+    },
+    button: {
+      text: { ja: "詳細を見る", en: "View Details", ko: "자세히 보기" },
+      url: "https://www.gigo.co.jp/shops/dotonbori",
+      eventId: "gigo_appearance"
+    }
+  },
+  {
+    id: "20260911-jinsengo",
+    end: null,
+    type: "video",
+    videoId: "cFpn8p2eaM0",
+    message: "第五人格、夜の番人杯を主催するぞ！選手としても参加するよ！大会を勝ち進めるように応援しに来てね🤍"
+  }
+];
+
+function asobuCurrentPhase() {
+  var now = Date.now();
+  for (var i = 0; i < ASOBU_PHASES.length; i++) {
+    if (ASOBU_PHASES[i].end === null || now <= ASOBU_PHASES[i].end) return ASOBU_PHASES[i];
+  }
+  return null;
+}
+
+// 文字列 または {ja,en,ko} を、現在の表示言語に合わせて解決する
+function asobuLocalize(val) {
+  if (val && typeof val === "object") {
+    var lang = (typeof state !== "undefined" && state.lang) || localStorage.getItem("lang") || "ja";
+    return val[lang] || val.ja || "";
+  }
+  return val || "";
+}
+
+// 画面ジャック／ホームお知らせカードの両方から呼べる共通ビルダー
+function asobuBuildMediaHtml(phase, opts) {
+  opts = opts || {};
+  var frameClass = opts.frameClass || "screen-jack__frame-wrap";
+  var imgClass = opts.imgClass || "screen-jack__image";
+  var iframeClass = opts.iframeClass || "screen-jack__iframe";
+  var linkClass = opts.linkClass || "screen-jack__link-overlay";
+  var autoplay = opts.autoplay === false ? "0" : "1";
+
+  if (phase.type === "video") {
+    var videoUrl = "https://youtu.be/" + phase.videoId;
+    return (
+      '<div class="' + frameClass + '">' +
+        '<iframe class="' + iframeClass + '" ' +
+          'src="https://www.youtube.com/embed/' + phase.videoId + '?autoplay=' + autoplay + '&mute=1&rel=0" ' +
+          'title="YouTube video player" frameborder="0" ' +
+          'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+          'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
+        (opts.linkOverlay === false ? "" :
+          '<a class="' + linkClass + '" href="' + videoUrl + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>') +
+      "</div>"
+    );
+  }
+  return (
+    '<div class="' + frameClass + ' ' + frameClass + '--image">' +
+      '<img class="' + imgClass + '" src="' + phase.image + '" alt="">' +
+    "</div>"
+  );
+}
+
+function asobuBuildButtonHtml(phase, btnClass) {
+  if (!phase.button) return "";
+
+  // eventId が指定されている場合は、URLへ直接遷移せず
+  // events.json内の該当イベントの詳細モーダル（タイトル・日程・説明文）を開く
+  if (phase.button.eventId) {
+    return (
+      '<button type="button" class="' + (btnClass || "screen-jack__cta-btn") + '" onclick="openAsobuEventModal(\'' + phase.button.eventId + '\')">' +
+        asobuLocalize(phase.button.text) +
+      "</button>"
+    );
+  }
+
+  return (
+    '<a class="' + (btnClass || "screen-jack__cta-btn") + '" href="' + phase.button.url + '" target="_blank" rel="noopener">' +
+      asobuLocalize(phase.button.text) +
+    "</a>"
+  );
+}
+
+// お知らせ／画面ジャックのボタンから、events.json内の該当イベントの
+// 詳細モーダル（タイトル・日程・説明文）を開くためのグローバル関数
+window.openAsobuEventModal = function (eventId) {
+  var ev = (state.events || []).find(function (e) { return e.id === eventId; });
+  if (!ev) return;
+  var mediaType = ev.mediaType || "image";
+  var src = ev.src || ev.image || "";
+  var poster = ev.poster || "";
+  openModal(Object.assign({}, ev, {
+    image: mediaType === "video" ? (poster || src) : src
+  }));
+};
+
+/* ─────────────────────────────────────────────────────────────
    画面ジャック（告知オーバーレイ）
-   期間ごとに動画/画像・メッセージ・ボタンを切り替えて表示する。
-   PHASES を上から順にチェックし、現在時刻が最初に一致した
-   フェーズ（end が null、または現在時刻が end 以前）を表示する。
    ロードアニメーション終了後に発動。閉じたら同一セッション中は
    同じフェーズを再表示しない（フェーズが切り替わった場合や、
    次回サイトを開いたとき＝新しいセッションでは再度表示する）。
-   ※メッセージは日本語のみ固定表示（多言語i18n連動は廃止）。
    ───────────────────────────────────────────────────────────── */
 (function () {
   var SESSION_KEY = "asobuScreenJack_phase";
 
-  var PHASES = [
-    {
-      id: "20260829-summer",
-      end: new Date("2026-08-29T23:59:59+09:00").getTime(),
-      type: "video",
-      videoId: "jm-2KiEF-Zs",
-      message: "御手洗THEサマー☀夏祭り配信！\n金魚すくい、スイカ割り、歌のステージ、花火大会、マイクラ企画など盛りだくさん！\n8月29日15:00からゼッタイ来てね～🤍"
-    },
-    {
-      id: "20260910-aroma",
-      end: new Date("2026-09-10T23:59:59+09:00").getTime(),
-      type: "image",
-      image: "./assets/aroma.png",
-      message: "アロマキャンドル販売中🤍私が選んだ癒しの香りと、私が描いた限定ポストカードをどうか受け取ってね。",
-      button: { text: "詳細を見る", url: "https://oaseed.com/products/a7k9xq-arotomfes-3-a137" }
-    },
-    {
-      id: "20260911-jinsengo",
-      end: null,
-      type: "video",
-      videoId: "cFpn8p2eaM0",
-      message: "第五人格、夜の番人杯を主催するぞ！選手としても参加するよ！大会を勝ち進めるように応援しに来てね🤍"
-    }
-  ];
-
-  function currentPhase() {
-    var now = Date.now();
-    for (var i = 0; i < PHASES.length; i++) {
-      if (PHASES[i].end === null || now <= PHASES[i].end) return PHASES[i];
-    }
-    return null;
-  }
-
-  var PHASE = currentPhase();
+  var PHASE = asobuCurrentPhase();
   if (!PHASE) return;
   // 同一セッションで同じフェーズを表示済みなら何もしない
   if (sessionStorage.getItem(SESSION_KEY) === PHASE.id) return;
@@ -3473,36 +3667,6 @@ window.cfTabSwitch = function(panelId, btn) {
     setTimeout(function () { el.remove(); }, 350);
   }
 
-  function buildMediaHtml() {
-    if (PHASE.type === "video") {
-      var videoUrl = "https://youtu.be/" + PHASE.videoId;
-      return (
-        '<div class="screen-jack__frame-wrap">' +
-          '<iframe class="screen-jack__iframe" ' +
-            'src="https://www.youtube.com/embed/' + PHASE.videoId + '?autoplay=1&rel=0" ' +
-            'title="YouTube video player" frameborder="0" ' +
-            'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
-            'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
-          '<a class="screen-jack__link-overlay" href="' + videoUrl + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>' +
-        "</div>"
-      );
-    }
-    return (
-      '<div class="screen-jack__frame-wrap screen-jack__frame-wrap--image">' +
-        '<img class="screen-jack__image" src="' + PHASE.image + '" alt="">' +
-      "</div>"
-    );
-  }
-
-  function buildButtonHtml() {
-    if (!PHASE.button) return "";
-    return (
-      '<a class="screen-jack__cta-btn" href="' + PHASE.button.url + '" target="_blank" rel="noopener">' +
-        PHASE.button.text +
-      "</a>"
-    );
-  }
-
   function showOverlay() {
     // 表示した時点でフラグを立てる（遷移しても再表示させないため）
     sessionStorage.setItem(SESSION_KEY, PHASE.id);
@@ -3513,9 +3677,9 @@ window.cfTabSwitch = function(panelId, btn) {
       '<div class="screen-jack__backdrop"></div>' +
       '<button class="screen-jack__close" aria-label="Close">×</button>' +
       '<div class="screen-jack__inner">' +
-        '<div class="screen-jack__message">' + PHASE.message.replace(/\n/g, "<br>") + "</div>" +
-        buildMediaHtml() +
-        buildButtonHtml() +
+        '<div class="screen-jack__message">' + asobuLocalize(PHASE.message).replace(/\n/g, "<br>") + "</div>" +
+        asobuBuildMediaHtml(PHASE) +
+        asobuBuildButtonHtml(PHASE) +
       "</div>";
 
     document.body.appendChild(overlayEl);
@@ -3538,4 +3702,418 @@ window.cfTabSwitch = function(panelId, btn) {
   } else {
     boot();
   }
+})();
+
+/* ─────────────────────────────────────────────────────────────
+   ホーム「お知らせ」コーナー
+   ・上段: 画面ジャック(ASOBU_PHASES)と同じ内容を埋め込み表示
+     （データは共通、二重管理なし）
+   ・下段: グッズタブの最新グッズ（新グッズ公開予定=999は除外）上位2件
+   renderStaticTexts() から、goods-containerが存在した後に呼ばれる。
+   ───────────────────────────────────────────────────────────── */
+function renderHomeNotice() {
+  var titleEl = document.getElementById("homeNoticeTitle");
+  if (titleEl) titleEl.textContent = t("home.noticeTitle") || "📢 お知らせ";
+
+  // お知らせカード（画面ジャックと同じデータを使い回す）
+  var cardEl = document.getElementById("homeNoticeCard");
+  if (cardEl) {
+    var phase = asobuCurrentPhase();
+    if (phase) {
+      cardEl.innerHTML =
+        '<div class="notice-card__message">' + asobuLocalize(phase.message).replace(/\n/g, "<br>") + "</div>" +
+        asobuBuildMediaHtml(phase, {
+          frameClass: "notice-card__frame-wrap",
+          imgClass: "notice-card__image",
+          iframeClass: "notice-card__iframe",
+          linkClass: "notice-card__link-overlay",
+          autoplay: false
+        }) +
+        asobuBuildButtonHtml(phase, "notice-card__cta-btn");
+      cardEl.style.display = "";
+    } else {
+      cardEl.innerHTML = "";
+      cardEl.style.display = "none";
+    }
+  }
+
+  // 最新グッズ2件（新グッズ公開予定＝order 999 は除外）
+  var goodsSection = document.getElementById("homeNoticeGoods");
+  var goodsListEl = document.getElementById("homeNoticeGoodsList");
+  var goodsTitleEl = document.getElementById("homeNoticeGoodsTitle");
+  if (goodsTitleEl) goodsTitleEl.textContent = t("home.noticeGoodsTitle") || "🛍️ 最新グッズ";
+
+  if (goodsSection && goodsListEl) {
+    var container = document.getElementById("goods-container");
+    var boxes = container
+      ? Array.from(container.querySelectorAll(".goods-box[data-goods-order]")).filter(function (b) {
+          return b.dataset.goodsOrder !== "999";
+        })
+      : [];
+
+    boxes.sort(function (a, b) {
+      return parseInt(b.dataset.goodsOrder, 10) - parseInt(a.dataset.goodsOrder, 10);
+    });
+    boxes = boxes.slice(0, 2);
+
+    goodsListEl.innerHTML = "";
+    boxes.forEach(function (box) {
+      var imgEl = box.querySelector(".goods-summary .goods-thumb");
+      var titleNode = box.querySelector(".goods-summary .title");
+      var linkEl = box.querySelector(".goods-summary a.buy-now");
+
+      var item = document.createElement(linkEl ? "a" : "div");
+      item.className = "notice-goods-item";
+      if (linkEl) {
+        item.href = linkEl.getAttribute("href");
+        item.target = "_blank";
+        item.rel = "noopener";
+      } else {
+        // リンクが無いグッズはグッズタブへ遷移させる
+        item.addEventListener("click", function () {
+          var goodsTab = document.querySelector('[data-tab="goods"]');
+          if (goodsTab) goodsTab.click();
+        });
+        item.style.cursor = "pointer";
+      }
+      item.innerHTML =
+        (imgEl ? '<img class="notice-goods-thumb" src="' + imgEl.getAttribute("src") + '" alt="">' : "") +
+        '<div class="notice-goods-title">' + (titleNode ? titleNode.textContent : "") + "</div>";
+      goodsListEl.appendChild(item);
+    });
+
+    goodsSection.style.display = boxes.length ? "" : "none";
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BGM（背景音楽・プレイリスト対応）
+   ・music/music.json から曲リスト（曲名・ファイル名・MVのURL）を読み込み、
+     music/ フォルダ内の音源を再生する
+   ・起動するたびにランダムな曲から再生を開始し、以降はリストの並び順で
+     ループ再生する（最後まで行ったら先頭へ戻る）
+   ・music/music.json が読み込めない場合は ./assets/music.wav（無ければ.mp3）
+     の単曲再生にフォールバックする
+   ・三本線ボタン（🔈の左）を押すとプルダウンで曲リストが開き、曲を選んで
+     直接再生できる
+   ・音量バーの横の「この曲のMVを見る」リンクから、再生中の曲のMVを
+     YouTubeで開ける（曲にurlが無い場合はリンク自体を非表示にする）
+   ・音量はlocalStorageに保存し、次回訪問時も復元
+   ・タブ（ページ内セクション）を切り替えても再生を継続
+   ・他の動画/音声（ミュートされていないもの）が再生中は自動でダッキング（無音化）
+   ・スライダーを一番左にすると無音
+   ・ブラウザの自動再生ポリシー対策：最初は「ミュートで自動再生」を保証し、
+     　最初のユーザー操作（クリック等）で実際の音量に切り替える
+   ───────────────────────────────────────────────────────────── */
+(function initBgm() {
+  var VOLUME_KEY = "bgmVolume"; // 0-100 で保存
+  var DEFAULT_VOLUME = 12;
+
+  var audio = document.getElementById("bgMusic");
+  var slider = document.getElementById("bgmVolumeSlider");
+  var muteBtn = document.getElementById("bgmMuteBtn");
+  var playlistToggle = document.getElementById("bgmPlaylistToggle");
+  var playlistMenu = document.getElementById("bgmPlaylistMenu");
+  var mvLink = document.getElementById("bgmMvLink");
+  var mvLinkText = document.getElementById("bgmMvLinkText");
+  if (!audio || !slider) return;
+
+  // <audio loop> が付いていると曲が終わっても ended イベントが発火せず、
+  // 次の曲に進めなくなるため、ここで明示的にネイティブループを無効化する
+  audio.loop = false;
+
+  // music/music.json が読み込めない場合の保険（従来の単曲フォールバック）
+  var FALLBACK_TRACKS = [
+    { title: "BGM", sources: ["./assets/music.wav", "./assets/music.mp3"], url: "" }
+  ];
+
+  var playlist = [];
+  var currentIndex = 0;
+  var usingFallback = false;
+  var unlocked = false; // 実際の音量での再生が解禁されたか
+  var errorSkipCount = 0;
+
+  // 保存済み音量の読み込み（無ければデフォルト）
+  var savedVolume = parseInt(localStorage.getItem(VOLUME_KEY), 10);
+  if (isNaN(savedVolume) || savedVolume < 0 || savedVolume > 100) {
+    savedVolume = DEFAULT_VOLUME;
+  }
+  slider.value = String(savedVolume);
+
+  function updateIcon() {
+    if (!muteBtn) return;
+    muteBtn.textContent = Number(slider.value) <= 0 ? "🔇" : "🔈";
+  }
+  updateIcon();
+
+  // ダッキング用
+  var duckActive = false;
+  var duckCount = 0;
+
+  function targetVolume() {
+    return Number(slider.value) / 100;
+  }
+
+  // 実際の音量を反映（ダッキング中・未解禁中は反映しない）
+  function applyVolume() {
+    if (duckActive || !unlocked) return;
+    audio.volume = targetVolume();
+  }
+
+  slider.addEventListener("input", function () {
+    localStorage.setItem(VOLUME_KEY, slider.value);
+    updateIcon();
+    applyVolume();
+  });
+
+  var lastVolumeBeforeMute = DEFAULT_VOLUME;
+  if (muteBtn) {
+    muteBtn.addEventListener("click", function () {
+      if (Number(slider.value) > 0) {
+        lastVolumeBeforeMute = Number(slider.value);
+        slider.value = "0";
+      } else {
+        slider.value = String(lastVolumeBeforeMute || DEFAULT_VOLUME);
+      }
+      localStorage.setItem(VOLUME_KEY, slider.value);
+      updateIcon();
+      applyVolume();
+    });
+  }
+
+  // 他の動画/音声（ミュートされていないもの）が再生されたら一時的に無音化
+  document.addEventListener("play", function (e) {
+    var el = e.target;
+    if (!el || el === audio) return;
+    if (typeof el.muted === "undefined") return; // audio/video要素以外は無視
+    if (el.muted) return; // 常時ミュートの背景動画などは無視
+
+    duckCount++;
+    if (!duckActive) {
+      duckActive = true;
+      audio.volume = 0;
+    }
+  }, true);
+
+  function maybeRestore(e) {
+    var el = e.target;
+    if (!el || el === audio) return;
+    if (typeof el.muted === "undefined") return;
+    if (el.muted) return;
+
+    if (duckCount > 0) duckCount--;
+    if (duckCount <= 0) {
+      duckCount = 0;
+      duckActive = false;
+      applyVolume();
+    }
+  }
+  document.addEventListener("pause", maybeRestore, true);
+  document.addEventListener("ended", maybeRestore, true);
+
+  // ── 多言語テキスト（i18n本体の読み込みタイミングに関わらず安全に取得） ──
+  function musicText(key, fallback) {
+    if (typeof t === "function") {
+      var v = t("music." + key);
+      if (v && v !== "music." + key) return v;
+    }
+    return fallback;
+  }
+
+  // 言語切り替え時に renderStaticTexts() から呼んでもらうためのフック
+  window.__refreshBgmI18n = function () {
+    if (playlistToggle) {
+      var label = musicText("playlist", "曲リスト");
+      playlistToggle.setAttribute("aria-label", label);
+      playlistToggle.title = label;
+    }
+    updateMvLink();
+  };
+
+  // ── 「この曲のMVを見る」リンクの更新 ──
+  function updateMvLink() {
+    if (!mvLink) return;
+    var track = playlist[currentIndex];
+    var label = musicText("watchMv", "この曲のMVを見る");
+    if (mvLinkText) { mvLinkText.textContent = label; } else { mvLink.textContent = label; }
+    mvLink.title = label;
+    mvLink.setAttribute("aria-label", label);
+    if (track && track.url) {
+      mvLink.href = track.url;
+      mvLink.style.display = "";
+    } else {
+      mvLink.removeAttribute("href");
+      mvLink.style.display = "none";
+    }
+  }
+
+  // ── 曲リスト（プルダウンメニュー）の描画 ──
+  function renderPlaylistMenu() {
+    if (!playlistMenu) return;
+    playlistMenu.innerHTML = "";
+    playlist.forEach(function (track, i) {
+      var item = document.createElement("button");
+      item.type = "button";
+      item.className = "bgm-playlist__item" + (i === currentIndex ? " active" : "");
+      item.setAttribute("role", "menuitem");
+      item.textContent = track.title || ("music" + (i + 1));
+      item.addEventListener("click", function () {
+        closePlaylistMenu();
+        if (i === currentIndex) return;
+        currentIndex = i;
+        loadTrack(currentIndex);
+        attemptPlay();
+      });
+      playlistMenu.appendChild(item);
+    });
+  }
+
+  function markActiveInMenu() {
+    if (!playlistMenu) return;
+    var items = playlistMenu.querySelectorAll(".bgm-playlist__item");
+    items.forEach(function (el, i) {
+      el.classList.toggle("active", i === currentIndex);
+    });
+  }
+
+  function openPlaylistMenu() {
+    if (!playlistMenu || !playlistToggle) return;
+    playlistMenu.classList.add("open");
+    playlistMenu.setAttribute("aria-hidden", "false");
+    playlistToggle.setAttribute("aria-expanded", "true");
+  }
+  function closePlaylistMenu() {
+    if (!playlistMenu || !playlistToggle) return;
+    playlistMenu.classList.remove("open");
+    playlistMenu.setAttribute("aria-hidden", "true");
+    playlistToggle.setAttribute("aria-expanded", "false");
+  }
+  if (playlistToggle) {
+    playlistToggle.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (playlistMenu && playlistMenu.classList.contains("open")) {
+        closePlaylistMenu();
+      } else {
+        openPlaylistMenu();
+      }
+    });
+    document.addEventListener("click", function (e) {
+      if (!playlistMenu || !playlistMenu.classList.contains("open")) return;
+      if (playlistMenu.contains(e.target) || playlistToggle.contains(e.target)) return;
+      closePlaylistMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closePlaylistMenu();
+    });
+  }
+
+  // ── 再生まわり ──
+  function trackSrc(track) {
+    if (usingFallback) return track.sources[track._srcIndex || 0];
+    return "./music/" + track.file;
+  }
+
+  function loadTrack(i) {
+    var track = playlist[i];
+    if (!track) return;
+    audio.src = trackSrc(track);
+    audio.load();
+    updateMvLink();
+    markActiveInMenu();
+  }
+
+  function attemptPlay() {
+    var p = audio.play();
+    if (p && typeof p.catch === "function") {
+      p.catch(function () {
+        // 自動再生に失敗した場合は、後続のunlockAudioで再度試みる
+      });
+    }
+  }
+
+  // 次の曲へ（リストの最後まで行ったら先頭に戻ってループ）
+  function playNext() {
+    if (!playlist.length) return;
+    currentIndex = (currentIndex + 1) % playlist.length;
+    errorSkipCount++;
+    loadTrack(currentIndex);
+    attemptPlay();
+  }
+
+  audio.addEventListener("ended", function () {
+    errorSkipCount = 0;
+    playNext();
+  });
+
+  audio.addEventListener("error", function () {
+    if (!playlist.length) return;
+
+    if (usingFallback) {
+      var track = playlist[currentIndex];
+      var next = (track._srcIndex || 0) + 1;
+      if (next < track.sources.length) {
+        track._srcIndex = next;
+        audio.src = trackSrc(track);
+        audio.load();
+        attemptPlay();
+        return;
+      }
+    }
+
+    // 読み込みに失敗した曲はスキップして次へ（全曲失敗時は無限ループしない）
+    if (errorSkipCount < playlist.length) {
+      playNext();
+    }
+  });
+
+  // ステップ1：ミュートで確実に自動再生を開始（ブラウザは基本的に許可する）
+  audio.muted = true;
+  audio.volume = 0;
+
+  // ステップ2：最初のユーザー操作でミュート解除→保存済み音量を適用
+  function unlockAudio() {
+    if (unlocked) return;
+    unlocked = true;
+    audio.muted = false;
+    applyVolume();
+    attemptPlay();
+    ["click", "touchstart", "keydown"].forEach(function (ev) {
+      document.removeEventListener(ev, unlockAudio, true);
+    });
+  }
+  ["click", "touchstart", "keydown"].forEach(function (ev) {
+    document.addEventListener(ev, unlockAudio, { capture: true, passive: true });
+  });
+
+  // ── music/music.json を読み込んでプレイリストを組み立てる ──
+  fetch("./music/music.json", { cache: "no-store" })
+    .then(function (res) {
+      if (!res.ok) throw new Error("music.json not found");
+      return res.json();
+    })
+    .then(function (data) {
+      if (!Array.isArray(data) || !data.length) throw new Error("music.json empty");
+      var list = data
+        .filter(function (item) { return item && item.file; })
+        .map(function (item) {
+          return { title: item.title || "", file: item.file, url: item.url || "" };
+        });
+      if (!list.length) throw new Error("music.json empty");
+      playlist = list;
+      usingFallback = false;
+    })
+    .catch(function () {
+      usingFallback = true;
+      playlist = FALLBACK_TRACKS.map(function (item) {
+        return { title: item.title, sources: item.sources.slice(), url: item.url, _srcIndex: 0 };
+      });
+    })
+    .then(function () {
+      // 起動のたびにランダムな曲から再生開始 → 以降はリスト順にループ
+      currentIndex = Math.floor(Math.random() * playlist.length);
+      renderPlaylistMenu();
+      window.__refreshBgmI18n();
+      loadTrack(currentIndex);
+      attemptPlay();
+    });
 })();

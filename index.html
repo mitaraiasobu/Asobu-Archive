@@ -28,6 +28,20 @@
       <a class="sns-img-btn" href="https://mitaraiasobu.booth.pm/" target="_blank" rel="noopener"><img src="./assets/Booth.png" alt="BOOTH" width="80" height="40" /></a>
     </div>
 
+    <!-- BGM音量 -->
+    <div class="bgm-volume" id="bgmVolume" title="音量">
+      <div class="bgm-playlist" id="bgmPlaylist">
+        <button class="bgm-volume__icon bgm-playlist__toggle" id="bgmPlaylistToggle" type="button" aria-haspopup="true" aria-expanded="false" aria-label="曲リスト">☰</button>
+        <div class="bgm-playlist__menu" id="bgmPlaylistMenu" role="menu" aria-hidden="true"></div>
+      </div>
+      <button class="bgm-volume__icon" id="bgmMuteBtn" type="button" aria-label="ミュート切り替え">🔈</button>
+      <input type="range" id="bgmVolumeSlider" class="bgm-volume__slider" min="0" max="100" step="1" value="12" aria-label="音量">
+      <a class="bgm-mv-link" id="bgmMvLink" href="#" target="_blank" rel="noopener noreferrer" style="display:none;">
+        <span class="bgm-mv-link__icon" aria-hidden="true">🎬</span>
+        <span class="bgm-mv-link__text" id="bgmMvLinkText">この曲のMVを見る</span>
+      </a>
+    </div>
+
     <!-- 翻訳ボタン -->
     <div class="lang">
       <button class="chip" data-lang="ja">日本語</button>
@@ -104,7 +118,11 @@
       <!-- 最近の配信や動画（自己紹介タブから移動） -->
       <div class="thumb-gallery-section" id="homeThumbGallerySection">
         <div class="thumb-gallery-header">
-          <span class="thumb-gallery-title">📺 最近の配信や動画</span>
+          <span class="thumb-gallery-title" id="thumbGalleryTitle">📺 最近の配信や動画</span>
+          <button class="tg-autoplay-btn" id="tgAutoplayBtn" type="button" aria-pressed="true">
+            <span class="tg-autoplay-btn__dot"></span>
+            <span class="tg-autoplay-btn__label">自動再生：ON</span>
+          </button>
         </div>
         <div class="thumb-gallery-wrap">
           <button class="tg-btn tg-btn--prev" aria-label="前へ">‹</button>
@@ -112,6 +130,24 @@
           <button class="tg-btn tg-btn--next" aria-label="次へ">›</button>
         </div>
         <div class="thumb-gallery-dots" id="thumbGalleryDots"></div>
+      </div>
+
+      <!-- お知らせ（画面ジャックと同じデータを表示 + 最新グッズ2件） -->
+      <div class="home-notice-section" id="homeNoticeSection">
+        <div class="home-notice-header">
+          <span class="home-notice-title" id="homeNoticeTitle">📢 お知らせ</span>
+          <span class="home-notice-goods__title" id="homeNoticeGoodsTitle">🛍️ 最新グッズ</span>
+        </div>
+        <div class="home-notice-split">
+          <div class="home-notice-left">
+            <div class="notice-card" id="homeNoticeCard"></div>
+          </div>
+          <div class="home-notice-right">
+            <div class="home-notice-goods" id="homeNoticeGoods">
+              <div class="notice-goods-list" id="homeNoticeGoodsList"></div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="home-split">
@@ -280,6 +316,9 @@
   <footer class="footer">
     <span class="muted" id="footerNote"></span>
   </footer>
+
+  <!-- BGM（自動再生・音量はユーザー操作で保存） -->
+  <audio id="bgMusic" preload="auto"></audio>
 
   <script src="./app.js"></script>
 </body>
