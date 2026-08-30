@@ -3787,13 +3787,14 @@ function renderHomeNotice() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   BGM（背景音楽・プレイリスト対応）
-   ・music/music.json から曲リスト（曲名・ファイル名・MVのURL）を読み込み、
-     music/ フォルダ内の音源を再生する
+   BGM（背景音楽・プレイリスト対応）※YouTube再生方式
+   ・music/music.json から曲リスト（曲名・MVのYouTube URL）を読み込み、
+     各曲のYouTube動画を非表示プレイヤーで音声のみ再生する
+     （ローカル音源ファイルは使用しない。GitHubのファイルサイズ制限対策）
    ・起動するたびにランダムな曲から再生を開始し、以降はリストの並び順で
      ループ再生する（最後まで行ったら先頭へ戻る）
-   ・music/music.json が読み込めない場合は ./assets/music.wav（無ければ.mp3）
-     の単曲再生にフォールバックする
+   ・music/music.json が読み込めない、または曲にurl（YouTubeリンク）が
+     無い場合はその曲をスキップする
    ・三本線ボタン（🔈の左）を押すとプルダウンで曲リストが開き、曲を選んで
      直接再生できる
    ・音量バーの横の「この曲のMVを見る」リンクから、再生中の曲のMVを
@@ -3809,27 +3810,16 @@ function renderHomeNotice() {
   var VOLUME_KEY = "bgmVolume"; // 0-100 で保存
   var DEFAULT_VOLUME = 12;
 
-  var audio = document.getElementById("bgMusic");
   var slider = document.getElementById("bgmVolumeSlider");
   var muteBtn = document.getElementById("bgmMuteBtn");
   var playlistToggle = document.getElementById("bgmPlaylistToggle");
   var playlistMenu = document.getElementById("bgmPlaylistMenu");
   var mvLink = document.getElementById("bgmMvLink");
   var mvLinkText = document.getElementById("bgmMvLinkText");
-  if (!audio || !slider) return;
-
-  // <audio loop> が付いていると曲が終わっても ended イベントが発火せず、
-  // 次の曲に進めなくなるため、ここで明示的にネイティブループを無効化する
-  audio.loop = false;
-
-  // music/music.json が読み込めない場合の保険（従来の単曲フォールバック）
-  var FALLBACK_TRACKS = [
-    { title: "BGM", sources: ["./assets/music.wav", "./assets/music.mp3"], url: "" }
-  ];
+  if (!slider) return;
 
   var playlist = [];
   var currentIndex = 0;
-  var usingFallback = false;
   var unlocked = false; // 実際の音量での再生が解禁されたか
   var errorSkipCount = 0;
 
@@ -3851,13 +3841,20 @@ function renderHomeNotice() {
   var duckCount = 0;
 
   function targetVolume() {
-    return Number(slider.value) / 100;
+    return Number(slider.value);
   }
 
   // 実際の音量を反映（ダッキング中・未解禁中は反映しない）
   function applyVolume() {
+    if (!ytPlayer || !playerReady) return;
     if (duckActive || !unlocked) return;
-    audio.volume = targetVolume();
+    var v = targetVolume();
+    if (v <= 0) {
+      ytPlayer.mute();
+    } else {
+      ytPlayer.unMute();
+      ytPlayer.setVolume(v);
+    }
   }
 
   slider.addEventListener("input", function () {
@@ -3884,21 +3881,19 @@ function renderHomeNotice() {
   // 他の動画/音声（ミュートされていないもの）が再生されたら一時的に無音化
   document.addEventListener("play", function (e) {
     var el = e.target;
-    if (!el || el === audio) return;
-    if (typeof el.muted === "undefined") return; // audio/video要素以外は無視
+    if (!el || typeof el.muted === "undefined") return; // audio/video要素以外は無視
     if (el.muted) return; // 常時ミュートの背景動画などは無視
 
     duckCount++;
     if (!duckActive) {
       duckActive = true;
-      audio.volume = 0;
+      if (ytPlayer && playerReady) ytPlayer.setVolume(0);
     }
   }, true);
 
   function maybeRestore(e) {
     var el = e.target;
-    if (!el || el === audio) return;
-    if (typeof el.muted === "undefined") return;
+    if (!el || typeof el.muted === "undefined") return;
     if (el.muted) return;
 
     if (duckCount > 0) duckCount--;
@@ -3962,7 +3957,6 @@ function renderHomeNotice() {
         if (i === currentIndex) return;
         currentIndex = i;
         loadTrack(currentIndex);
-        attemptPlay();
       });
       playlistMenu.appendChild(item);
     });
@@ -4007,27 +4001,105 @@ function renderHomeNotice() {
     });
   }
 
-  // ── 再生まわり ──
-  function trackSrc(track) {
-    if (usingFallback) return track.sources[track._srcIndex || 0];
-    return "./music/" + track.file;
+  // ── YouTube動画IDの抽出 ──
+  function extractYouTubeId(url) {
+    if (!url) return null;
+    var m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
   }
 
+  // ── YouTube IFrame Player（非表示・音声のみ再生用） ──
+  var ytPlayer = null;
+  var playerReady = false;
+  var pendingVideoId = null;
+
+  function loadYouTubeAPI() {
+    return new Promise(function (resolve) {
+      if (window.YT && window.YT.Player) { resolve(window.YT); return; }
+      var prevReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () {
+        if (typeof prevReady === "function") prevReady();
+        resolve(window.YT);
+      };
+      if (!document.getElementById("bgmYtApiScript")) {
+        var tag = document.createElement("script");
+        tag.id = "bgmYtApiScript";
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+      }
+    });
+  }
+
+  function ensurePlayerHost() {
+    var host = document.getElementById("bgmYtPlayerHost");
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "bgmYtPlayerHost";
+      host.style.cssText = "position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;";
+      var inner = document.createElement("div");
+      inner.id = "bgmYtPlayerInner";
+      host.appendChild(inner);
+      document.body.appendChild(host);
+    }
+  }
+
+  function createPlayer(videoId) {
+    ensurePlayerHost();
+    ytPlayer = new YT.Player("bgmYtPlayerInner", {
+      height: "1",
+      width: "1",
+      videoId: videoId,
+      playerVars: {
+        autoplay: 1,
+        controls: 0,
+        disablekb: 1,
+        fs: 0,
+        modestbranding: 1,
+        playsinline: 1,
+        rel: 0
+      },
+      events: {
+        onReady: function () {
+          playerReady = true;
+          ytPlayer.mute();
+          ytPlayer.playVideo();
+        },
+        onStateChange: function (e) {
+          if (e.data === YT.PlayerState.ENDED) {
+            errorSkipCount = 0;
+            playNext();
+          }
+        },
+        onError: function () {
+          if (errorSkipCount < playlist.length) playNext();
+        }
+      }
+    });
+  }
+
+  // ── 再生まわり ──
   function loadTrack(i) {
     var track = playlist[i];
     if (!track) return;
-    audio.src = trackSrc(track);
-    audio.load();
+    var videoId = track.videoId;
+    if (!videoId) {
+      // urlが無い/YouTube動画IDが取れない曲はスキップ
+      errorSkipCount++;
+      playNext();
+      return;
+    }
     updateMvLink();
     markActiveInMenu();
-  }
 
-  function attemptPlay() {
-    var p = audio.play();
-    if (p && typeof p.catch === "function") {
-      p.catch(function () {
-        // 自動再生に失敗した場合は、後続のunlockAudioで再度試みる
-      });
+    if (!playerReady) {
+      pendingVideoId = videoId;
+      return;
+    }
+    ytPlayer.loadVideoById(videoId);
+    if (unlocked) {
+      applyVolume();
+    } else {
+      ytPlayer.mute();
     }
   }
 
@@ -4035,48 +4107,15 @@ function renderHomeNotice() {
   function playNext() {
     if (!playlist.length) return;
     currentIndex = (currentIndex + 1) % playlist.length;
-    errorSkipCount++;
     loadTrack(currentIndex);
-    attemptPlay();
   }
-
-  audio.addEventListener("ended", function () {
-    errorSkipCount = 0;
-    playNext();
-  });
-
-  audio.addEventListener("error", function () {
-    if (!playlist.length) return;
-
-    if (usingFallback) {
-      var track = playlist[currentIndex];
-      var next = (track._srcIndex || 0) + 1;
-      if (next < track.sources.length) {
-        track._srcIndex = next;
-        audio.src = trackSrc(track);
-        audio.load();
-        attemptPlay();
-        return;
-      }
-    }
-
-    // 読み込みに失敗した曲はスキップして次へ（全曲失敗時は無限ループしない）
-    if (errorSkipCount < playlist.length) {
-      playNext();
-    }
-  });
-
-  // ステップ1：ミュートで確実に自動再生を開始（ブラウザは基本的に許可する）
-  audio.muted = true;
-  audio.volume = 0;
 
   // ステップ2：最初のユーザー操作でミュート解除→保存済み音量を適用
   function unlockAudio() {
     if (unlocked) return;
     unlocked = true;
-    audio.muted = false;
     applyVolume();
-    attemptPlay();
+    if (ytPlayer && playerReady) ytPlayer.playVideo();
     ["click", "touchstart", "keydown"].forEach(function (ev) {
       document.removeEventListener(ev, unlockAudio, true);
     });
@@ -4094,26 +4133,29 @@ function renderHomeNotice() {
     .then(function (data) {
       if (!Array.isArray(data) || !data.length) throw new Error("music.json empty");
       var list = data
-        .filter(function (item) { return item && item.file; })
+        .filter(function (item) { return item && item.url; })
         .map(function (item) {
-          return { title: item.title || "", file: item.file, url: item.url || "" };
-        });
-      if (!list.length) throw new Error("music.json empty");
+          return { title: item.title || "", url: item.url, videoId: extractYouTubeId(item.url) };
+        })
+        .filter(function (item) { return !!item.videoId; });
+      if (!list.length) throw new Error("music.json: no valid YouTube url found");
       playlist = list;
-      usingFallback = false;
     })
-    .catch(function () {
-      usingFallback = true;
-      playlist = FALLBACK_TRACKS.map(function (item) {
-        return { title: item.title, sources: item.sources.slice(), url: item.url, _srcIndex: 0 };
-      });
+    .catch(function (err) {
+      console.warn("[BGM] playlist load failed:", err);
+      playlist = [];
     })
     .then(function () {
+      if (!playlist.length) return;
       // 起動のたびにランダムな曲から再生開始 → 以降はリスト順にループ
       currentIndex = Math.floor(Math.random() * playlist.length);
       renderPlaylistMenu();
       window.__refreshBgmI18n();
-      loadTrack(currentIndex);
-      attemptPlay();
+      updateMvLink();
+      markActiveInMenu();
+
+      loadYouTubeAPI().then(function () {
+        createPlayer(playlist[currentIndex].videoId);
+      });
     });
 })();
