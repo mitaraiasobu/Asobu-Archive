@@ -1,70 +1,98 @@
 [
   {
-    "file": "自己紹介.png",
-    "url": "https://youtu.be/0x1XEsxoS6g"
-  },
-  {
     "file": "III.png",
-    "url": "https://www.youtube.com/watch?v=PEUCJ7274jM"
-  },
-  {
-    "file": "御手洗THEサマー.png",
-    "url": "https://www.youtube.com/watch?v=jm-2KiEF-Zs"
-  },
-  {
-    "file": "安価寿司2.png",
-    "url": "https://www.youtube.com/live/I2o_tKf8lr0"
-  },
-  {
-    "file": "ブレインロット.png",
-    "url": "https://www.youtube.com/watch?v=794ZQMcLYSo"
-  },
- {
-    "file": "ループザルーム.jpg",
-    "url": "https://www.youtube.com/watch?v=wXyY2R3QKPI"
-  },
-  {
-    "file": "心予報みたサムネ.png",
-    "url": "https://www.youtube.com/watch?v=dW6JQ9IP2Ao"
-  },
-  {
-    "file": "面接M.png",
-    "url": "https://www.youtube.com/watch?v=bl-tUxj3Cas"
+    "url": "https://www.youtube.com/watch?v=PEUCJ7274jM",
+    "autoplay": true,
+    "duration": 17
   },
   {
     "file": "みた祭り闇鍋.png",
-    "url": "https://www.youtube.com/watch?v=LMTtn5fLw4k"
+    "url": "https://www.youtube.com/watch?v=LMTtn5fLw4k",
+    "autoplay": true,
+    "duration": 15
+  },
+  {
+    "file": "御手洗THEサマー.png",
+    "url": "https://www.youtube.com/watch?v=jm-2KiEF-Zs",
+    "autoplay": false,
+    "duration": 8
+  },
+  {
+    "file": "ブレインロット.png",
+    "url": "https://www.youtube.com/watch?v=794ZQMcLYSo",
+    "autoplay": true,
+    "duration": 15
+  },
+  {
+    "file": "安価寿司2.png",
+    "url": "https://www.youtube.com/live/I2o_tKf8lr0",
+    "autoplay": false,
+    "duration": 8
+  },
+  {
+    "file": "ループザルーム.jpg",
+    "url": "https://www.youtube.com/watch?v=wXyY2R3QKPI",
+    "autoplay": true,
+    "duration": 15
+  },
+  {
+    "file": "心予報みたサムネ.png",
+    "url": "https://www.youtube.com/watch?v=dW6JQ9IP2Ao",
+    "autoplay": true,
+    "duration": 15
+  },
+  {
+    "file": "面接M.png",
+    "url": "https://www.youtube.com/watch?v=bl-tUxj3Cas",
+    "autoplay": true,
+    "duration": 15
   },
   {
     "file": "3000人色.png",
-    "url": "https://www.youtube.com/live/6aWcyKT8uh0"
+    "url": "https://www.youtube.com/live/6aWcyKT8uh0",
+    "autoplay": false,
+    "duration": 8
   },
   {
     "file": "ラヴィ.jpg",
-    "url": "https://youtu.be/W09Mn6onF5Q?si=6n5WpHsRc_for6Ks"
+    "url": "https://youtu.be/W09Mn6onF5Q?si=6n5WpHsRc_for6Ks",
+    "autoplay": true,
+    "duration": 8
   },
   {
     "file": "雑談6.png",
-    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKKAICFs3czZ3HQoakegmo7z&si=zE0iuS4g3Go9Fif-"
+    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKKAICFs3czZ3HQoakegmo7z&si=zE0iuS4g3Go9Fif-",
+    "autoplay": false,
+    "duration": 8
   },
   {
     "file": "歌.png",
-    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKImzN0dasYzhbx-M_poWN5V&si=Cko-A9_V0ApCklGv"
+    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKImzN0dasYzhbx-M_poWN5V&si=Cko-A9_V0ApCklGv",
+    "autoplay": false,
+    "duration": 8
   },
   {
     "file": "お絵描き.png",
-    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKKcd71oD2hheMTt8QGLE7Xx&si=JeVPeYnTuf9Gz24-"
+    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKKcd71oD2hheMTt8QGLE7Xx&si=JeVPeYnTuf9Gz24-",
+    "autoplay": false,
+    "duration": 8
   },
   {
     "file": "10_content warning1.png",
-    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKJGIm1weB-1ghQKwNE9kmSi&si=Y2zsfIbDv-uWH4uK"
+    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKJGIm1weB-1ghQKwNE9kmSi&si=Y2zsfIbDv-uWH4uK",
+    "autoplay": false,
+    "duration": 8
   },
   {
     "file": "おやすみ.png",
-    "url": "https://youtu.be/pUBiG9XZpyw?si=vlLxK59EoaX98pcz"
+    "url": "https://youtu.be/pUBiG9XZpyw?si=vlLxK59EoaX98pcz",
+    "autoplay": false,
+    "duration": 8
   },
   {
     "file": "メン限マイクラ2.png",
-    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKI6Gyjpy2buJY-7laycW-N1&si=-mY9h2Iv2bAHkmNn"
+    "url": "https://youtube.com/playlist?list=PLiJ012iJHZKI6Gyjpy2buJY-7laycW-N1&si=-mY9h2Iv2bAHkmNn",
+    "autoplay": false,
+    "duration": 8
   }
 ]
