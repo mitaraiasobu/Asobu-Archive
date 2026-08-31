@@ -280,6 +280,7 @@ a{color:inherit}
   border-radius:14px;
   border:1px solid rgba(255,255,255,.06);
   background: var(--card2);
+  cursor: pointer;
 }
 
 .grid{
@@ -637,6 +638,7 @@ body.modal-open {
   touch-action:none;
   user-select:none;
   -webkit-user-drag:none;
+  cursor: pointer;
 }
 .lightbox__img--dragging{ transition:none; }
 
@@ -2274,8 +2276,18 @@ body:not(.no-anim) button,
 body:not(.no-anim) [role="button"],
 body:not(.no-anim) .event,
 body:not(.no-anim) .tab,
-body:not(.no-anim) .chip {
+body:not(.no-anim) .chip,
+body:not(.no-anim) .schedule img,
+body:not(.no-anim) .lightbox__img,
+body:not(.no-anim) .ct-palette-swatch,
+body:not(.no-anim) .ct-layer-item {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpolygon points='2,2 2,16 6,12 9,19 11,18 8,11 14,11' fill='%23ff79b0' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 2 2, pointer;
+}
+
+/* 上記リストに直接無いが個別にクリック可能な要素（ぬりえツールのパレット/レイヤーなど） */
+.ct-palette-swatch,
+.ct-layer-item {
+  cursor: pointer;
 }
 
 /* ── フッター：ドットフォント ─────────────────────────── */
@@ -2750,17 +2762,35 @@ body:not(.no-anim) .chip {
   cursor: pointer;
 }
 
-.thumb-gallery-track {
-  display: flex;
-  transition: transform .45s cubic-bezier(.4,0,.2,1);
-  will-change: transform;
+/* 「大」の行（スマホ:1枚 / PC:2枚） */
+.thumb-gallery-large {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+/* 「小」の行（スマホ:2枚 / PC:4枚） */
+.thumb-gallery-small {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 8px;
 }
 
 .tg-item {
-  flex: 0 0 100%;
   min-width: 0;
   position: relative;
   display: grid;
+  cursor: pointer;
+}
+
+/* フェード切り替え用（JSが再描画のたびに一瞬だけ付与） */
+.tg-item.is-fading {
+  animation: tgFadeIn .35s ease;
+}
+@keyframes tgFadeIn {
+  from { opacity: 0; transform: scale(.97); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .tg-item img {
@@ -2947,31 +2977,29 @@ body:not(.no-anim) .chip {
 .tg-btn--prev { left: 6px; }
 .tg-btn--next { right: 6px; }
 
-/* ── PC: 半分サイズ＋2枚並び ── */
+/* ── PC: 大2枚＋小4枚 ── */
 @media (min-width: 768px) {
   .thumb-gallery-section {
-    /* 親幅の50%に制限してセンタリング */
     max-width: 100%;
   }
 
-
-  .tg-item {
-    flex: 0 0 50%;   /* 2枚並び */
-    min-width: 0;
-    padding: 0 6px;
-    box-sizing: border-box;
+  .thumb-gallery-large {
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  /* goTo() は1枚ずつ動かしているが、50%幅なので
-     translateX(-N*50%) になるよう上書きはJSで行う。
-     ここではCSS側の見た目だけ整える */
+  .thumb-gallery-small {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
-/* ── スマホ: 1枚表示（従来通り） ── */
+/* ── スマホ: 大1枚＋小2枚（従来通り） ── */
 @media (max-width: 767px) {
-  .tg-item {
-    flex: 0 0 100%;
-    padding: 0;
+  .thumb-gallery-large {
+    grid-template-columns: 1fr;
+  }
+
+  .thumb-gallery-small {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -4462,4 +4490,14 @@ body:not(.no-anim) .chip {
   width: 100%;
   height: auto;
   aspect-ratio: 2 / 1;
+}
+
+/* ============================================================
+   ✨ アニメON/OFFボタン：ハンバーガーメニュー内での見た目調整
+   ============================================================ */
+.navpanel__inner .anim-toggle-btn--mobile{
+  display: inline-flex;
+  margin: 10px 0 4px;
+  font-size: 12px;
+  padding: 7px 12px 7px 10px;
 }

@@ -1946,10 +1946,18 @@ function setupAnimToggle() {
   const btnPC = makeAnimBtn("animToggleBtnPC", "anim-toggle-btn anim-toggle-btn--pc");
   document.body.appendChild(btnPC);
 
-  // スマホ用: ヘッダー内、☰の左隣（PCでは非表示）
+  // スマホ用: ハンバーガーメニュー内に配置（PCでは非表示）
   const btnMobile = makeAnimBtn("animToggleBtnMobile", "anim-toggle-btn anim-toggle-btn--mobile");
   const navToggle = document.getElementById("navToggle");
-  if (navToggle && navToggle.parentElement) {
+  const navPanelInner = document.querySelector("#navPanel .navpanel__inner");
+  if (navPanelInner) {
+    const ruleline = navPanelInner.querySelector(".ruleline");
+    if (ruleline) {
+      navPanelInner.insertBefore(btnMobile, ruleline);
+    } else {
+      navPanelInner.appendChild(btnMobile);
+    }
+  } else if (navToggle && navToggle.parentElement) {
     navToggle.parentElement.insertBefore(btnMobile, navToggle);
   }
 
@@ -3049,10 +3057,13 @@ function renderDreamGoals(wrap, data) {
 (function () {
 
   let _thumbs   = null; // null=未ロード / [] 以上=ロード済み
-  let _current  = 0;
+  let _current  = 0;    // 「大1」の位置にあるサムネイルの、全体(_thumbs)の中でのインデックス
   let _timer    = null;
   let _paused   = false;
-  const INTERVAL = 8000;
+  let _resizeTimer = null;
+  let _renderToken = 0; // renderWindow()の多重実行対策（古い結果を無視するためのトークン）
+  const _imgLoadCache = new Set(); // 読み込み済み画像URLのキャッシュ（先読み判定用）
+  const INTERVAL = 8000; // 各サムネイルに "duration" が無い場合のデフォルト滞在時間(ms)
   const INITIAL_DELAY = 8000;
   const AUTOPLAY_KEY = "tgAutoplay";
 
@@ -3104,38 +3115,9 @@ function renderDreamGoals(wrap, data) {
     btn.onclick = function () {
       setAutoplayOn(!isAutoplayOn());
       updateAutoplayBtn();
-      applyActiveMedia();
+      renderWindow();
     };
     updateAutoplayBtn();
-  }
-
-  // 現在表示中(アクティブ)のスライドだけ動画を埋め込み、他は画像に戻す
-  function applyActiveMedia() {
-    const track = document.getElementById("thumbGalleryTrack");
-    if (!track) return;
-    const items = track.querySelectorAll(".tg-item");
-    const on = isAutoplayOn();
-    items.forEach(function (item, i) {
-      const videoId = item.dataset.videoId || "";
-      const videoUrl = item.dataset.videoUrl || ("https://youtu.be/" + videoId);
-      const existingFrame = item.querySelector(".tg-video-frame");
-      if (i === _current && on && videoId) {
-        if (!existingFrame) {
-          const frame = document.createElement("div");
-          frame.className = "tg-video-frame";
-          frame.innerHTML =
-            '<iframe class="tg-video-frame__iframe" ' +
-              'src="https://www.youtube.com/embed/' + videoId + '?autoplay=1&mute=1&rel=0&playsinline=1&controls=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1&loop=1&playlist=' + videoId + '" ' +
-              'title="YouTube video player" frameborder="0" ' +
-              'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
-              'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
-            '<a class="tg-video-frame__link-overlay" href="' + videoUrl + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>';
-          item.appendChild(frame);
-        }
-      } else if (existingFrame) {
-        existingFrame.remove();
-      }
-    });
   }
 
   async function loadThumbs() {
@@ -3163,77 +3145,179 @@ function renderDreamGoals(wrap, data) {
     }
   }
 
+  // 画面幅から「大」「小」それぞれの表示枚数を返す（PC: 大2/小4、スマホ: 大1/小2）
+  function getCounts() {
+    const pc = window.innerWidth >= 768;
+    return { large: pc ? 2 : 1, small: pc ? 4 : 2 };
+  }
+
+  // base から offset 進んだ位置の、_thumbs 内インデックスを返す（末尾まで来たら先頭に循環）
+  function idxAt(base, offset, total) {
+    return ((base + offset) % total + total) % total;
+  }
+
+  // 「大1」（コンベアの先頭＝現在再生中のサムネイル）の滞在時間(ms)を返す
+  function currentDuration() {
+    if (!_thumbs || !_thumbs.length) return INTERVAL;
+    const thumb = _thumbs[idxAt(_current, 0, _thumbs.length)];
+    const ms = Math.round(Number(thumb.duration) * 1000);
+    return (ms > 0) ? ms : INTERVAL;
+  }
+
+  function buildVideoFrame(videoId, videoUrl) {
+    const frame = document.createElement("div");
+    frame.className = "tg-video-frame";
+    frame.innerHTML =
+      '<iframe class="tg-video-frame__iframe" ' +
+        'src="https://www.youtube.com/embed/' + videoId + '?autoplay=1&mute=1&rel=0&playsinline=1&controls=0&modestbranding=1&showinfo=0&iv_load_policy=3&disablekb=1&loop=1&playlist=' + videoId + '" ' +
+        'title="YouTube video player" frameborder="0" ' +
+        'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" ' +
+        'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>' +
+      '<a class="tg-video-frame__link-overlay" href="' + videoUrl + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>';
+    return frame;
+  }
+
+  // 画像を先読みしておく。読み込み済み（またはブラウザキャッシュ済み）なら即resolveする
+  function preloadImage(src) {
+    return new Promise(function (resolve) {
+      if (_imgLoadCache.has(src)) { resolve(); return; }
+      const img = new Image();
+      img.onload = img.onerror = function () {
+        _imgLoadCache.add(src);
+        resolve();
+      };
+      img.src = src;
+    });
+  }
+
+  // 1枚分のサムネイル要素（画像のみ）を作る。クリックで常にYouTube等のURLへ遷移する。
+  // 画像の読み込みを待ってから要素を返す：DOMに入れた瞬間に絵が出るので、
+  // 差し替え時に一瞬空白/未読込画像になる「点滅」が起きない
+  async function buildItem(thumb, sizeClass) {
+    const url = thumb.url || "";
+    const src = "./thumbnails/" + thumb.file;
+
+    await preloadImage(src);
+
+    const item = document.createElement("div");
+    item.className = "tg-item " + sizeClass + " is-fading";
+
+    const img = document.createElement("img");
+    img.src     = src;
+    img.alt     = thumb.file;
+    img.loading = "eager";
+    img.style.cursor = url ? "pointer" : "default";
+    if (url) {
+      img.addEventListener("click", function () { window.open(url, "_blank", "noopener"); });
+    }
+    item.appendChild(img);
+    return item;
+  }
+
+  // 現在の _current を起点に「大」「小」それぞれの枠を描き直す
+  // ・大1（先頭）だけ動画を埋め込んで再生する
+  // ・大2以降・小はすべて静止画で、クリックすると直接YouTube等に飛ぶ
+  // ・画像がすべて読み込み終わってから一括でDOMを差し替えることで点滅を防ぐ
+  async function renderWindow() {
+    if (!_thumbs || !_thumbs.length) return;
+    const total = _thumbs.length;
+    const { large, small } = getCounts();
+    const largeEl = document.getElementById("thumbGalleryLarge");
+    const smallEl = document.getElementById("thumbGallerySmall");
+    if (!largeEl || !smallEl) return;
+    const on = isAutoplayOn();
+
+    // このrenderWindow呼び出し固有のトークン。
+    // 画像読み込みを待っている間に次のrenderWindowが呼ばれたら、古い方の結果は捨てる
+    const token = ++_renderToken;
+
+    const largeItemsPromise = Promise.all(
+      Array.from({ length: large }, function (_unused, i) {
+        const thumb = _thumbs[idxAt(_current, i, total)];
+        return buildItem(thumb, "tg-item--large").then(function (item) {
+          if (i === 0) {
+            const videoId = extractYouTubeId(thumb.url || "");
+            const itemAutoplay = thumb.autoplay !== false;
+            if (on && itemAutoplay && videoId) {
+              item.appendChild(buildVideoFrame(videoId, thumb.url));
+            }
+          }
+          return item;
+        });
+      })
+    );
+
+    const smallItemsPromise = Promise.all(
+      Array.from({ length: small }, function (_unused, i) {
+        const thumb = _thumbs[idxAt(_current, large + i, total)];
+        return buildItem(thumb, "tg-item--small");
+      })
+    );
+
+    const [largeItems, smallItems] = await Promise.all([largeItemsPromise, smallItemsPromise]);
+
+    // 待機中に別のrenderWindow呼び出しが走っていたら、こちらの結果は反映しない
+    if (token !== _renderToken) return;
+
+    // 全部読み込み終わってから、一括で差し替える（空白になる瞬間がない）
+    largeEl.replaceChildren(...largeItems);
+    smallEl.replaceChildren(...smallItems);
+  }
+
   function goTo(idx) {
-    const track = document.getElementById("thumbGalleryTrack");
-    if (!track) return;
-    const items = track.querySelectorAll(".tg-item");
-    if (!items.length) return;
-    _current = ((idx % items.length) + items.length) % items.length;
-    /* PC(>=768px)は2枚並び(50%幅)、スマホは1枚(100%幅) */
-    const pct = window.innerWidth >= 768 ? 50 : 100;
-    track.style.transform = "translateX(-" + (_current * pct) + "%)";
-    updateDots(items.length, _current);
-    applyActiveMedia();
+    if (!_thumbs || !_thumbs.length) return;
+    _current = ((idx % _thumbs.length) + _thumbs.length) % _thumbs.length;
+    renderWindow();
+    updateDots(_thumbs.length, _current);
+    /* スライドが切り替わるたびに、新しい「大1」のduration設定で
+       次の自動送りタイマーを張り直す（手動でのprev/next/ドット操作でも同様） */
+    startSlider(false);
   }
 
   function startSlider(isFirst) {
     clearInterval(_timer);
-    const delay = isFirst ? INITIAL_DELAY : INTERVAL;
+    clearTimeout(_timer);
+    const delay = isFirst ? INITIAL_DELAY : currentDuration();
     _timer = setTimeout(function() {
+      // 「大1」が終わったら1つ先へ：大2→大1、小1→大2、小2→小1…と1コマずつ繰り上がる
       if (!_paused) goTo(_current + 1);
-      _timer = setInterval(function() {
-        if (!_paused) goTo(_current + 1);
-      }, INTERVAL);
     }, delay);
   }
 
+  function handleResize() {
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(renderWindow, 150); // PC/スマホの枚数切り替わりに追従
+  }
+
   async function render(thumbs) {
-    const track = document.getElementById("thumbGalleryTrack");
-    if (!track) return;
-    const section = track.closest(".thumb-gallery-section");
+    const largeEl = document.getElementById("thumbGalleryLarge");
+    if (!largeEl) return;
+    const section = largeEl.closest(".thumb-gallery-section");
     if (!thumbs.length) {
       if (section) section.style.display = "none";
       return;
     }
     if (section) section.style.display = "";
 
-    /* 左右ボタン */
+    /* 左右ボタン：1コマずつコンベアを動かす */
     const btnPrev = section && section.querySelector(".tg-btn--prev");
     const btnNext = section && section.querySelector(".tg-btn--next");
     if (btnPrev) btnPrev.onclick = function() { goTo(_current - 1); };
     if (btnNext) btnNext.onclick = function() { goTo(_current + 1); };
 
-    track.innerHTML = "";
-    thumbs.forEach(function(thumb) {
-      const file = thumb.file;
-      const url  = thumb.url || "";
-      const videoId = extractYouTubeId(url);
-      const item = document.createElement("div");
-      item.className = "tg-item";
-      if (videoId) {
-        item.dataset.videoId = videoId;
-        item.dataset.videoUrl = url;
-      }
-
-      const img = document.createElement("img");
-      img.src     = "./thumbnails/" + file;
-      img.alt     = file;
-      img.loading = "eager"; /* lazyをやめて確実にロード */
-      img.style.cursor = url ? "pointer" : "default";
-
-      if (url) {
-        img.addEventListener("click", (function(u){ return function(){ window.open(u, "_blank", "noopener"); }; })(url));
-      }
-
-      item.appendChild(img);
-      track.appendChild(item);
+    // 全サムネイルをバックグラウンドで先読みしておく（自動送りで初登場する画像も
+    // 表示される頃には読み込み済みになっている確率が上がり、点滅しにくくなる）
+    thumbs.forEach(function (thumb) {
+      preloadImage("./thumbnails/" + thumb.file);
     });
 
     _current = 0;
-    track.style.transform = "translateX(0)";
+    renderWindow();
     updateDots(thumbs.length, 0);
-    applyActiveMedia();
     startSlider(true);
+
+    window.removeEventListener("resize", handleResize);
+    window.addEventListener("resize", handleResize);
   }
 
   window.initThumbGallery = async function() {
@@ -3245,8 +3329,8 @@ function renderDreamGoals(wrap, data) {
 
     bindAutoplayBtn();
 
-    const track = document.getElementById("thumbGalleryTrack");
-    if (!track) return;
+    const largeEl = document.getElementById("thumbGalleryLarge");
+    if (!largeEl) return;
 
     const thumbs = await loadThumbs();
     await render(thumbs);
@@ -4061,20 +4145,8 @@ function renderHomeNotice() {
       events: {
         onReady: function () {
           playerReady = true;
-          if (pendingVideoId) {
-            var vid = pendingVideoId;
-            pendingVideoId = null;
-            ytPlayer.loadVideoById(vid);
-          }
-          if (unlocked) {
-            // プレイヤー準備完了より先にユーザー操作で音量解除済みだった場合は
-            // ミュートし直さず、保存済み音量をそのまま適用する
-            applyVolume();
-            ytPlayer.playVideo();
-          } else {
-            ytPlayer.mute();
-            ytPlayer.playVideo();
-          }
+          ytPlayer.mute();
+          ytPlayer.playVideo();
         },
         onStateChange: function (e) {
           if (e.data === YT.PlayerState.ENDED) {
@@ -4134,6 +4206,22 @@ function renderHomeNotice() {
   }
   ["click", "touchstart", "keydown"].forEach(function (ev) {
     document.addEventListener(ev, unlockAudio, { capture: true, passive: true });
+  });
+
+  // ── タブ/ウィンドウがフォーカスを失ったらBGMを一時停止し、戻ったら再開 ──
+  var pausedByVisibility = false;
+  document.addEventListener("visibilitychange", function () {
+    if (!ytPlayer || !playerReady) return;
+    if (document.hidden) {
+      var state = ytPlayer.getPlayerState ? ytPlayer.getPlayerState() : null;
+      if (state === YT.PlayerState.PLAYING) {
+        pausedByVisibility = true;
+        ytPlayer.pauseVideo();
+      }
+    } else if (pausedByVisibility) {
+      pausedByVisibility = false;
+      ytPlayer.playVideo();
+    }
   });
 
   // ── music/music.json を読み込んでプレイリストを組み立てる ──
