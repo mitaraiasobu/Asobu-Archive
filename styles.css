@@ -4397,3 +4397,69 @@ body:not(.no-anim) .chip {
   .screen-jack__close { top: 10px; left: 10px; width: 38px; height: 38px; font-size: 20px; }
   .screen-jack__cta-btn { padding: 14px 28px; width: 100%; }
 }
+/* ============================================================
+   📱 スマホ用ヘッダー：タイトルの縦積み防止（2段レイアウト）
+   1段目: ブランド（タイトル＋サブ）を横並びで1行に
+   2段目: 音量・ハンバーガー等のアクション類
+   ============================================================ */
+@media (max-width: 900px){
+  .topbar{
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .brand{
+    flex: 1 1 100%;
+    order: 1;
+    display: flex;
+    align-items: baseline;
+    flex-wrap: nowrap;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .brand__title{
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .brand__sub{
+    margin-top: 0;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .actions{
+    flex: 1 1 100%;
+    order: 2;
+    justify-content: flex-end;
+  }
+}
+/* ============================================================
+   🌐 言語ボタンを常に地球儀アイコンの中にまとめる
+   ============================================================ */
+.lang{
+  display: none !important;
+}
+.mobile-lang-select{
+  display: flex !important;
+  align-items: center;
+}
+
+/* ============================================================
+   📱 SNSボタンが絶対に2段にならないようにする
+   ============================================================ */
+.social{
+  flex-wrap: nowrap;
+}
+.navpanel__group{
+  flex-wrap: nowrap;
+}
+.navpanel__group .sns-img-btn{
+  flex: 1 1 0;
+  min-width: 0;
+}
+.navpanel__group .sns-img-btn img{
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 1;
+}
