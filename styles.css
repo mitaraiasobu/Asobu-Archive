@@ -21,6 +21,10 @@
   --line:#2b2b34;
   --accent:#ff79b0; /* ほんのりピンク */
   --radius:18px;
+
+  /* ── カスタムカーソル（外ピンク・中黒） ── */
+  --cursor-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpolygon points='2,2 2,16 6,12 9,19 11,18 8,11 14,11' fill='%23000000' stroke='%23ff6eb4' stroke-width='1.4'/%3E%3C/svg%3E") 2 2, auto;
+  --cursor-paw: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='17' r='6' fill='%23000000' stroke='%23ff79b0' stroke-width='1.2'/%3E%3Ccircle cx='4' cy='10' r='2.2' fill='%23000000' stroke='%23ff79b0' stroke-width='1.2'/%3E%3Ccircle cx='8' cy='5' r='2.4' fill='%23000000' stroke='%23ff79b0' stroke-width='1.2'/%3E%3Ccircle cx='12' cy='3.5' r='2.4' fill='%23000000' stroke='%23ff79b0' stroke-width='1.2'/%3E%3Ccircle cx='16' cy='5' r='2.4' fill='%23000000' stroke='%23ff79b0' stroke-width='1.2'/%3E%3Ccircle cx='20' cy='10' r='2.2' fill='%23000000' stroke='%23ff79b0' stroke-width='1.2'/%3E%3C/svg%3E") 12 17, pointer;
 }
 
 *{box-sizing:border-box}
@@ -87,7 +91,7 @@ a{color:inherit}
   background: rgba(255,255,255,.04);
   color:var(--text);
   font-size:15px;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
   flex-shrink:0;
 }
 .bgm-volume__icon:hover{
@@ -100,7 +104,7 @@ a{color:inherit}
   height:4px;
   border-radius:999px;
   background: rgba(255,255,255,.18);
-  cursor:pointer;
+  cursor: var(--cursor-paw);
   outline:none;
 }
 .bgm-volume__slider::-webkit-slider-thumb{
@@ -111,7 +115,7 @@ a{color:inherit}
   border-radius:50%;
   background: #ff79b0;
   box-shadow: 0 0 0 3px rgba(255,121,176,.25);
-  cursor:pointer;
+  cursor: var(--cursor-paw);
 }
 .bgm-volume__slider::-moz-range-thumb{
   width:14px;
@@ -120,7 +124,7 @@ a{color:inherit}
   border-radius:50%;
   background: #ff79b0;
   box-shadow: 0 0 0 3px rgba(255,121,176,.25);
-  cursor:pointer;
+  cursor: var(--cursor-paw);
 }
 
 /* 曲リスト（ハンバーガー・プルダウン） */
@@ -161,7 +165,7 @@ a{color:inherit}
   padding:8px 10px;
   border-radius:8px;
   font-size:13px;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -204,7 +208,7 @@ a{color:inherit}
   color:var(--text);
   padding:8px 10px;
   border-radius:999px;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
 }
 .chip.active{
   border-color: rgba(255,121,176,.7);
@@ -280,7 +284,7 @@ a{color:inherit}
   border-radius:14px;
   border:1px solid rgba(255,255,255,.06);
   background: var(--card2);
-  cursor: pointer;
+  cursor: var(--cursor-paw);
 }
 
 .grid{
@@ -300,7 +304,7 @@ a{color:inherit}
   background: rgba(255,255,255,.03);
   border-radius:16px;
   overflow:hidden;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
   transition: transform .08s ease, border-color .08s ease;
 }
 .event:hover{ transform: translateY(-1px); border-color: rgba(255,121,176,.45); }
@@ -383,7 +387,7 @@ a{color:inherit}
   border-radius:999px;
   border:1px solid var(--line);
   font-size:22px;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
   z-index:2;
 }
 .modal__content{
@@ -410,7 +414,7 @@ a{color:inherit}
   border:1px solid var(--line);
   background: rgba(255,255,255,.05);
   text-decoration:none;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
 }
 .btn.primary{
   border-color: rgba(255,121,176,.7);
@@ -638,7 +642,7 @@ body.modal-open {
   touch-action:none;
   user-select:none;
   -webkit-user-drag:none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
 }
 .lightbox__img--dragging{ transition:none; }
 
@@ -659,7 +663,7 @@ body.modal-open {
   font-size:19px;
   line-height:1;
   display:flex; align-items:center; justify-content:center;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
   backdrop-filter: blur(6px);
   transition: background .15s ease, border-color .15s ease, transform .15s ease;
 }
@@ -688,7 +692,7 @@ body.modal-open {
 .lightbox__zoom-slider{
   width:160px;
   accent-color:#ff6eb4;
-  cursor:pointer;
+  cursor: var(--cursor-paw);
 }
 .lightbox__zoom-value{
   color:#fff;
@@ -847,7 +851,7 @@ body.modal-open {
   margin: 12px 0;
 }
 .goods-box summary{
-  cursor:pointer;
+  cursor: var(--cursor-paw);
   padding:14px 14px;
   font-weight:900;
   font-size:18px;
@@ -996,7 +1000,7 @@ body.modal-open {
   background: none;
   border: none;
   color: var(--text);
-  cursor: pointer;
+  cursor: var(--cursor-paw);
 }
 
 /* メニュー本体 */
@@ -1031,7 +1035,7 @@ body.modal-open {
   padding: 8px 12px;
   color: var(--text);
   text-decoration: none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
 }
 
 /* スマホ時の切替 */
@@ -1086,7 +1090,7 @@ body.modal-open {
   border: 1px solid var(--line);
   background: rgba(255,255,255,.05);
   color: var(--text);
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   align-items:center;
   justify-content:center;
   font-size: 20px;
@@ -1459,7 +1463,7 @@ body.no-anim .support-accent { opacity: 1 !important; transition: none !importan
 .support-accordion-wrap { margin-bottom: 28px; }
 .support-accordion-header {
   display: flex; align-items: center; justify-content: space-between;
-  cursor: pointer; user-select: none;
+  cursor: var(--cursor-paw); user-select: none;
 }
 .support-accordion-header .support-sec-head { margin-bottom: 0; flex: 1; pointer-events: none; }
 .support-accordion-arrow { font-size: 12px; color: #ff79b0; transition: transform 0.3s ease; margin-left: 8px; }
@@ -1512,7 +1516,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   user-select: none;
   list-style: none;
   padding: 0;
@@ -1585,7 +1589,7 @@ body {
   color: #ff79b0;
   letter-spacing: 0.04em;
   list-style: none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
 }
 .callout > summary::-webkit-details-marker { display: none; }
 .callout > summary::marker { display: none; }
@@ -1639,7 +1643,7 @@ body {
   background: rgba(255,121,176,0.1);
   color: #ff79b0;
   font-size: 20px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   text-align: center;
   line-height: 42px;
   transition: background 0.2s, transform 0.2s;
@@ -1709,7 +1713,7 @@ body {
   border-radius: 50%;
   width: 26px;
   height: 26px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   color: var(--text);
   font-size: 12px;
   display: flex;
@@ -1897,7 +1901,7 @@ body:not(.no-anim) .support-cf-reward::after {
   border: 1px solid var(--line);
   background: rgba(15,15,18,.80);
   color: var(--muted);
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   backdrop-filter: blur(8px);
   transition: border-color .18s, color .18s, background .18s;
   user-select: none;
@@ -1960,7 +1964,7 @@ body.no-anim .anim-toggle-btn__dot {
   border-radius: 10px;
   border: 1px solid var(--line);
   background: rgba(255,255,255,.05);
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   font-size: 18px;
   display: flex;
   align-items: center;
@@ -1996,7 +2000,7 @@ body.no-anim .anim-toggle-btn__dot {
   border: none;
   color: var(--text);
   font-size: 13px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   border-bottom: 1px solid var(--line);
 }
 .mobile-lang-option:last-child { border-bottom: none; }
@@ -2268,26 +2272,32 @@ body:not(.no-anim) .page.active {
 }
 
 /* ── カスタムカーソル ─────────────────────────────────── */
+/* html(ページ全体の土台)にも同じルールを掛けることで、bodyの外側
+   （左右の余白・下端の隙間など）にマウスが来てもブラウザ標準の
+   矢印に戻らないようにする。 */
+html:not(.no-anim),
 body:not(.no-anim) {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpolygon points='2,2 2,16 6,12 9,19 11,18 8,11 14,11' fill='%23ffffff' stroke='%23ff6eb4' stroke-width='1'/%3E%3C/svg%3E") 2 2, auto;
+  cursor: var(--cursor-arrow);
 }
 body:not(.no-anim) a,
 body:not(.no-anim) button,
 body:not(.no-anim) [role="button"],
+body:not(.no-anim) label[for],
+body:not(.no-anim) select,
+body:not(.no-anim) summary,
+body:not(.no-anim) input[type="checkbox"],
+body:not(.no-anim) input[type="radio"],
+body:not(.no-anim) input[type="submit"],
+body:not(.no-anim) input[type="button"],
 body:not(.no-anim) .event,
 body:not(.no-anim) .tab,
 body:not(.no-anim) .chip,
 body:not(.no-anim) .schedule img,
 body:not(.no-anim) .lightbox__img,
 body:not(.no-anim) .ct-palette-swatch,
-body:not(.no-anim) .ct-layer-item {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpolygon points='2,2 2,16 6,12 9,19 11,18 8,11 14,11' fill='%23ff79b0' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E") 2 2, pointer;
-}
-
-/* 上記リストに直接無いが個別にクリック可能な要素（ぬりえツールのパレット/レイヤーなど） */
-.ct-palette-swatch,
-.ct-layer-item {
-  cursor: pointer;
+body:not(.no-anim) .ct-layer-item,
+body:not(.no-anim) [onclick] {
+  cursor: var(--cursor-paw);
 }
 
 /* ── フッター：ドットフォント ─────────────────────────── */
@@ -2607,7 +2617,7 @@ body:not(.no-anim) .ct-layer-item {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   user-select: none;
   list-style: none;
   padding: 0;
@@ -2730,7 +2740,7 @@ body:not(.no-anim) .ct-layer-item {
   background: rgba(15,15,18,.80);
   color: var(--muted);
   font-size: 11px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   backdrop-filter: blur(8px);
   transition: border-color .18s, color .18s, background .18s;
   user-select: none;
@@ -2759,7 +2769,7 @@ body:not(.no-anim) .ct-layer-item {
   overflow: hidden;
   border-radius: 12px;
   background: rgba(0,0,0,.25);
-  cursor: pointer;
+  cursor: var(--cursor-paw);
 }
 
 /* 「大」の行（スマホ:1枚 / PC:2枚） */
@@ -2781,7 +2791,7 @@ body:not(.no-anim) .ct-layer-item {
   min-width: 0;
   position: relative;
   display: grid;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
 }
 
 /* フェード切り替え用（JSが再描画のたびに一瞬だけ付与） */
@@ -2825,7 +2835,7 @@ body:not(.no-anim) .ct-layer-item {
   position: absolute;
   inset: 0;
   z-index: 2;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   display: block;
 }
 
@@ -2847,7 +2857,7 @@ body:not(.no-anim) .ct-layer-item {
   border-radius: 50%;
   border: none;
   background: rgba(255,255,255,.22);
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   padding: 0;
   transition: background .2s, transform .2s;
 }
@@ -2901,7 +2911,7 @@ body:not(.no-anim) .ct-layer-item {
   background: rgba(255,255,255,.12);
   color: #fff;
   font-size: 18px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2966,7 +2976,7 @@ body:not(.no-anim) .ct-layer-item {
   color: #fff;
   font-size: 22px;
   line-height: 1;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3073,12 +3083,13 @@ body:not(.no-anim) .ct-layer-item {
   width: 100%;
   height: 100%;
   border: 0;
+  pointer-events: none;
 }
 .notice-card__link-overlay {
   position: absolute;
   inset: 0;
   z-index: 2;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   display: block;
 }
 .notice-card__frame-wrap--image {
@@ -3102,7 +3113,7 @@ body:not(.no-anim) .ct-layer-item {
 .notice-card__cta-btn {
   display: inline-block;
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   font-family: inherit;
   padding: 12px 34px;
   border-radius: 999px;
@@ -3537,7 +3548,7 @@ body:not(.no-anim) .ct-layer-item {
   font-weight: 700;
   font-size: .85em;
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   transition: opacity .15s;
 }
 
@@ -3669,7 +3680,7 @@ body:not(.no-anim) .ct-layer-item {
   border-radius: 50%;
   background: var(--accent);
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   padding: 0;
   opacity: 0.3;
   transition: opacity 0.2s;
@@ -3799,7 +3810,7 @@ body:not(.no-anim) .ct-layer-item {
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #fff;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -3833,7 +3844,7 @@ body:not(.no-anim) .ct-layer-item {
   border-radius: 50%;
   background: var(--accent);
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   padding: 0;
   opacity: 0.3;
   transition: opacity 0.2s;
@@ -3915,7 +3926,7 @@ body:not(.no-anim) .ct-layer-item {
   border: 2px solid transparent;
   border-radius: 50%;
   padding: 3px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   opacity: 0.45;
   transition: opacity 0.2s, border-color 0.2s;
 }
@@ -3958,7 +3969,7 @@ body:not(.no-anim) .ct-layer-item {
   background: rgba(15,15,18,.85);
   color: #ff79b0;
   font-size: 20px;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4182,7 +4193,7 @@ body:not(.no-anim) .ct-layer-item {
 
 /* PayPalボタンのための特別なスタイル */
 .support-item-arrow:has([id^="paypal-container-"]) {
-  cursor: default;
+  cursor: var(--cursor-arrow);
   background: transparent;
   border: none;
   padding: 0;
@@ -4271,7 +4282,7 @@ body:not(.no-anim) .ct-layer-item {
 }
 .biz-stat-row:last-child { border-bottom: none; }
 .biz-details summary {
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   color: #ff7abf;
   font-size: .88em;
   margin: 8px 0 4px;
@@ -4332,7 +4343,7 @@ body:not(.no-anim) .ct-layer-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   box-shadow: 0 0 14px rgba(255,60,154,.35);
   transition: transform .15s ease, background .15s ease;
 }
@@ -4380,7 +4391,7 @@ body:not(.no-anim) .ct-layer-item {
   position: absolute;
   inset: 0;
   z-index: 2;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   display: block;
 }
 .screen-jack__frame-wrap--image {
@@ -4402,7 +4413,7 @@ body:not(.no-anim) .ct-layer-item {
 .screen-jack__cta-btn {
   display: inline-block;
   border: none;
-  cursor: pointer;
+  cursor: var(--cursor-paw);
   font-family: inherit;
   margin-top: 4px;
   padding: 16px 48px;

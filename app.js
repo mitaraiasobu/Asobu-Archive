@@ -55,7 +55,7 @@
       align-items: center; justify-content: center; gap: 20px;
       background: #080408; overflow: hidden;
       contain: layout paint;
-      cursor: default; user-select: none;
+      cursor: var(--cursor-arrow); user-select: none;
     }
     /* スキャンライン */
     #asobu-intro::before {
@@ -340,6 +340,9 @@ let modalPage = 0; // 0: media, 1: details
 let modalMode = "video"; // 'video' or 'image'
 let modalMinPage = 0;
 let modalMaxPage = 1;
+// イベントモーダルの動画は、ネイティブ<video>の pause→load() でpauseイベントが
+// 発火しないことがあるため、汎用の play/pause 監視に頼らず自前でBGMを止め・戻す
+let modalVideoDuckActive = false;
 
 const $ = (sel) => document.querySelector(sel);
 
@@ -455,6 +458,41 @@ function setActiveTab(tabKey) {
     }
   }
 }
+
+// 他タブ（イベントタブ等）から「コンテストタブ内の特定アンカー」へ
+// 安全にジャンプするためのヘルパー。
+// タブ切り替え直後はMISSION演出（数秒間コンテンツを隠すオーバーレイ）が
+// 走ることがあるため、固定80ms待つだけでは間に合わずスクロールが
+// 効かない/ズレることがあった。ここではページが実際に表示され、
+// MISSIONオーバーレイが消えるまでポーリングしてからスクロールする。
+function gotoContestAnchor(anchorId) {
+  setActiveTab("contest");
+  if (location.hash.replace("#", "") !== anchorId) {
+    history.pushState(null, "", "#" + anchorId);
+  }
+
+  const start = Date.now();
+  const tryScroll = () => {
+    const page = document.getElementById("page-contest");
+    const overlay = document.getElementById("mission-overlay");
+    const el = document.getElementById(anchorId);
+    const pageReady = page && page.classList.contains("active");
+    const missionDone = !overlay;
+
+    if (pageReady && missionDone && el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (Date.now() - start < 6000) {
+      setTimeout(tryScroll, 100);
+    } else if (el) {
+      // タイムアウトしても最後にできる範囲でスクロールしておく
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+  setTimeout(tryScroll, 100);
+}
+window.gotoContestAnchor = gotoContestAnchor;
 
 // ═══════════════════════════════════════════════════════════════════
 //  PARTICLE RAIN SYSTEM  ─  固定レイヤーで降らせる
@@ -1216,6 +1254,9 @@ function renderStaticTexts() {
     initGoodsSort();
   }
 
+  const eventTabBody = $("#eventTabBody");
+  if (eventTabBody) { eventTabBody.innerHTML = t("eventTab.bodyHtml"); animateSupportHeader(eventTabBody); animateTimeline(eventTabBody); }
+
   // ホームの「お知らせ」コーナー（goods-containerが存在してから呼ぶ）
   renderHomeNotice();
 
@@ -1312,6 +1353,9 @@ function renderStaticTexts() {
       });
     });
   });
+
+  // ページ本文内の音声付きYouTube埋め込みを検知し、再生中はBGMを一時停止する
+  if (typeof initContentVideoDucking === "function") initContentVideoDucking();
 }
 
 function renderEvents() {
@@ -1492,7 +1536,22 @@ async function openModal(ev) {
     v.preload = "metadata";
     v.loop = true;
     v.muted = false;
+    v.dataset.bgmManual = "1"; // BGMのダッキングはこのモーダル側で明示的に制御する
     if (mediaWrapMain) mediaWrapMain.appendChild(v);
+
+    // ユーザーが動画コントロールで再生/一時停止した場合にもBGMを連動させる
+    v.addEventListener("play", () => {
+      if (!modalVideoDuckActive) {
+        modalVideoDuckActive = true;
+        if (window.__bgmDuck) window.__bgmDuck.acquire();
+      }
+    });
+    v.addEventListener("pause", () => {
+      if (modalVideoDuckActive) {
+        modalVideoDuckActive = false;
+        if (window.__bgmDuck) window.__bgmDuck.release();
+      }
+    });
 
     // Page 2: poster image + details
     const img = document.createElement("img");
@@ -1504,6 +1563,11 @@ async function openModal(ev) {
 
     try {
       await v.play();
+      // 再生に成功した時だけBGMを止める（自動再生がブロックされた場合は何もしない）
+      if (!modalVideoDuckActive) {
+        modalVideoDuckActive = true;
+        if (window.__bgmDuck) window.__bgmDuck.acquire();
+      }
     } catch {}
 
     modalMode = "video";
@@ -1547,6 +1611,12 @@ function closeModal() {
     v.removeAttribute("src");
     v.load();
   }
+  // v.pause()直後のv.load()でネイティブのpauseイベントが発火しないことがあるため、
+  // pauseイベントの発火有無に関わらずここで確実にBGMを再開させる
+  if (modalVideoDuckActive) {
+    modalVideoDuckActive = false;
+    if (window.__bgmDuck) window.__bgmDuck.release();
+  }
 
   const modal = $("#modal");
   if (!modal) return;
@@ -1567,6 +1637,10 @@ function setModalPage(p) {
     try {
       videoEl.pause();
     } catch {}
+    if (modalVideoDuckActive) {
+      modalVideoDuckActive = false;
+      if (window.__bgmDuck) window.__bgmDuck.release();
+    }
   }
 
   const prev = $("#carPrev");
@@ -1669,7 +1743,7 @@ async function setLang(lang) {
   if (mobileDropdown) mobileDropdown.value = lang;
 
   // lang.json（軽量テキスト系）と分割ファイル群をマージして読み込む
-  const _keys2 = ['support','membership','goods','log','notice','contact','crowdfunding','contest','inquiry'];
+  const _keys2 = ['support','membership','goods','eventTab','log','notice','contact','crowdfunding','contest','inquiry'];
   const [part1, ...parts2] = await Promise.all([
     loadJSON(`./i18n/${lang}.json`),
     ..._keys2.map(k => loadJSON(`./i18n/${k}-${lang.toUpperCase()}.json`).catch(() => ({}))),
@@ -1699,7 +1773,7 @@ async function setLang(lang) {
 
 function handleRoute() {
   const hash = location.hash.replace("#", "") || "home";
-  const known = ["home", "about", "support", "goods", "log", "membership", "notice", "contact", "crowdfunding", "contest", "inquiry", "temporary"];
+  const known = ["home", "about", "support", "goods", "event", "log", "membership", "notice", "contact", "crowdfunding", "contest", "inquiry", "temporary"];
 
   // 完全一致ならそのままタブ切り替え
   if (known.includes(hash)) {
@@ -1922,7 +1996,7 @@ function wireOnce() {
 
 function setupAnimToggle() {
   const noAnim = localStorage.getItem("noAnim") === "1";
-  if (noAnim) document.body.classList.add("no-anim");
+  if (noAnim) { document.body.classList.add("no-anim"); document.documentElement.classList.add("no-anim"); }
 
   function getAnimLabel(off) {
     return off ? (t("animToggle.off") || "アニメOFF") : (t("animToggle.on") || "アニメON");
@@ -1936,6 +2010,7 @@ function setupAnimToggle() {
     b.innerHTML = '<span class="anim-toggle-btn__dot"></span><span class="anim-toggle-btn__label">' + getAnimLabel(noAnim) + '</span>';
     b.addEventListener("click", () => {
       const off = document.body.classList.toggle("no-anim");
+      document.documentElement.classList.toggle("no-anim", off);
       document.querySelectorAll(".anim-toggle-btn__label").forEach(s => s.textContent = getAnimLabel(off));
       localStorage.setItem("noAnim", off ? "1" : "0");
     });
@@ -2397,7 +2472,7 @@ window.cfTabSwitch = function(name, btn) {
 
   // Events (optional)
   try {
-    state.events = await loadJSON("./data/events.json");
+    state.events = await loadJSON("./events.json");
   } catch {
     state.events = [];
   }
@@ -2551,7 +2626,7 @@ function initContest() {
         const sw = document.createElement('div');
         sw.className = 'ct-palette-swatch'; sw.style.backgroundColor = c; sw.title = c;
         const del = document.createElement('button');
-        del.style.cssText = 'position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:9px;cursor:pointer;display:none;align-items:center;justify-content:center;';
+        del.style.cssText = 'position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:#ef4444;color:#fff;border:none;font-size:9px;cursor:var(--cursor-paw);display:none;align-items:center;justify-content:center;';
         del.textContent = 'x';
         sw.addEventListener('mouseenter', function() { del.style.display = 'flex'; });
         sw.addEventListener('mouseleave', function() { del.style.display = 'none'; });
@@ -3206,7 +3281,7 @@ function renderDreamGoals(wrap, data) {
     img.src     = src;
     img.alt     = thumb.file;
     img.loading = "eager";
-    img.style.cursor = url ? "pointer" : "default";
+    img.style.cursor = url ? "var(--cursor-paw)" : "var(--cursor-arrow)";
     if (url) {
       img.addEventListener("click", function () { window.open(url, "_blank", "noopener"); });
     }
@@ -3858,7 +3933,7 @@ function renderHomeNotice() {
           var goodsTab = document.querySelector('[data-tab="goods"]');
           if (goodsTab) goodsTab.click();
         });
-        item.style.cursor = "pointer";
+        item.style.cursor = "var(--cursor-paw)";
       }
       item.innerHTML =
         (imgEl ? '<img class="notice-goods-thumb" src="' + imgEl.getAttribute("src") + '" alt="">' : "") +
@@ -3872,12 +3947,12 @@ function renderHomeNotice() {
 
 /* ─────────────────────────────────────────────────────────────
    BGM（背景音楽・プレイリスト対応）※YouTube再生方式
-   ・music/music.json から曲リスト（曲名・MVのYouTube URL）を読み込み、
+   ・music.json から曲リスト（曲名・MVのYouTube URL）を読み込み、
      各曲のYouTube動画を非表示プレイヤーで音声のみ再生する
      （ローカル音源ファイルは使用しない。GitHubのファイルサイズ制限対策）
    ・起動するたびにランダムな曲から再生を開始し、以降はリストの並び順で
      ループ再生する（最後まで行ったら先頭へ戻る）
-   ・music/music.json が読み込めない、または曲にurl（YouTubeリンク）が
+   ・music.json が読み込めない、または曲にurl（YouTubeリンク）が
      無い場合はその曲をスキップする
    ・三本線ボタン（🔈の左）を押すとプルダウンで曲リストが開き、曲を選んで
      直接再生できる
@@ -3890,6 +3965,70 @@ function renderHomeNotice() {
    ・ブラウザの自動再生ポリシー対策：最初は「ミュートで自動再生」を保証し、
      　最初のユーザー操作（クリック等）で実際の音量に切り替える
    ───────────────────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────────
+   ページ本文（about / membership / crowdfunding など、JSONの
+   bodyHtmlに直接書かれたiframe）に埋め込まれた、音声付きで再生できる
+   YouTube動画を検知し、再生中はBGM（music.json）を一時停止、
+   止まったら再開する。
+   ※ ホームの「最近の配信や動画」サムネイル・画面ジャック・
+     お知らせカードのiframeは常にmute=1で無音のため対象外。
+   ───────────────────────────────────────────────────────────── */
+var CONTENT_VIDEO_DUCK_CONTAINER_IDS = [
+  "aboutBody", "supportBody", "goodsBody", "eventTabBody", "logBody",
+  "membershipBody", "noticeBody", "crowdfundingBody",
+  "contestBody", "contactBody", "inquiryBody"
+];
+
+function initContentVideoDucking() {
+  if (typeof window.__loadYouTubeAPI !== "function") return;
+
+  var targets = [];
+  CONTENT_VIDEO_DUCK_CONTAINER_IDS.forEach(function (id) {
+    var container = document.getElementById(id);
+    if (!container) return;
+    container
+      .querySelectorAll('iframe[src*="youtube.com/embed"], iframe[src*="youtube-nocookie.com/embed"]')
+      .forEach(function (ifr) {
+        if (ifr.dataset.duckWired) return; // 二重登録防止
+        ifr.dataset.duckWired = "1";
+        targets.push(ifr);
+      });
+  });
+  if (!targets.length) return;
+
+  window.__loadYouTubeAPI().then(function (YT) {
+    targets.forEach(function (ifr) {
+      try {
+        // IFrame APIでの状態監視にはenablejsapi=1が必要
+        var src = ifr.getAttribute("src") || "";
+        if (src.indexOf("enablejsapi=1") === -1) {
+          src += (src.indexOf("?") === -1 ? "?" : "&") + "enablejsapi=1";
+          ifr.setAttribute("src", src);
+        }
+
+        var wasPlaying = false;
+        new YT.Player(ifr, {
+          events: {
+            onStateChange: function (e) {
+              if (e.data === YT.PlayerState.PLAYING) {
+                if (!wasPlaying) {
+                  wasPlaying = true;
+                  if (window.__bgmDuck) window.__bgmDuck.acquire();
+                }
+              } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+                if (wasPlaying) {
+                  wasPlaying = false;
+                  if (window.__bgmDuck) window.__bgmDuck.release();
+                }
+              }
+            }
+          }
+        });
+      } catch (err) {}
+    });
+  });
+}
+
 (function initBgm() {
   var VOLUME_KEY = "bgmVolume"; // 0-100 で保存
   var DEFAULT_VOLUME = 12;
@@ -3920,18 +4059,14 @@ function renderHomeNotice() {
   }
   updateIcon();
 
-  // ダッキング用
-  var duckActive = false;
-  var duckCount = 0;
-
   function targetVolume() {
     return Number(slider.value);
   }
 
-  // 実際の音量を反映（ダッキング中・未解禁中は反映しない）
+  // 実際の音量を反映（未解禁中は反映しない）
   function applyVolume() {
     if (!ytPlayer || !playerReady) return;
-    if (duckActive || !unlocked) return;
+    if (!unlocked) return;
     var v = targetVolume();
     if (v <= 0) {
       ytPlayer.mute();
@@ -3962,30 +4097,56 @@ function renderHomeNotice() {
     });
   }
 
-  // 他の動画/音声（ミュートされていないもの）が再生されたら一時的に無音化
+  // ── 他の動画/音声が再生されている間、BGMを実際に一時停止・再開する共有マネージャ ──
+  // （音量を0にするだけだと、そのあと音量バーを操作しても音が戻らないため、
+  //   pauseVideo()/playVideo() で本当に止める／再開する方式にしている）
+  var externalPlayCount = 0;
+
+  function bgmDuckAcquire() {
+    externalPlayCount++;
+    if (externalPlayCount === 1) {
+      if (ytPlayer && playerReady) {
+        try { ytPlayer.pauseVideo(); } catch (e) {}
+      }
+    }
+  }
+
+  function bgmDuckRelease() {
+    if (externalPlayCount > 0) externalPlayCount--;
+    if (externalPlayCount === 0) {
+      if (ytPlayer && playerReady && unlocked) {
+        try { ytPlayer.playVideo(); } catch (e) {}
+        applyVolume();
+      }
+    }
+  }
+
+  // 埋め込みYouTube動画側（iframe）からも呼べるよう公開しておく
+  window.__bgmDuck = { acquire: bgmDuckAcquire, release: bgmDuckRelease };
+
+  // 他の動画/音声（ミュートされていないもの）が再生されたらBGMを一時停止
+  // ※ 自動再生ポリシー等でplay/pauseイベントが要素ごとに何度も発火することがあるため、
+  //   要素単位で「カウント済みかどうか」を記録し、二重加算・二重減算を防ぐ
+  var duckedElements = new WeakSet();
+
   document.addEventListener("play", function (e) {
     var el = e.target;
     if (!el || typeof el.muted === "undefined") return; // audio/video要素以外は無視
     if (el.muted) return; // 常時ミュートの背景動画などは無視
-
-    duckCount++;
-    if (!duckActive) {
-      duckActive = true;
-      if (ytPlayer && playerReady) ytPlayer.setVolume(0);
-    }
+    if (el.dataset && el.dataset.bgmManual === "1") return; // イベントモーダル動画は自前で制御済み
+    if (duckedElements.has(el)) return; // 既にカウント済みなら無視
+    duckedElements.add(el);
+    bgmDuckAcquire();
   }, true);
 
   function maybeRestore(e) {
     var el = e.target;
     if (!el || typeof el.muted === "undefined") return;
     if (el.muted) return;
-
-    if (duckCount > 0) duckCount--;
-    if (duckCount <= 0) {
-      duckCount = 0;
-      duckActive = false;
-      applyVolume();
-    }
+    if (el.dataset && el.dataset.bgmManual === "1") return; // イベントモーダル動画は自前で制御済み
+    if (!duckedElements.has(el)) return; // カウントされていない要素の pause/ended は無視
+    duckedElements.delete(el);
+    bgmDuckRelease();
   }
   document.addEventListener("pause", maybeRestore, true);
   document.addEventListener("ended", maybeRestore, true);
@@ -4113,6 +4274,8 @@ function renderHomeNotice() {
       }
     });
   }
+  // ページ本文（about/membershipなど）の埋め込み動画からも使えるよう公開
+  window.__loadYouTubeAPI = loadYouTubeAPI;
 
   function ensurePlayerHost() {
     var host = document.getElementById("bgmYtPlayerHost");
@@ -4145,7 +4308,14 @@ function renderHomeNotice() {
       events: {
         onReady: function () {
           playerReady = true;
-          ytPlayer.mute();
+          // ここに来る前に既に(unlockAudio等で)解禁済みなら、問答無用でミュートせず
+          // 正しい音量をそのまま反映する。そうしないと「音量バーは0じゃないのに
+          // 実際の音は0のまま戻らない」状態になる
+          if (unlocked) {
+            applyVolume();
+          } else {
+            ytPlayer.mute();
+          }
           ytPlayer.playVideo();
         },
         onStateChange: function (e) {
@@ -4224,8 +4394,8 @@ function renderHomeNotice() {
     }
   });
 
-  // ── music/music.json を読み込んでプレイリストを組み立てる ──
-  fetch("./music/music.json", { cache: "no-store" })
+  // ── music.json を読み込んでプレイリストを組み立てる ──
+  fetch("./music.json", { cache: "no-store" })
     .then(function (res) {
       if (!res.ok) throw new Error("music.json not found");
       return res.json();
