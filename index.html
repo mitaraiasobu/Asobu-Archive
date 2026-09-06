@@ -263,6 +263,12 @@
       <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
     </section>
 
+    <!-- SCHOOL COLORING CONTEST（タブメニューには非表示。コンテストページの「塗ってみる」リンクからのみ遷移） -->
+    <section class="page" id="page-school-coloring-contest">
+      <div id="schoolColoringBody"></div>
+      <button class="scroll-top-btn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ページトップへ">↑</button>
+    </section>
+
     <!-- TEMPORARY（タブメニューには非表示。URLを直接知っている人だけがアクセス可能） -->
     <section class="page" id="page-temporary">
       <div class="temp-wrap">
@@ -306,13 +312,14 @@
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <div class="lightbox__backdrop" id="lightboxBackdrop"></div>
 
-    <div class="lightbox__toolbar">
-      <button class="lightbox__tool-btn" id="lightboxDownload" type="button" aria-label="Download" title="ダウンロード">⬇</button>
-      <button class="lightbox__tool-btn" id="lightboxClose" type="button" aria-label="Close" title="閉じる">×</button>
-    </div>
-
     <div class="lightbox__stage" id="lightboxStage">
-      <img class="lightbox__img" id="lightboxImg" alt="">
+      <div class="lightbox__frame" id="lightboxFrame">
+        <img class="lightbox__img" id="lightboxImg" alt="">
+        <div class="lightbox__toolbar">
+          <button class="lightbox__tool-btn" id="lightboxDownload" type="button" aria-label="Download" title="ダウンロード">⬇</button>
+          <button class="lightbox__tool-btn" id="lightboxClose" type="button" aria-label="Close" title="閉じる">×</button>
+        </div>
+      </div>
     </div>
 
     <div class="lightbox__zoom">

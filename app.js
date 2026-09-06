@@ -360,6 +360,9 @@ function setActiveTab(tabKey) {
   const page = $(`#page-${tabKey}`);
   if (page) page.classList.add("active");
 
+  // 塗り絵コンテストページ表示中はブラウザ幅いっぱいに広げる
+  document.body.classList.toggle("page-schoolcoloring-active", tabKey === "school-coloring-contest");
+
   // パーティクルレイン起動
   triggerTabRain(tabKey);
 
@@ -1291,6 +1294,12 @@ function renderStaticTexts() {
     }
   }
 
+  const schoolColoringBody = document.getElementById("schoolColoringBody");
+  if (schoolColoringBody) {
+    schoolColoringBody.innerHTML = t("school-coloring-contest.bodyHtml");
+    animateSupportHeader(schoolColoringBody);
+  }
+
   const contestBody = document.getElementById("contestBody");
   if (contestBody) {
     const contestHtml = t("contest.bodyHtml").replace(
@@ -1684,13 +1693,17 @@ function resetLightboxZoom() {
   applyLightboxTransform();
 }
 
-function openLightbox(imgUrl) {
+function openLightbox(imgUrl, hideDownload) {
   const lb = $("#lightbox");
   const img = $("#lightboxImg");
   if (!lb || !img) return;
 
   img.src = imgUrl;
   resetLightboxZoom();
+
+  const downloadBtn = $("#lightboxDownload");
+  if (downloadBtn) downloadBtn.style.display = hideDownload ? "none" : "";
+
   lb.classList.add("open");
   lb.setAttribute("aria-hidden", "false");
 }
@@ -1773,7 +1786,7 @@ async function setLang(lang) {
 
 function handleRoute() {
   const hash = location.hash.replace("#", "") || "home";
-  const known = ["home", "about", "support", "goods", "event", "log", "membership", "notice", "contact", "crowdfunding", "contest", "inquiry", "temporary"];
+  const known = ["home", "about", "support", "goods", "event", "log", "membership", "notice", "contact", "crowdfunding", "contest", "inquiry", "temporary", "school-coloring-contest"];
 
   // 完全一致ならそのままタブ切り替え
   if (known.includes(hash)) {
@@ -1875,6 +1888,8 @@ function wireOnce() {
   if (lbStage) {
     lbStage.addEventListener("pointerdown", (e) => {
       if (lbScale <= 1) return;
+      // ツールバー（✕・ダウンロード）やズームバー上でのタップはドラッグ扱いにしない
+      if (e.target.closest(".lightbox__toolbar, .lightbox__zoom")) return;
       lbDragging = true;
       lbPointerId = e.pointerId;
       lbDragStartX = e.clientX - lbTx;
@@ -2916,14 +2931,8 @@ function initContest() {
   const _pc = document.getElementById('ct-panel-close-btn'); if(_pc) _pc.onclick = ctClosePanel;
   const _ov = document.getElementById('ct-overlay');         if(_ov) _ov.onclick = ctClosePanel;
 
-  // Promo images
-  document.querySelectorAll('.ct-promo-btn').forEach(function(btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const img = btn.querySelector('img');
-      ctOpenModal(btn.getAttribute('data-full'), img ? img.alt : '');
-    });
-  });
+  // Promo images（※ 第一回イラコンの受賞画像は onclick="openLightbox(...)" で
+  // 共通のライトボックスを使う設計に変更済みのため、ここでの ctOpenModal 二重バインドは削除）
 
   // Image modal controls
   const _mc = document.getElementById('ct-modal-close');
