@@ -210,13 +210,13 @@
           },
           {
             "label": "8월",
-            "status": "current",
-            "value": "도전 중!"
+            "status": "failed",
+            "value": "미달성"
           },
           {
             "label": "9월",
-            "status": "empty",
-            "value": ""
+            "status": "failed",
+            "value": "미달성"
           },
           {
             "label": "10월",

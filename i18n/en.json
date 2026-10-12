@@ -211,13 +211,13 @@
           },
           {
             "label": "Aug",
-            "status": "current",
-            "value": "In progress!"
+            "status": "failed",
+            "value": "Not Achieved"
           },
           {
             "label": "Sep",
-            "status": "empty",
-            "value": ""
+            "status": "failed",
+            "value": "Not Achieved"
           },
           {
             "label": "Oct",
