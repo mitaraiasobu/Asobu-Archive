@@ -1187,6 +1187,34 @@ function getEventPeriod(ev) {
   return formatPeriod(ev.start, ev.end);
 }
 
+// 週替わりコメント（note.txt）を現在の言語で描画
+// note.txt は [ja] [en] [ko] の見出しの下に本文を書くだけ。改行はそのまま反映
+const NOTE_ALT = { ja: "御手洗 遊", en: "Mitarai Asobu", ko: "미타라이 아소부" };
+function parseNoteTxt(src) {
+  const out = {};
+  let cur = null;
+  String(src).replace(/\r\n?/g, "\n").split("\n").forEach((line) => {
+    const m = line.match(/^\s*\[(ja|en|ko)\]\s*$/i);
+    if (m) { cur = m[1].toLowerCase(); out[cur] = []; }
+    else if (cur) out[cur].push(line);
+  });
+  Object.keys(out).forEach((k) => { out[k] = out[k].join("\n").trim(); });
+  return out;
+}
+function renderScheduleNote() {
+  const el = $("#scheduleNoteText");
+  if (!el) return;
+  const text = (state.note || {})[state.lang];
+  if (!text) { el.innerHTML = ""; return; }
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  el.innerHTML =
+    `<div class="sp-wish"><div class="sp-wish__body">` +
+    `<img class="sp-wish__icon" src="./mita/icon.png" alt="${esc(NOTE_ALT[state.lang] || "")}">` +
+    `<div class="sp-wish__bubble-wrap"><div class="sp-wish__bubble sp-wish__bubble--long">` +
+    `${esc(text).replace(/\n/g, "<br>")}` +
+    `</div></div></div></div>`;
+}
+
 function renderStaticTexts() {
   // ヘッダーのブランドタイトル・サブ
   const siteTitle = $("#siteTitle");
@@ -1201,9 +1229,8 @@ function renderStaticTexts() {
 
   // Static texts
   const scheduleNoteLabel = $("#scheduleNoteLabel");
-  const scheduleNoteText = $("#scheduleNoteText");
   if (scheduleNoteLabel) scheduleNoteLabel.textContent = t("schedule.noteLabel");
-  if (scheduleNoteText) scheduleNoteText.innerHTML = t("schedule.noteHtml");
+  renderScheduleNote();
 
   const homeHeadline = $("#homeHeadline");
   const homeLead = $("#homeLead");
@@ -1763,6 +1790,11 @@ async function setLang(lang) {
   ]);
   const part2 = Object.assign({}, ...parts2);
   state.i18n = Object.assign({}, part1, part2);
+  // 週替わりコメント（3か国語まとめ）。無くてもサイトは動く
+  state.note = await fetch("./note.txt", { cache: "no-store" })
+    .then((r) => (r.ok ? r.text() : ""))
+    .then(parseNoteTxt)
+    .catch(() => ({}));
   document.documentElement.lang = lang === "ja" ? "ja" : (lang === "ko" ? "ko" : "en");
   // 韓国語フォント切り替え用クラス
   document.body.classList.toggle("lang-ko", lang === "ko");
