@@ -1,100 +1,30 @@
 [
-
   {
-    "id": "gigo_appearance",
+    "id": "anniversary_2027",
     "mediaType": "image",
-    "src": "./assets/gigo.png",
+    "src": "./assets/一周年記念サムネ.png",
     "status": "active",
-    "start": "2026-09-07",
-    "end": "2026-09-13",
-    "links": [
-      {
-        "labelKey": "event.detailsBtn",
-        "url": "https://www.gigo.co.jp/shops/dotonbori"
-      }
-    ],
-
-    "i18n": {
-      "ja": {
-        "title": "GiGOゲームセンターに御手洗遊が登場！？",
-        "period": "9月7日～13日",
-        "descHtml": "エスカレーターのてっぺんに私の写真が表示されます！<br>お客さんをみ～んな虜にさせちゃうぜ🖤<br>場所：GiGO大阪道頓堀本店２～３階間のエスカレーターのてっぺん<br>日程：9月7日～13日<br>私とツーショットを撮るとUFOキャッチャー全部とれる！？(かも)"
-      },
-      "en": {
-        "title": "Mitarai Asobu is coming to GiGO Game Center!?",
-        "period": "September 7–13",
-        "descHtml": "My photo will be displayed at the top of the escalator!<br>I'm gonna charm every single customer! 🖤<br>Location: GiGO Osaka Dotonbori Main Store, at the top of the escalator between the 2nd and 3rd floors<br>Dates: September 7–13<br>Take a two-shot photo with me and maybe you'll be able to win every single UFO Catcher prize!? (Maybe)"
-      },
-      "ko": {
-        "title": "GiGO 게임센터에 미타라이 아소부가 등장!?",
-        "period": "9월 7일~13일",
-        "descHtml": "에스컬레이터 꼭대기에 제 사진이 전시됩니다!<br>모든 손님들을 제 매력에 푹 빠지게 해버리겠어! 🖤<br>장소: GiGO 오사카 도톤보리 본점, 2층과 3층 사이 에스컬레이터 꼭대기<br>기간: 9월 7일~13일<br>저와 투샷을 찍으면 UFO 캐처 상품을 전부 뽑을 수 있을지도!? (아마도)"
-      }
-    }
-  },
-  {
-    "id": "summer_illust_contest",
-    "mediaType": "image",
-    "src": "./thumbnails/御手洗THEサマーイラコンサムネ_イベント用.png",
-    "status": "active",
-    "start": "2026-07-01",
-    "end": "2026-08-17",
+    "start": "2027-01-03",
+    "end": "",
     "links": [],
-    "linkTab": "contest",
-
     "i18n": {
       "ja": {
-        "title": "御手洗THEサマーイラコン 結果発表",
-        "period": "2026年8月17日まで",
-        "descHtml": "コンテストは終了しました！たくさんの応募ありがとう🤍<br>受賞作品はコンテストタブで確認できます！"
+        "title": "御手洗遊 一周年記念",
+        "period": "2027年1月3日",
+        "descHtml": "御手洗遊の一周年＆誕生日をお祝いする特別企画！<br>詳細は1月3日の１周年＆誕生日配信で発表！お楽しみに🤍"
       },
       "en": {
-        "title": "Mitarai THE Summer Illust Contest — Results Announced",
-        "period": "Until Aug 17, 2026",
-        "descHtml": "The contest has ended! Thank you so much for all the submissions 🤍<br>Check the award works in the Contest tab!"
+        "title": "Mitarai Asobu 1st Anniversary",
+        "period": "January 3, 2027",
+        "descHtml": "A special celebration for Mitarai Asobu's 1st anniversary & birthday!<br>Details will be announced at the 1st Anniversary & Birthday stream on January 3! Stay tuned 🤍"
       },
       "ko": {
-        "title": "미타라이 THE 사마 일러스트 콘테스트 — 결과 발표",
-        "period": "2026년 8월 17일까지",
-        "descHtml": "콘테스트가 종료됐어요！많은 응모 감사해요 🤍<br>수상작품은 콘테스트 탭에서 확인할 수 있어요！"
+        "title": "미타라이 아소부 1주년 기념",
+        "period": "2027년 1월 3일",
+        "descHtml": "미타라이 아소부의 1주년 & 생일을 축하하는 특별 기획!<br>자세한 내용은 1월 3일 1주년 & 생일 방송에서 발표! 기대해 주세요🤍"
       }
     }
   },
-
-  {
-    "id": "school_uniform_contest",
-    "mediaType": "image",
-    "src": "./assets/学生服イラストコンテスト.png",
-    "status": "active",
-    "start": "2026-05-01",
-    "end": "2026-05-31",
-    "links": [
-      {
-        "labelKey": "event.openOnX",
-        "url": "https://x.com/hashtag/%E5%BE%A1%E6%89%8B%E6%B4%97%E9%81%8A%E5%AD%A6%E7%94%9F%E6%9C%8D?src=hashtag_click&f=live"
-      }
-    ],
-    "linkTab": "contest",
-
-    "i18n": {
-      "ja": {
-        "title": "学生服イラストコンテスト 結果発表",
-        "period": "2026年5月31日まで",
-        "descHtml": "コンテストは終了しました！たくさんの応募ありがとう🤍<br>受賞作品はコンテストタブで確認できます！"
-      },
-      "en": {
-        "title": "School Uniform Illustration Contest — Results Announced",
-        "period": "Until May 31, 2026",
-        "descHtml": "The contest has ended! Thank you so much for all the submissions 🤍<br>Check the award works in the Contest tab!"
-      },
-      "ko": {
-        "title": "교복 일러스트 콘테스트 — 결과 발표",
-        "period": "2026년 5월 31일까지",
-        "descHtml": "콘테스트가 종료됐어요！많은 응모 감사해요 🤍<br>수상작품은 콘테스트 탭에서 확인할 수 있어요！"
-      }
-    }
-  },
-
   {
     "id": "onigiri_raccoon_contest",
     "mediaType": "image",
@@ -109,7 +39,6 @@
       }
     ],
     "linkTab": "contest",
-
     "i18n": {
       "ja": {
         "title": "オニギリラクーンコンテスト",
@@ -128,64 +57,6 @@
       }
     }
   },
-
-  {
-    "id": "clip_contest",
-    "mediaType": "video",
-    "src": "./assets/切り抜き動画コンテスト.mp4",
-    "poster": "./assets/切り抜き動画コンテスト.png",
-    "status": "active",
-    "start": "all-the-time",
-    "end": "",
-
-    "i18n": {
-      "ja": {
-        "title": "切り抜き動画コンテスト",
-        "period": "常時開催中",
-        "descHtml": "切り抜き動画のイベントです。<br>完成した動画はXのDMもしくはメールに送ってください！応募期限は廃止しました、常時応募可能です！"
-      },
-      "en": {
-        "title": "Clip Video Contest",
-        "period": "Always open",
-        "descHtml": "An event for clip videos.<br>Please send your finished video via X DM or email! The deadline has been removed — submit anytime!"
-      },
-      "ko": {
-        "title": "클립 영상 콘테스트",
-        "period": "상시 개최 중",
-        "descHtml": "클립 영상 이벤트입니다.<br>완성된 영상은 X DM 또는 이메일로 보내주세요！응모 기한은 폐지됐어요, 상시 응모 가능！"
-      }
-    }
-  },
-
-  {
-    "id": "soundproof_crowdfunding",
-    "mediaType": "image",
-    "src": "./assets/防音室169.png",
-    "status": "active",
-    "start": "2026-01-18",
-    "end": "",
-    "links": [],
-    "linkTab": "crowdfunding",
-
-    "i18n": {
-      "ja": {
-        "title": "防音室クラウドファンディング",
-        "period": "",
-        "descHtml": "防音室のための支援ページです。<br>詳細はリンク先へ！"
-      },
-      "en": {
-        "title": "Soundproof Room Crowdfunding",
-        "period": "",
-        "descHtml": "A support page for the soundproof room.<br>Check the link for details!"
-      },
-      "ko": {
-        "title": "방음실 크라우드펀딩",
-        "period": "",
-        "descHtml": "방음실을 위한 지원 페이지입니다.<br>자세한 내용은 링크로！"
-      }
-    }
-  },
-
   {
     "id": "survey_forms",
     "mediaType": "image",
@@ -207,7 +78,6 @@
         "url": "https://docs.google.com/forms/d/e/1FAIpQLSf3o5S-v-BnMxS8hk20_MxAG9e3gDHGj_RNXT79DFmcTTtQNA/viewform?usp=header"
       }
     ],
-
     "i18n": {
       "ja": {
         "title": "アンケートにご協力ください🤍",
