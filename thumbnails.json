@@ -1,5 +1,23 @@
 [
   {
+    "file": "デビルじゃないもんサムネ.png",
+    "url": "https://www.youtube.com/watch?v=zSQSYVMGXuU",
+    "autoplay": true,
+    "duration": 15
+  },
+  {
+    "file": "縛.png",
+    "url": "https://www.youtube.com/shorts/55kn6wVu-hM",
+    "autoplay": false,
+    "duration": 8
+  },
+  {
+    "file": "assets/goods/アロマボイス.png",
+    "url": "https://www.youtube.com/watch?v=kxUlZ2w1Nfg",
+    "autoplay": true,
+    "duration": 15
+  },
+  {
     "file": "III.png",
     "url": "https://www.youtube.com/watch?v=PEUCJ7274jM",
     "autoplay": true,

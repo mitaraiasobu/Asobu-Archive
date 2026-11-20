@@ -64,7 +64,6 @@
         0deg, transparent, transparent 2px,
         rgba(255,255,255,0.025) 2px, rgba(255,255,255,0.025) 4px);
       pointer-events: none;
-      animation: intro-scanline 10s linear infinite;
     }
     @keyframes intro-scanline {
       from { background-position: 0 0; } to { background-position: 0 240px; }
@@ -76,7 +75,6 @@
         radial-gradient(ellipse 60% 40% at 50% 52%, rgba(255,80,160,0.22) 0%, transparent 70%),
         radial-gradient(ellipse 100% 100% at 50% 50%, rgba(20,0,30,0.7) 0%, transparent 100%);
       pointer-events: none;
-      animation: intro-glow-pulse 2s ease-in-out infinite alternate;
     }
     @keyframes intro-glow-pulse { from { opacity: 0.8; } to { opacity: 1; } }
 
@@ -93,8 +91,7 @@
       font-family: ${DOT_FONT};
       font-size: clamp(22px, 5.5vw, 58px); font-weight: 400;
       color: #fff; letter-spacing: 0.14em;
-      text-shadow: 0 0 6px #ff6eb4, 0 0 18px #ff3d9a,
-                   0 0 40px #ff3d9a, 0 0 80px rgba(255,60,154,0.35);
+      text-shadow: 0 0 8px #ff3d9a;
       white-space: nowrap; min-height: 1.3em;
       width: 100%; max-width: min(90vw, 720px);
       text-align: center;
@@ -107,7 +104,7 @@
       font-family: ${DOT_FONT};
       font-size: clamp(10px, 1.8vw, 16px); font-weight: 400;
       color: rgba(255,200,230,0.85); letter-spacing: 0.07em;
-      text-shadow: 0 0 10px rgba(255,100,180,0.5);
+      text-shadow: 0 0 4px rgba(255,100,180,0.5);
       white-space: nowrap; min-height: 1.5em;
       width: 100%; max-width: min(90vw, 720px);
       text-align: center;
@@ -126,9 +123,7 @@
       transform: scaleX(0);
       transform-origin: left center;
       background: linear-gradient(90deg, #c0006a, #ff3d9a, #ffaadd, #ff3d9a, #c0006a);
-      background-size: 300% 100%;
-      box-shadow: 0 0 12px #ff3d9a, 0 0 24px rgba(255,60,154,0.4);
-      animation: intro-bar-shine 8s linear infinite;
+      will-change: transform;
       /* transition はJSで動的に設定 */
     }
     @keyframes intro-bar-shine {
@@ -147,6 +142,23 @@
     /* スクランブル文字 */
     .scr-char { display: inline-block; color: #ff6eb4; }
     .scr-char.settled { color: inherit; transition: color 0.08s; }
+
+    /* 軽量化モード切り替え（右下） */
+    #intro-lite-btn {
+      position: absolute; right: 24px; bottom: 24px; z-index: 5;
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 999px;
+      font-family: ${DOT_FONT}; font-size: clamp(11px, 1.6vw, 14px);
+      color: #fff; background: rgba(255,110,180,0.12);
+      border: 1px solid rgba(255,110,180,0.55);
+      cursor: var(--cursor-paw, pointer);
+    }
+    #intro-lite-btn:hover { background: rgba(255,110,180,0.28); }
+    #intro-lite-btn .intro-lite-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+    }
+    #intro-lite-btn[aria-pressed="true"] .intro-lite-dot { background: #7dffb0; box-shadow: 0 0 8px #7dffb0; }
   `;
   document.head.appendChild(style);
 
@@ -166,47 +178,99 @@
   const loadLabel = document.createElement("div"); loadLabel.id = "intro-loading-label";
   loadLabel.textContent = "NOW LOADING...";
   overlay.append(titleEl, subEl, barWrap, loadLabel);
+
+  // ── 軽量化モード（右下のオンオフ） ──
+  // ONにするとイントロを即スキップし、サイト内アニメも自動でOFFにする
+  // （既存の「アニメOFF」= noAnim と同じ仕組みを共有する）
+  let introAborted = false;
+  const LITE_LABELS = {
+    ja: { text: "軽量化モード", on: "ON", off: "OFF" },
+    en: { text: "Lite mode",   on: "ON", off: "OFF" },
+    ko: { text: "경량화 모드",   on: "ON", off: "OFF" }
+  };
+  const liteL = LITE_LABELS[savedLang] || LITE_LABELS.ja;
+  const liteBtn = document.createElement("button");
+  liteBtn.id = "intro-lite-btn";
+  liteBtn.type = "button";
+  liteBtn.setAttribute("aria-pressed", "false");
+  liteBtn.innerHTML = '<span class="intro-lite-dot"></span><span class="intro-lite-label"></span>';
+  const liteLabelEl = liteBtn.querySelector(".intro-lite-label");
+  function updateLiteLabel(on) {
+    liteBtn.setAttribute("aria-pressed", on ? "true" : "false");
+    liteLabelEl.textContent = liteL.text + "：" + (on ? liteL.on : liteL.off);
+  }
+  updateLiteLabel(false);
+  function applyNoAnimFlag(on) {
+    localStorage.setItem("noAnim", on ? "1" : "0");
+    document.body.classList.toggle("no-anim", on);
+    document.documentElement.classList.toggle("no-anim", on);
+    // すでにアニメ切り替えボタンが作られていればラベルも同期
+    document.querySelectorAll(".anim-toggle-btn__label").forEach(function (s) {
+      var txt = (typeof t === "function") ? t(on ? "animToggle.off" : "animToggle.on") : "";
+      if (txt && txt.indexOf("animToggle.") !== 0) s.textContent = txt;
+    });
+  }
+  function abortIntro() {
+    if (introAborted) return;
+    introAborted = true;
+    overlay.remove();
+    style.remove();
+    if (window.__introFinishResolve) window.__introFinishResolve();
+  }
+  liteBtn.addEventListener("click", function () {
+    const on = liteBtn.getAttribute("aria-pressed") !== "true";
+    updateLiteLabel(on);
+    applyNoAnimFlag(on);
+    if (on) abortIntro();
+  });
+  overlay.appendChild(liteBtn);
+
   document.body.prepend(overlay);
 
   function randomChar() {
     return SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
   }
 
+  // 文字ごとにタイマーを持たず、1本のrAFループでまとめて更新する（軽量）
   function scrambleTo(el, targetText, startDelay) {
     return new Promise(resolve => {
       el.innerHTML = "";
-      const spans = [];
+      const items = [];
       for (let i = 0; i < targetText.length; i++) {
-        if (targetText[i] === " " || targetText[i] === "　" || targetText[i] === "/") {
-          el.appendChild(document.createTextNode(targetText[i]));
-          spans.push(null);
+        const ch = targetText[i];
+        if (ch === " " || ch === "　" || ch === "/") {
+          el.appendChild(document.createTextNode(ch));
         } else {
           const s = document.createElement("span");
           s.className = "scr-char";
           s.textContent = randomChar();
           el.appendChild(s);
-          spans.push(s);
+          items.push({ s, ch, start: startDelay + items.length * (FRAME_MS * 0.75), last: -1, done: false });
         }
       }
-      let settled = 0;
-      const nonNull = spans.filter(Boolean);
-      if (nonNull.length === 0) { resolve(); return; }
-      nonNull.forEach((s, ni) => {
-        const idx = spans.indexOf(s);
-        const charDelay = startDelay + ni * (FRAME_MS * 0.75);
-        let frame = 0;
-        const tick = () => {
-          if (frame < SCRAMBLE_FRAMES) {
-            s.textContent = randomChar(); frame++;
-            setTimeout(tick, FRAME_MS);
-          } else {
-            s.textContent = targetText[idx];
-            s.classList.add("settled");
-            if (++settled === nonNull.length) resolve();
+      if (items.length === 0) { resolve(); return; }
+      const t0 = performance.now();
+      let remaining = items.length;
+      function step() {
+        if (introAborted) { resolve(); return; }
+        const dt = performance.now() - t0;
+        for (let k = 0; k < items.length; k++) {
+          const it = items[k];
+          if (it.done || dt < it.start) continue;
+          const f = Math.floor((dt - it.start) / FRAME_MS);
+          if (f >= SCRAMBLE_FRAMES) {
+            it.s.textContent = it.ch;
+            it.s.classList.add("settled");
+            it.done = true;
+            remaining--;
+          } else if (f !== it.last) {
+            it.s.textContent = randomChar();
+            it.last = f;
           }
-        };
-        setTimeout(tick, charDelay);
-      });
+        }
+        if (remaining <= 0) resolve(); else setTimeout(step, FRAME_MS / 2);
+      }
+      step();
     });
   }
 
@@ -225,7 +289,7 @@
       "#ff6eb4","#ff3d9a","#ffaadd","#fff","#ff6eb4",
       "#ffccee","#ff3d9a","#fff","#ffaadd","#ff6eb4"
     ];
-    var COUNT = 80;
+    var COUNT = 28;
 
     // コンテナ（overlayの上）
     var container = document.createElement("div");
@@ -247,7 +311,6 @@
           "top:"  + CY + "px",
           "font-size:" + size + "px",
           "color:" + color,
-          "text-shadow:0 0 6px " + color + ",0 0 14px " + color,
           "line-height:1",
           "transform:translate(-50%,-50%)",
           "opacity:1",
@@ -313,7 +376,9 @@
     await scrambleTo(subEl,   texts.sub,   10);
 
     // サブテキスト（有意義に使っていこ～！）が出た1秒後にグリッチ消滅
+    if (introAborted) return;
     setTimeout(() => {
+      if (introAborted) return;
       runGlitchExit(() => {
         if (window.__introFinishResolve) window.__introFinishResolve();
       });
@@ -3236,6 +3301,12 @@ function renderDreamGoals(wrap, data) {
     updateAutoplayBtn();
   }
 
+  // file に "/" を含む場合はサイト直下からのパス（例: assets/goods/xxx.png）、
+  // 含まない場合は ./thumbnails/ 配下のファイルとして扱う
+  function thumbSrc(file) {
+    return file.indexOf("/") !== -1 ? "./" + file.replace(/^\.?\//, "") : "./thumbnails/" + file;
+  }
+
   async function loadThumbs() {
     if (_thumbs !== null) return _thumbs;
     try {
@@ -3311,7 +3382,7 @@ function renderDreamGoals(wrap, data) {
   // 差し替え時に一瞬空白/未読込画像になる「点滅」が起きない
   async function buildItem(thumb, sizeClass) {
     const url = thumb.url || "";
-    const src = "./thumbnails/" + thumb.file;
+    const src = thumbSrc(thumb.file);
 
     await preloadImage(src);
 
@@ -3424,7 +3495,7 @@ function renderDreamGoals(wrap, data) {
     // 全サムネイルをバックグラウンドで先読みしておく（自動送りで初登場する画像も
     // 表示される頃には読み込み済みになっている確率が上がり、点滅しにくくなる）
     thumbs.forEach(function (thumb) {
-      preloadImage("./thumbnails/" + thumb.file);
+      preloadImage(thumbSrc(thumb.file));
     });
 
     _current = 0;
@@ -3731,35 +3802,48 @@ window.cfTabSwitch = function(panelId, btn) {
    ───────────────────────────────────────────────────────────── */
 var ASOBU_PHASES = [
   {
-    id: "20260829-summer",
-    end: new Date("2026-08-29T23:59:59+09:00").getTime(),
+    id: "20261125-yoru-entry",
+    end: new Date("2026-11-25T23:59:59+09:00").getTime(),
     type: "video",
-    videoId: "jm-2KiEF-Zs",
-    message: "御手洗THEサマー☀夏祭り配信！\n金魚すくい、スイカ割り、歌のステージ、花火大会、マイクラ企画など盛りだくさん！\n8月29日15:00からゼッタイ来てね～🤍"
-  },
-  {
-    id: "20260911-gigo",
-    end: new Date("2026-09-10T23:59:59+09:00").getTime(),
-    type: "image",
-    // TODO: GiGOコラボ用の画像を ./assets/gigo.png として配置してください
-    image: "./assets/gigo.png",
+    videoId: "5StIy9CaA9c",
     message: {
-      ja: "GiGO ゲームセンターに御手洗遊が登場！？\n一緒にツーショット、撮ろ？🤍",
-      en: "Mitarai Asobu is coming to GiGO amusement arcade!?\nWant to take a photo together? 🤍",
-      ko: "GiGO 오락실 미타라이 아소부가 등장!?\n같이 투샷 찍을래? 🤍"
-    },
-    button: {
-      text: { ja: "詳細を見る", en: "View Details", ko: "자세히 보기" },
-      url: "https://www.gigo.co.jp/shops/dotonbori",
-      eventId: "gigo_appearance"
+      ja: "夜の番人杯 エントリー募集中！\n11月25日24時まで受付中だよ。ゼッタイ参加してね🤍",
+      en: "Night Watchman Cup — Entries Open!\nSign-ups are open until 24:00 on November 25. Be sure to join! 🤍",
+      ko: "밤의 파수꾼 컵 참가자 모집 중!\n11월 25일 24시까지 접수 중이에요. 꼭 참가해 주세요🤍"
     }
   },
   {
-    id: "20260911-jinsengo",
+    id: "20261205-yoru-live",
+    end: new Date("2026-12-05T23:59:59+09:00").getTime(),
+    type: "video",
+    videoId: "f6FuC1sXXp4",
+    message: {
+      ja: "夜の番人杯 本番大会の生配信はこちら！\n熱い戦いを一緒に見届けよう🤍",
+      en: "Watch the Night Watchman Cup tournament live here!\nLet's witness the heated battles together 🤍",
+      ko: "밤의 파수꾼 컵 본 대회 생방송은 여기서!\n뜨거운 승부를 함께 지켜봐요🤍"
+    }
+  },
+  {
+    id: "20261206-yoru-live2",
+    end: new Date("2026-12-06T23:59:59+09:00").getTime(),
+    type: "video",
+    videoId: "JqB_Wfk-1eg",
+    message: {
+      ja: "夜の番人杯 本番大会、最終日の生配信はこちら！\n最後まで応援してね🤍",
+      en: "The final day of the Night Watchman Cup live stream is here!\nCheer us on until the very end 🤍",
+      ko: "밤의 파수꾼 컵 본 대회, 마지막 날 생방송은 여기서!\n끝까지 응원해 주세요🤍"
+    }
+  },
+  {
+    id: "20270103-anniversary",
     end: null,
     type: "video",
-    videoId: "cFpn8p2eaM0",
-    message: "第五人格、夜の番人杯を主催するぞ！選手としても参加するよ！大会を勝ち進めるように応援しに来てね🤍"
+    videoId: "NpGpIqiR0cw",
+    message: {
+      ja: "1月3日は 御手洗遊 一周年記念＆誕生日！\n生配信でお祝いしよう、ゼッタイ来てね🤍",
+      en: "January 3 is Mitarai Asobu's 1st Anniversary & Birthday!\nCelebrate with us at the live stream — don't miss it 🤍",
+      ko: "1월 3일은 미타라이 아소부 1주년 기념 & 생일!\n생방송에서 함께 축하해요, 꼭 와 주세요🤍"
+    }
   }
 ];
 
@@ -3791,6 +3875,18 @@ function asobuBuildMediaHtml(phase, opts) {
 
   if (phase.type === "video") {
     var videoUrl = "https://youtu.be/" + phase.videoId;
+    // 軽量化モード（アニメOFF）中は、重いYouTube埋め込みの代わりに静止サムネイルを表示
+    var liteMode = false;
+    try { liteMode = localStorage.getItem("noAnim") === "1"; } catch (e) {}
+    if (liteMode) {
+      return (
+        '<div class="' + frameClass + '">' +
+          '<img class="' + iframeClass + '" src="https://i.ytimg.com/vi/' + phase.videoId + '/hqdefault.jpg" alt="" loading="lazy" style="object-fit:cover;">' +
+          '<span aria-hidden="true" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:48px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.7);pointer-events:none;z-index:1;">▶</span>' +
+          '<a class="' + linkClass + '" href="' + videoUrl + '" target="_blank" rel="noopener" aria-label="Watch on YouTube"></a>' +
+        "</div>"
+      );
+    }
     return (
       '<div class="' + frameClass + '">' +
         '<iframe class="' + iframeClass + '" ' +
