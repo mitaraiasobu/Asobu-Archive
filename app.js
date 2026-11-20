@@ -1194,8 +1194,71 @@ function t(path) {
     if (cur && typeof cur === "object" && p in cur) cur = cur[p];
     else return path;
   }
+  if (typeof cur === "string" && cur.indexOf("<iframe") !== -1 && /bodyHtml$/.test(path)) {
+    return ytFacadeTransform(cur);
+  }
   return cur;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   YouTube埋め込みの「サムネ表示 → クリックで再生」化
+   ・本文HTML中の YouTube iframe を、再生前はサムネ＋ピンクの再生ボタンだけの
+     srcdoc iframe に差し替える（YouTubeのロゴやタイトルバーを再生前に出さない）。
+   ・iframe要素そのものは残すので、元のレイアウト・サイズ指定がそのまま効く。
+   ・クリックすると本物のプレーヤー（autoplay）に切り替える。
+   ───────────────────────────────────────────────────────────── */
+function ytFacadeDoc(id) {
+  var css =
+    "html,body{margin:0;height:100%;overflow:hidden;background:#000}" +
+    "button{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;cursor:pointer;" +
+    "background:#000 center/cover no-repeat;-webkit-tap-highlight-color:transparent}" +
+    "i{--w:max(46px,19vmin);position:absolute;left:50%;top:50%;width:var(--w);height:calc(var(--w)*.7);" +
+    "transform:translate(-50%,-50%);border-radius:calc(var(--w)*.22);background:#ff5fae;" +
+    "box-shadow:0 2px 12px rgba(0,0,0,.45);transition:background .15s,transform .15s}" +
+    "i:after{content:'';position:absolute;left:50%;top:50%;width:0;height:0;" +
+    "transform:translate(-38%,-50%);border-style:solid;" +
+    "border-width:calc(var(--w)*.13) 0 calc(var(--w)*.13) calc(var(--w)*.22);" +
+    "border-color:transparent transparent transparent #fff}" +
+    "button:hover i,button:focus-visible i{background:#ff3d9d;transform:translate(-50%,-50%) scale(1.08)}" +
+    "button:focus{outline:0}";
+  var js =
+    "var id='" + id + "',b=document.getElementById('p');" +
+    "function f(){b.style.backgroundImage=\"url('https://i.ytimg.com/vi/\"+id+\"/hqdefault.jpg')\"}" +
+    "var m=new Image();m.onload=function(){m.naturalWidth>200?b.style.backgroundImage=\"url('\"+m.src+\"')\":f()};" +
+    "m.onerror=f;m.src='https://i.ytimg.com/vi/'+id+'/maxresdefault.jpg';" +
+    "b.onclick=function(){try{parent.__ytPlay(frameElement)}catch(e){}};";
+  return "<!doctype html><meta charset='utf-8'><style>" + css + "</style>" +
+    "<button id='p' type='button' aria-label='Play'><i></i></button><script>" + js + "<\/script>";
+}
+
+var __ytFacadeRe = /<iframe((?:\s[^>]*?)?)\ssrc="(https:\/\/www\.youtube(?:-nocookie)?\.com\/embed\/([\w-]{11})[^"]*)"([^>]*)>/g;
+function ytFacadeTransform(html) {
+  return html.replace(__ytFacadeRe, function (all, pre, src, id, post) {
+    var attrs = pre + " " + post;
+    var allow = /\sallow\s*=/.test(attrs) ? "" :
+      ' allow="autoplay; encrypted-media; picture-in-picture; fullscreen"';
+    var doc = ytFacadeDoc(id).replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+    return '<iframe' + pre + ' data-yt-src="' + src + '"' + allow + ' srcdoc="' + doc + '"' + post + '>';
+  });
+}
+
+window.__ytPlay = function (ifr) {
+  if (!ifr) return;
+  var src = ifr.getAttribute("data-yt-src");
+  if (!src) return;
+  var add = [];
+  if (!/[?&]autoplay=/.test(src)) add.push("autoplay=1");
+  if (!/[?&]enablejsapi=/.test(src)) add.push("enablejsapi=1");
+  if (!/[?&]rel=/.test(src)) add.push("rel=0");
+  if (!/[?&]playsinline=/.test(src)) add.push("playsinline=1");
+  src += (src.indexOf("?") === -1 ? "?" : "&") + add.join("&");
+  ifr.removeAttribute("data-yt-src");
+  ifr.setAttribute("src", src);
+  ifr.removeAttribute("srcdoc");
+  setTimeout(function () {
+    if (typeof initContentVideoDucking === "function") initContentVideoDucking();
+  }, 0);
+};
 
 function escapeHtml(s) {
   return String(s ?? "")
@@ -4146,6 +4209,15 @@ function initContentVideoDucking() {
         var wasPlaying = false;
         new YT.Player(ifr, {
           events: {
+            onReady: function (e) {
+              // クリック直後の自動再生はAPI接続前に始まっていることがあるので、ここで拾う
+              try {
+                if (e.target.getPlayerState() === YT.PlayerState.PLAYING && !wasPlaying) {
+                  wasPlaying = true;
+                  if (window.__bgmDuck) window.__bgmDuck.acquire();
+                }
+              } catch (err) {}
+            },
             onStateChange: function (e) {
               if (e.data === YT.PlayerState.PLAYING) {
                 if (!wasPlaying) {

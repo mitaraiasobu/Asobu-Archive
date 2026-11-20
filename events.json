@@ -6,7 +6,22 @@
     "status": "active",
     "start": "2027-01-03",
     "end": "",
-    "links": [],
+    "links": [
+      {
+        "labelKey": "event.anniStream",
+        "url": "https://www.youtube.com/watch?v=NpGpIqiR0cw"
+      },
+      {
+        "labelKey": "event.anniGoods",
+        "url": "#",
+        "linkTab": "goods"
+      },
+      {
+        "labelKey": "event.anniContest",
+        "url": "#",
+        "linkTab": "contest"
+      }
+    ],
     "i18n": {
       "ja": {
         "title": "御手洗遊 一周年記念",
