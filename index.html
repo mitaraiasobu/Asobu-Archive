@@ -114,6 +114,20 @@
       <div class="hero">
         <div class="hero__left">
           <p class="muted" id="homeLead"></p>
+          <!-- チャンネル情報（YouTubeから自動取得：channel.json） -->
+          <div class="channel-card" id="channelCard" hidden>
+            <a id="channelAvatarLink" class="channel-card__avatar-link" href="https://www.youtube.com/@MitaraiAsobu" target="_blank" rel="noopener">
+              <img id="channelAvatar" class="channel-card__avatar" alt="" hidden />
+            </a>
+            <div class="channel-card__body">
+              <div class="channel-card__name" id="channelName"></div>
+              <div class="channel-card__stats" id="channelStats"></div>
+            </div>
+            <div class="channel-card__btns">
+              <a id="channelViewBtn" class="btn channel-card__btn" href="https://www.youtube.com/@MitaraiAsobu" target="_blank" rel="noopener"></a>
+              <a id="channelSubBtn" class="btn primary channel-card__btn" href="https://www.youtube.com/@MitaraiAsobu?sub_confirmation=1" target="_blank" rel="noopener"></a>
+            </div>
+          </div>
         </div>
       </div>
 

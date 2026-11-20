@@ -6,7 +6,9 @@ from datetime import datetime, timezone
 
 HANDLE = os.environ.get("YT_HANDLE", "MitaraiAsobu")
 KEY = os.environ.get("YOUTUBE_API_KEY", "").strip()
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "schedule.json")
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+OUT = os.path.join(ROOT, "schedule.json")
+CHANNEL_OUT = os.path.join(ROOT, "channel.json")
 MAX_ITEMS = 8
 # タイトルにこのいずれかが含まれる枠は表示しない
 EXCLUDE_TITLE_KEYWORDS = ["スケジュール＆フリーチャット"]
@@ -17,6 +19,40 @@ def api(path, **params):
     url = "https://www.googleapis.com/youtube/v3/%s?%s" % (path, urllib.parse.urlencode(params))
     with urllib.request.urlopen(url, timeout=30) as r:
         return json.load(r)
+
+
+def write_if_changed(path, data):
+    """内容が変わったときだけ書き込む（無駄なコミットを防ぐ）。変更したらTrue。"""
+    new = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
+    try:
+        with open(path, encoding="utf-8") as f:
+            if f.read() == new:
+                return False
+    except FileNotFoundError:
+        pass
+    with open(path, "w", encoding="utf-8", newline="\n") as f:
+        f.write(new)
+    return True
+
+
+def fetch_channel(channel_id):
+    r = api("channels", part="snippet,statistics", id=channel_id)
+    if not r.get("items"):
+        return None
+    it = r["items"][0]
+    st = it.get("statistics", {})
+    th = it["snippet"].get("thumbnails", {})
+    pic = (th.get("medium") or th.get("default") or {}).get("url", "")
+    data = {
+        "title": it["snippet"]["title"],
+        "url": "https://www.youtube.com/@%s" % HANDLE,
+        "thumbnail": pic,
+        "videoCount": int(st.get("videoCount", 0)),
+        "viewCount": int(st.get("viewCount", 0)),
+    }
+    if not st.get("hiddenSubscriberCount"):
+        data["subscriberCount"] = int(st.get("subscriberCount", 0))  # APIの仕様で上位3桁に丸められる
+    return data
 
 
 def main():
@@ -56,18 +92,13 @@ def main():
     items.sort(key=lambda x: x["start"])
     data = {"channelId": channel_id, "items": items[:MAX_ITEMS]}
 
-    # 内容が変わらないときはファイルを触らない（無駄なコミットを防ぐ）
-    new = json.dumps(data, ensure_ascii=False, indent=2) + "\n"
-    try:
-        with open(OUT, encoding="utf-8") as f:
-            if f.read() == new:
-                print("変更なし")
-                return 0
-    except FileNotFoundError:
-        pass
-    with open(OUT, "w", encoding="utf-8", newline="\n") as f:
-        f.write(new)
-    print("更新: %d 件" % len(data["items"]))
+    changed = write_if_changed(OUT, data)
+    print("配信予定: %s (%d 件)" % ("更新" if changed else "変更なし", len(data["items"])))
+
+    ch = fetch_channel(channel_id)
+    if ch:
+        changed = write_if_changed(CHANNEL_OUT, ch)
+        print("チャンネル情報: %s" % ("更新" if changed else "変更なし"))
     return 0
 
 

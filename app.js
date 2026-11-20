@@ -1519,6 +1519,7 @@ function renderStaticTexts() {
   });
 
   if (typeof renderUpcoming === "function") renderUpcoming();
+  if (typeof renderChannelCard === "function") renderChannelCard();
 
   // ページ本文内の音声付きYouTube埋め込みを検知し、再生中はBGMを一時停止する
   if (typeof initContentVideoDucking === "function") initContentVideoDucking();
@@ -3188,6 +3189,25 @@ function renderDreamGoals(wrap, data) {
     return g[key] || "";
   }
 
+  /* チャンネル登録者数（channel.json：GitHub Actionsが自動更新）で「登録者1万人」の進捗を上書き */
+  if (window.__channelStats && window.__channelStats.subscriberCount && data && data.goals) {
+    var __n = window.__channelStats.subscriberCount;
+    var __fmt = __n.toLocaleString("en-US");
+    var __sub = {
+      ja: "現在 約" + __fmt + "人",
+      en: "Currently about " + __fmt,
+      ko: "현재 약 " + __fmt + "명"
+    }[state.lang] || ("" + __fmt);
+    data = Object.assign({}, data, {
+      goals: data.goals.map(function (g) {
+        if (g.type === "progress" && g.target === 10000 && g.icon === "📈") {
+          return Object.assign({}, g, { current: __n, subtitle: __sub });
+        }
+        return g;
+      })
+    });
+  }
+
   /* 達成済み(done)を末尾に移動 */
   const goals = (data.goals || []).slice().sort(function(a, b) {
     return (a.type === 'done' ? 1 : 0) - (b.type === 'done' ? 1 : 0);
@@ -3875,6 +3895,10 @@ var ASOBU_PHASES = [
       ja: "夜の番人杯 エントリー募集中！\n11月25日24時まで受付中だよ。ゼッタイ参加してね🤍",
       en: "Night Watchman Cup — Entries Open!\nSign-ups are open until 24:00 on November 25. Be sure to join! 🤍",
       ko: "밤의 파수꾼 컵 참가자 모집 중!\n11월 25일 24시까지 접수 중이에요. 꼭 참가해 주세요🤍"
+    },
+    button: {
+      text: { ja: "詳細を見る", en: "View Details", ko: "자세히 보기" },
+      url: "https://mitaraiasobu.github.io/IDV-tournament-BOT-brows/rulebook.html?t=ukiCbIOz73Dv"
     }
   },
   {
@@ -4741,4 +4765,57 @@ function renderUpcoming() {
     }
     g.items.forEach(function (it) { list.appendChild(buildItem(it)); });
   });
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   チャンネル情報（channel.json：GitHub Actionsが3時間ごとにYouTubeから更新）
+   ───────────────────────────────────────────────────────────── */
+window.__channelStats = null;
+(function loadChannelStats() {
+  fetch("./channel.json?t=" + Math.floor(Date.now() / 600000), { cache: "no-cache" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (d) {
+      if (!d || !d.title) return;
+      window.__channelStats = d;
+      if (typeof renderChannelCard === "function") renderChannelCard();
+      if (typeof initDreamGoals === "function") initDreamGoals(); // 自己紹介の登録者数を更新
+    });
+})();
+
+function renderChannelCard() {
+  var card = document.getElementById("channelCard");
+  var d = window.__channelStats;
+  if (!card || !d) return;
+
+  var lang = (typeof state !== "undefined" && state.lang) || "ja";
+  var L = {
+    ja: { subs: function (n) { return "登録者 約" + n + "人"; }, vids: function (n) { return "動画 " + n + "本"; }, view: "チャンネルを見る", sub: "チャンネル登録" },
+    en: { subs: function (n) { return "About " + n + " subscribers"; }, vids: function (n) { return n + " videos"; }, view: "View channel", sub: "Subscribe" },
+    ko: { subs: function (n) { return "구독자 약 " + n + "명"; }, vids: function (n) { return "동영상 " + n + "개"; }, view: "채널 보기", sub: "구독하기" }
+  }[lang];
+  if (!L) return;
+
+  var url = d.url || "https://www.youtube.com/@MitaraiAsobu";
+  var avatar = document.getElementById("channelAvatar");
+  if (avatar) {
+    if (d.thumbnail) { avatar.src = d.thumbnail; avatar.hidden = false; } else { avatar.hidden = true; }
+  }
+  var link = document.getElementById("channelAvatarLink");
+  if (link) link.href = url;
+  var name = document.getElementById("channelName");
+  if (name) name.textContent = d.title;
+
+  var parts = [];
+  if (d.subscriberCount) parts.push(L.subs(Number(d.subscriberCount).toLocaleString("en-US")));
+  if (d.videoCount) parts.push(L.vids(Number(d.videoCount).toLocaleString("en-US")));
+  var stats = document.getElementById("channelStats");
+  if (stats) stats.textContent = parts.join("  ・  ");
+
+  var viewBtn = document.getElementById("channelViewBtn");
+  if (viewBtn) { viewBtn.href = url; viewBtn.textContent = L.view; }
+  var subBtn = document.getElementById("channelSubBtn");
+  if (subBtn) { subBtn.href = url + "?sub_confirmation=1"; subBtn.textContent = L.sub; }
+  card.hidden = false;
 }
