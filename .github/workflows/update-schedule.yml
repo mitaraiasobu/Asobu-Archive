@@ -2,7 +2,7 @@ name: Update stream schedule
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # 30分ごと（UTC）
+    - cron: "7 */3 * * *"      # 3時間ごと（UTC・毎時7分）
   workflow_dispatch:          # 手動実行ボタン
 
 permissions:

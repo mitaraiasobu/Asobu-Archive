@@ -8,6 +8,8 @@ HANDLE = os.environ.get("YT_HANDLE", "MitaraiAsobu")
 KEY = os.environ.get("YOUTUBE_API_KEY", "").strip()
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "schedule.json")
 MAX_ITEMS = 8
+# タイトルにこのいずれかが含まれる枠は表示しない
+EXCLUDE_TITLE_KEYWORDS = ["スケジュール＆フリーチャット"]
 
 
 def api(path, **params):
@@ -43,6 +45,9 @@ def main():
             st = datetime.fromisoformat(start.replace("Z", "+00:00"))
             if (now - st).total_seconds() > 6 * 3600:
                 continue  # 6時間以上前の予定は古いので除外
+            title = v["snippet"]["title"]
+            if any(k in title for k in EXCLUDE_TITLE_KEYWORDS):
+                continue  # 表示しない枠
             items.append({
                 "id": v["id"],
                 "title": v["snippet"]["title"],

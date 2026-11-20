@@ -4098,7 +4098,7 @@ function renderHomeNotice() {
     }
   }
 
-  // 最新グッズ2件（新グッズ公開予定＝order 999 は除外）
+  // 最新グッズ3件（新グッズ公開予定＝order 999 は除外）
   var goodsSection = document.getElementById("homeNoticeGoods");
   var goodsListEl = document.getElementById("homeNoticeGoodsList");
   var goodsTitleEl = document.getElementById("homeNoticeGoodsTitle");
@@ -4115,7 +4115,7 @@ function renderHomeNotice() {
     boxes.sort(function (a, b) {
       return parseInt(b.dataset.goodsOrder, 10) - parseInt(a.dataset.goodsOrder, 10);
     });
-    boxes = boxes.slice(0, 2);
+    boxes = boxes.slice(0, 3);
 
     goodsListEl.innerHTML = "";
     boxes.forEach(function (box) {
@@ -4669,22 +4669,30 @@ function renderUpcoming() {
 
   var lang = (typeof state !== "undefined" && state.lang) || "ja";
   var L = {
-    ja: { title: "📅 配信予定", hint: "YouTubeから自動で更新されます", locale: "ja-JP" },
-    en: { title: "📅 Upcoming Streams", hint: "Updated automatically from YouTube", locale: "en-US" },
-    ko: { title: "📅 방송 예정", hint: "YouTube에서 자동으로 업데이트돼요", locale: "ko-KR" }
+    ja: { week: "📅 1週間の配信予定", later: "📅 今後の配信予定", hint: "YouTubeから自動で更新されます", locale: "ja-JP" },
+    en: { week: "📅 This Week's Streams", later: "📅 Upcoming Streams", hint: "Updated automatically from YouTube", locale: "en-US" },
+    ko: { week: "📅 1주일 방송 예정", later: "📅 앞으로의 방송 예정", hint: "YouTube에서 자동으로 업데이트돼요", locale: "ko-KR" }
   }[lang] || null;
-  if (!L) L = { title: "📅 配信予定", hint: "", locale: "ja-JP" };
+  if (!L) L = { week: "📅 1週間の配信予定", later: "📅 今後の配信予定", hint: "", locale: "ja-JP" };
 
   var now = Date.now();
+  var weekEnd = now + 7 * 24 * 3600 * 1000;
   var items = __upcomingData.items.filter(function (it) {
     return new Date(it.start).getTime() > now - 6 * 3600 * 1000;
   });
-  if (!items.length) { card.hidden = true; return; }
+  var head = document.getElementById("upcomingHead");
+  if (!items.length) {
+    // 予定が無いときは見出し・一覧を隠し、一言メッセージだけ残す
+    if (head) head.hidden = true;
+    list.innerHTML = "";
+    return;
+  }
+  if (head) head.hidden = false;
 
-  document.getElementById("upcomingTitle").textContent = L.title;
-  document.getElementById("upcomingHint").textContent = L.hint;
-  list.innerHTML = "";
-  items.forEach(function (it) {
+  var weekItems = items.filter(function (it) { return new Date(it.start).getTime() <= weekEnd; });
+  var laterItems = items.filter(function (it) { return new Date(it.start).getTime() > weekEnd; });
+
+  function buildItem(it) {
     var when = new Date(it.start).toLocaleString(L.locale, {
       timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", weekday: "short",
       hour: "2-digit", minute: "2-digit", hour12: false
@@ -4713,7 +4721,24 @@ function renderUpcoming() {
 
     a.appendChild(img);
     a.appendChild(box);
-    list.appendChild(a);
+    return a;
+  }
+
+  // 見出し：最初のグループはカードのタイトル、2つ目はリスト内の小見出し
+  var groups = [];
+  if (weekItems.length) groups.push({ title: L.week, items: weekItems });
+  if (laterItems.length) groups.push({ title: L.later, items: laterItems });
+
+  document.getElementById("upcomingTitle").textContent = groups[0].title;
+  document.getElementById("upcomingHint").textContent = L.hint;
+  list.innerHTML = "";
+  groups.forEach(function (g, idx) {
+    if (idx > 0) {
+      var h = document.createElement("h3");
+      h.className = "upcoming-subtitle";
+      h.textContent = g.title;
+      list.appendChild(h);
+    }
+    g.items.forEach(function (it) { list.appendChild(buildItem(it)); });
   });
-  card.hidden = false;
 }

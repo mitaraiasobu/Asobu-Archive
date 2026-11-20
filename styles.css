@@ -3162,7 +3162,7 @@ body:not(.no-anim) [onclick] {
 /* 左：お知らせカード／右：最新グッズ */
 .home-notice-split {
   display: flex;
-  align-items: stretch;
+  align-items: stretch; /* 左右の高さを揃える（右のグッズが3件でコンパクトなので不自然に伸びない） */
   gap: 20px;
 }
 .home-notice-left {
@@ -3174,9 +3174,9 @@ body:not(.no-anim) [onclick] {
   min-width: 0;
 }
 
-/* 最新グッズ2件（縦並び） */
+/* 最新グッズ3件（縦並び） */
 .home-notice-goods {
-  height: 100%;
+  height: auto;
   box-sizing: border-box;
 }
 .home-notice-goods__title {
@@ -3211,7 +3211,7 @@ body:not(.no-anim) [onclick] {
 }
 .notice-goods-thumb {
   display: block;
-  width: 50%;
+  width: 34%;
   aspect-ratio: 1 / 1;
   flex-shrink: 0;
   object-fit: cover;
@@ -4553,3 +4553,14 @@ body:not(.no-anim) [onclick] {
 .upcoming-item__date{font-weight:900;color:#ff7abf;font-size:14px}
 .upcoming-item__title{font-size:14px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 @media (max-width:640px){.upcoming-item img{width:96px}}
+.upcoming-subtitle{margin:14px 0 2px;font-size:16px;font-weight:900;color:#ff7abf}
+
+/* ホームのレイアウト調整：配信予定を左カラム上段に、イベントは追従＆高さは内容なり */
+.home-left{display:flex;flex-direction:column;gap:14px;min-width:0}
+.home-right{min-width:0}
+@media (min-width:901px){
+  .home-right{position:sticky;top:12px}
+  .home-right .card{height:auto;max-height:var(--homeEventsHeight)}
+}
+#upcomingHead[hidden]{display:none}
+.upcoming-card .asobu-note{margin-top:14px}
