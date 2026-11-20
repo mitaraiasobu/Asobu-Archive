@@ -1518,6 +1518,8 @@ function renderStaticTexts() {
     });
   });
 
+  if (typeof renderUpcoming === "function") renderUpcoming();
+
   // ページ本文内の音声付きYouTube埋め込みを検知し、再生中はBGMを一時停止する
   if (typeof initContentVideoDucking === "function") initContentVideoDucking();
 }
@@ -4638,3 +4640,80 @@ function initContentVideoDucking() {
       });
     });
 })();
+
+/* ─────────────────────────────────────────────────────────────
+   配信予定（schedule.json：GitHub Actionsが30分ごとにYouTubeから更新）
+   ───────────────────────────────────────────────────────────── */
+var __upcomingData = null;
+var __upcomingLoading = false;
+
+function renderUpcoming() {
+  var card = document.getElementById("upcomingCard");
+  var list = document.getElementById("upcomingList");
+  if (!card || !list) return;
+
+  if (__upcomingData === null) {
+    if (!__upcomingLoading) {
+      __upcomingLoading = true;
+      fetch("./schedule.json?t=" + Math.floor(Date.now() / 600000), { cache: "no-cache" })
+        .then(function (r) { return r.ok ? r.json() : { items: [] }; })
+        .catch(function () { return { items: [] }; })
+        .then(function (d) {
+          __upcomingData = d && Array.isArray(d.items) ? d : { items: [] };
+          __upcomingLoading = false;
+          renderUpcoming();
+        });
+    }
+    return;
+  }
+
+  var lang = (typeof state !== "undefined" && state.lang) || "ja";
+  var L = {
+    ja: { title: "📅 配信予定", hint: "YouTubeから自動で更新されます", locale: "ja-JP" },
+    en: { title: "📅 Upcoming Streams", hint: "Updated automatically from YouTube", locale: "en-US" },
+    ko: { title: "📅 방송 예정", hint: "YouTube에서 자동으로 업데이트돼요", locale: "ko-KR" }
+  }[lang] || null;
+  if (!L) L = { title: "📅 配信予定", hint: "", locale: "ja-JP" };
+
+  var now = Date.now();
+  var items = __upcomingData.items.filter(function (it) {
+    return new Date(it.start).getTime() > now - 6 * 3600 * 1000;
+  });
+  if (!items.length) { card.hidden = true; return; }
+
+  document.getElementById("upcomingTitle").textContent = L.title;
+  document.getElementById("upcomingHint").textContent = L.hint;
+  list.innerHTML = "";
+  items.forEach(function (it) {
+    var when = new Date(it.start).toLocaleString(L.locale, {
+      timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", weekday: "short",
+      hour: "2-digit", minute: "2-digit", hour12: false
+    }) + " JST";
+    var a = document.createElement("a");
+    a.className = "upcoming-item";
+    a.href = "https://www.youtube.com/watch?v=" + encodeURIComponent(it.id);
+    a.target = "_blank";
+    a.rel = "noopener";
+
+    var img = document.createElement("img");
+    img.src = "https://i.ytimg.com/vi/" + encodeURIComponent(it.id) + "/mqdefault.jpg";
+    img.alt = "";
+    img.loading = "lazy";
+
+    var box = document.createElement("div");
+    box.className = "upcoming-item__text";
+    var d = document.createElement("div");
+    d.className = "upcoming-item__date";
+    d.textContent = when;
+    var t = document.createElement("div");
+    t.className = "upcoming-item__title";
+    t.textContent = it.title;
+    box.appendChild(d);
+    box.appendChild(t);
+
+    a.appendChild(img);
+    a.appendChild(box);
+    list.appendChild(a);
+  });
+  card.hidden = false;
+}
