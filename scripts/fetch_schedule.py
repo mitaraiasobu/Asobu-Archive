@@ -9,7 +9,7 @@ KEY = os.environ.get("YOUTUBE_API_KEY", "").strip()
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 OUT = os.path.join(ROOT, "schedule.json")
 CHANNEL_OUT = os.path.join(ROOT, "channel.json")
-MAX_ITEMS = 8
+MAX_ITEMS = 15
 # タイトルにこのいずれかが含まれる枠は表示しない
 EXCLUDE_TITLE_KEYWORDS = ["スケジュール＆フリーチャット"]
 
@@ -69,26 +69,61 @@ def main():
                 type="video", maxResults=25)
     ids = [i["id"]["videoId"] for i in found.get("items", []) if i.get("id", {}).get("videoId")]
 
+    # メンバー限定の配信は search では出てこないので、
+    # 「メンバー限定の動画」再生リスト（UUMO + チャンネルIDの3文字目以降）の新しい分も見る
+    member_ids = set()
+    try:
+        pl = api("playlistItems", part="contentDetails",
+                 playlistId="UUMO" + channel_id[2:], maxResults=15)
+        member_ids = {i["contentDetails"]["videoId"] for i in pl.get("items", [])
+                      if i.get("contentDetails", {}).get("videoId")}
+    except Exception as e:  # メンバーシップ未開設・取得失敗でも通常の予定は更新する
+        print("メンバー限定の取得をスキップ: %s" % e, file=sys.stderr)
+    ids += [v for v in member_ids if v not in ids]
+
+    # 前回の schedule.json に載っていた枠も再確認する
+    # （配信が始まると search の upcoming から消えるため。配信中は live として残し、終了したら外す）
+    prev_members = set()
+    try:
+        with open(OUT, encoding="utf-8") as f:
+            for it in json.load(f).get("items", []):
+                if it.get("id") and it["id"] not in ids:
+                    ids.append(it["id"])
+                if it.get("members"):
+                    prev_members.add(it.get("id"))
+    except (FileNotFoundError, ValueError):
+        pass
+    member_ids |= prev_members
+
     items = []
     if ids:
-        vids = api("videos", part="snippet,liveStreamingDetails", id=",".join(ids))
+        vids = api("videos", part="snippet,liveStreamingDetails", id=",".join(ids[:50]))
         now = datetime.now(timezone.utc)
         for v in vids.get("items", []):
             d = v.get("liveStreamingDetails", {})
             start = d.get("scheduledStartTime")
-            if not start or d.get("actualStartTime"):
-                continue  # 予定時刻なし / すでに開始済み
-            st = datetime.fromisoformat(start.replace("Z", "+00:00"))
-            if (now - st).total_seconds() > 6 * 3600:
-                continue  # 6時間以上前の予定は古いので除外
+            actual = d.get("actualStartTime")
+            if d.get("actualEndTime"):
+                continue  # 配信終了済み
+            if not start and not actual:
+                continue  # 予定時刻なし（ライブ枠ではない）
+            base = actual or start
+            st = datetime.fromisoformat(base.replace("Z", "+00:00"))
+            if (now - st).total_seconds() > 3 * 3600:
+                continue  # 開始（予定）から3時間を過ぎた枠は終了扱い
             title = v["snippet"]["title"]
             if any(k in title for k in EXCLUDE_TITLE_KEYWORDS):
                 continue  # 表示しない枠
-            items.append({
+            item = {
                 "id": v["id"],
                 "title": v["snippet"]["title"],
-                "start": start,
-            })
+                "start": start or actual,
+            }
+            if actual:
+                item["actualStart"] = actual  # 配信中
+            if v["id"] in member_ids:
+                item["members"] = True
+            items.append(item)
     items.sort(key=lambda x: x["start"])
     data = {"channelId": channel_id, "items": items[:MAX_ITEMS]}
 

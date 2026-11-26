@@ -4693,16 +4693,17 @@ function renderUpcoming() {
 
   var lang = (typeof state !== "undefined" && state.lang) || "ja";
   var L = {
-    ja: { week: "📅 1週間の配信予定", later: "📅 今後の配信予定", hint: "YouTubeから自動で更新されます", locale: "ja-JP" },
-    en: { week: "📅 This Week's Streams", later: "📅 Upcoming Streams", hint: "Updated automatically from YouTube", locale: "en-US" },
-    ko: { week: "📅 1주일 방송 예정", later: "📅 앞으로의 방송 예정", hint: "YouTube에서 자동으로 업데이트돼요", locale: "ko-KR" }
+    ja: { week: "📅 1週間の配信予定", later: "📅 今後の配信予定", hint: "YouTubeから自動で更新されます", members: "メンバー限定", locale: "ja-JP", live: "配信中" },
+    en: { week: "📅 This Week's Streams", later: "📅 Upcoming Streams", hint: "Updated automatically from YouTube", members: "Members only", locale: "en-US", live: "LIVE" },
+    ko: { week: "📅 1주일 방송 예정", later: "📅 앞으로의 방송 예정", hint: "YouTube에서 자동으로 업데이트돼요", members: "멤버십 한정", locale: "ko-KR", live: "방송 중" }
   }[lang] || null;
-  if (!L) L = { week: "📅 1週間の配信予定", later: "📅 今後の配信予定", hint: "", locale: "ja-JP" };
+  if (!L) L = { week: "📅 1週間の配信予定", later: "📅 今後の配信予定", hint: "", members: "メンバー限定", locale: "ja-JP", live: "配信中" };
 
   var now = Date.now();
   var weekEnd = now + 7 * 24 * 3600 * 1000;
   var items = __upcomingData.items.filter(function (it) {
-    return new Date(it.start).getTime() > now - 6 * 3600 * 1000;
+    // 開始（実際の開始 or 予定）から3時間で終了扱い
+    return asobuLiveBase(it) + LIVE_DURATION_MS > now;
   });
   var head = document.getElementById("upcomingHead");
   if (!items.length) {
@@ -4737,6 +4738,18 @@ function renderUpcoming() {
     var d = document.createElement("div");
     d.className = "upcoming-item__date";
     d.textContent = when;
+    if (asobuIsLiveNow(it)) {
+      var live = document.createElement("span");
+      live.className = "upcoming-item__live";
+      live.textContent = L.live;
+      d.appendChild(live);
+    }
+    if (it.members) {
+      var badge = document.createElement("span");
+      badge.className = "upcoming-item__members";
+      badge.textContent = L.members;
+      d.appendChild(badge);
+    }
     var t = document.createElement("div");
     t.className = "upcoming-item__title";
     t.textContent = it.title;
@@ -4758,10 +4771,13 @@ function renderUpcoming() {
   list.innerHTML = "";
   groups.forEach(function (g, idx) {
     if (idx > 0) {
-      var h = document.createElement("h3");
-      h.className = "upcoming-subtitle";
+      // 1つ目の見出しと同じ見た目にするため、同じ card__head + h2 の構造で作る
+      var hw = document.createElement("div");
+      hw.className = "card__head upcoming-group-head";
+      var h = document.createElement("h2");
       h.textContent = g.title;
-      list.appendChild(h);
+      hw.appendChild(h);
+      list.appendChild(hw);
     }
     g.items.forEach(function (it) { list.appendChild(buildItem(it)); });
   });
@@ -4819,3 +4835,241 @@ function renderChannelCard() {
   if (subBtn) { subBtn.href = url + "?sub_confirmation=1"; subBtn.textContent = L.sub; }
   card.hidden = false;
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   いま配信中！フロートプレーヤー（全ページ共通）
+   ・schedule.json の枠のうち「開始（実際の開始 or 予定）〜3時間」の間を配信中とみなす
+   ・音声は小さい音量で自動再生（ブラウザが無音自動再生しか許さない場合は、
+     最初のクリック等の操作で小さい音量に切り替える）
+   ・×で消すと、その配信IDでは再表示しない（別の配信になったら再表示）
+   ───────────────────────────────────────────────────────────── */
+var LIVE_DURATION_MS = 3 * 3600 * 1000;
+var LIVE_VOLUME = 12;
+var LIVE_DISMISS_KEY = "liveDismissedId";
+
+function asobuLiveBase(it) {
+  return new Date(it.actualStart || it.start).getTime();
+}
+function asobuIsLiveNow(it) {
+  var now = Date.now(), b = asobuLiveBase(it);
+  return now >= b && now < b + LIVE_DURATION_MS;
+}
+
+(function initLivePip() {
+  var data = null;
+  var shownId = null;
+  var player = null;
+  var ducked = false;
+  var unlocked = false;
+
+  var T = {
+    ja: { live: "いま配信中！", members: "メン限", close: "閉じる", open: "YouTubeで見る" },
+    en: { live: "LIVE NOW!", members: "Members only", close: "Close", open: "Watch on YouTube" },
+    ko: { live: "지금 방송 중!", members: "멤버십 한정", close: "닫기", open: "YouTube에서 보기" }
+  };
+  function tr() {
+    var lang = (typeof state !== "undefined" && state.lang) || "ja";
+    return T[lang] || T.ja;
+  }
+  function dismissedId() { try { return localStorage.getItem(LIVE_DISMISS_KEY); } catch (e) { return null; } }
+  function setDismissed(id) { try { localStorage.setItem(LIVE_DISMISS_KEY, id); } catch (e) {} }
+  function liteMode() { try { return localStorage.getItem("noAnim") === "1"; } catch (e) { return false; } }
+
+  function load() {
+    fetch("./schedule.json?t=" + Math.floor(Date.now() / 300000), { cache: "no-cache" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .catch(function () { return null; })
+      .then(function (d) { if (d && Array.isArray(d.items)) { data = d; update(); } });
+  }
+
+  function currentLive() {
+    if (!data) return null;
+    var lives = data.items.filter(asobuIsLiveNow);
+    lives.sort(function (a, b) { return asobuLiveBase(b) - asobuLiveBase(a); }); // 一番最近始まった配信を優先
+    return lives[0] || null;
+  }
+
+  function releaseDuck() {
+    if (ducked && window.__bgmDuck) window.__bgmDuck.release();
+    ducked = false;
+  }
+
+  function hide() {
+    var el = document.getElementById("livePip");
+    if (el) el.remove();
+    player = null;
+    shownId = null;
+    releaseDuck();
+  }
+
+  function applyVolume() {
+    if (!player || !unlocked) return;
+    try {
+      player.unMute();
+      player.setVolume(LIVE_VOLUME);
+      if (!ducked && window.__bgmDuck) { window.__bgmDuck.acquire(); ducked = true; } // BGMと重ならないように
+    } catch (e) {}
+  }
+
+  function unlockOnce() {
+    unlocked = true;
+    applyVolume();
+    ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
+      document.removeEventListener(ev, unlockOnce, true);
+    });
+  }
+
+  function show(it) {
+    hide();
+    shownId = it.id;
+    var t = tr();
+    var url = "https://www.youtube.com/watch?v=" + encodeURIComponent(it.id);
+    var el = document.createElement("div");
+    el.className = "live-pip";
+    el.id = "livePip";
+    el.setAttribute("role", "complementary");
+    el.innerHTML =
+      '<div class="live-pip__bar">' +
+        '<a class="live-pip__badge" target="_blank" rel="noopener"><span class="live-pip__dot"></span><span class="live-pip__label"></span></a>' +
+        (it.members ? '<span class="live-pip__members"></span>' : "") +
+        '<button type="button" class="live-pip__close">✕</button>' +
+      "</div>" +
+      '<div class="live-pip__media"><a class="live-pip__link" target="_blank" rel="noopener"></a></div>' +
+      '<a class="live-pip__title" target="_blank" rel="noopener"></a>';
+    el.querySelector(".live-pip__label").textContent = t.live;
+    if (it.members) el.querySelector(".live-pip__members").textContent = t.members;
+    el.querySelectorAll("a").forEach(function (a) { a.href = url; a.title = t.open; a.draggable = false; });
+    el.querySelector(".live-pip__title").textContent = it.title || "";
+    var closeBtn = el.querySelector(".live-pip__close");
+    closeBtn.setAttribute("aria-label", t.close);
+    closeBtn.title = t.close;
+    closeBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      setDismissed(it.id);
+      hide();
+    });
+
+    enableDrag(el);
+
+    var media = el.querySelector(".live-pip__media");
+    if (liteMode()) {
+      // 軽量化モードでは埋め込みを使わず静止サムネイル
+      var img = document.createElement("img");
+      img.src = "https://i.ytimg.com/vi/" + encodeURIComponent(it.id) + "/hqdefault.jpg";
+      img.alt = "";
+      img.draggable = false;
+      media.insertBefore(img, media.firstChild);
+      document.body.appendChild(el);
+      return;
+    }
+
+    var holder = document.createElement("div");
+    holder.id = "livePipPlayer";
+    media.insertBefore(holder, media.firstChild);
+    document.body.appendChild(el);
+
+    if (typeof window.__loadYouTubeAPI !== "function") return;
+    window.__loadYouTubeAPI().then(function (YT) {
+      if (shownId !== it.id || !document.getElementById("livePipPlayer")) return;
+      player = new YT.Player("livePipPlayer", {
+        videoId: it.id,
+        playerVars: { autoplay: 1, mute: 1, playsinline: 1, rel: 0, controls: 0 },
+        events: {
+          onReady: function (e) {
+            try { e.target.playVideo(); } catch (err) {}
+            // ユーザー操作済みのページなら、すぐ小さい音量で鳴らす
+            if (navigator.userActivation && navigator.userActivation.hasBeenActive) unlocked = true;
+            applyVolume();
+          },
+          onStateChange: function (e) {
+            if (e.data === YT.PlayerState.PLAYING) applyVolume();
+          }
+        }
+      });
+    });
+  }
+
+  /* つまんで移動（位置はブラウザに保存）。少しでも動かした場合はクリック扱いにしない */
+  var POS_KEY = "livePipPos";
+  function clampPos(el, x, y) {
+    var w = el.offsetWidth, h = el.offsetHeight;
+    x = Math.max(4, Math.min(window.innerWidth - w - 4, x));
+    y = Math.max(4, Math.min(window.innerHeight - h - 4, y));
+    return { x: x, y: y };
+  }
+  function placeAt(el, x, y) {
+    var p = clampPos(el, x, y);
+    el.style.left = p.x + "px";
+    el.style.top = p.y + "px";
+    el.style.right = "auto";
+    el.style.bottom = "auto";
+    return p;
+  }
+  function enableDrag(el) {
+    try {
+      var saved = JSON.parse(localStorage.getItem(POS_KEY) || "null");
+      if (saved && typeof saved.x === "number") {
+        requestAnimationFrame(function () { placeAt(el, saved.x, saved.y); });
+      }
+    } catch (e) {}
+
+    var start = null, moved = false;
+    el.addEventListener("pointerdown", function (e) {
+      if (e.button !== 0 || e.target.closest(".live-pip__close")) return;
+      var r = el.getBoundingClientRect();
+      start = { px: e.clientX, py: e.clientY, x: r.left, y: r.top, id: e.pointerId };
+      moved = false;
+    });
+    // 素早く動かしてポインタが枠の外に出ても追従できるよう、移動・離す操作はwindowで受ける
+    window.addEventListener("pointermove", function (e) {
+      if (!start || e.pointerId !== start.id) return;
+      var dx = e.clientX - start.px, dy = e.clientY - start.py;
+      if (!moved && Math.abs(dx) + Math.abs(dy) < 6) return;
+      if (!moved) {
+        moved = true;
+        el.classList.add("is-dragging");
+        try { el.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+      e.preventDefault();
+      placeAt(el, start.x + dx, start.y + dy);
+    });
+    function end(e) {
+      if (!start || (e && e.pointerId !== start.id)) return;
+      if (moved) {
+        var r = el.getBoundingClientRect();
+        try { localStorage.setItem(POS_KEY, JSON.stringify({ x: r.left, y: r.top })); } catch (err) {}
+      }
+      el.classList.remove("is-dragging");
+      start = null;
+    }
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    // ドラッグ直後のクリック（リンクを開く動作）を止める
+    el.addEventListener("click", function (e) {
+      if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; }
+    }, true);
+    // リンクや画像をブラウザ標準のドラッグで持ち上げないようにする
+    el.addEventListener("dragstart", function (e) { e.preventDefault(); });
+  }
+  window.addEventListener("resize", function () {
+    var el = document.getElementById("livePip");
+    if (el && el.style.left) placeAt(el, parseFloat(el.style.left), parseFloat(el.style.top));
+  });
+
+  function update() {
+    var it = currentLive();
+    if (!it || dismissedId() === it.id) { if (shownId) hide(); return; }
+    if (shownId === it.id) return;
+    show(it);
+  }
+
+  ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
+    document.addEventListener(ev, unlockOnce, true);
+  });
+
+  load();
+  setInterval(update, 30 * 1000);      // 開始時刻・3時間経過をチェック
+  setInterval(load, 10 * 60 * 1000);   // schedule.json を再取得
+})();
